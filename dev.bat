@@ -27,11 +27,21 @@ if defined CLEANUP (
     exit /B 0
 )
 
-:: Step 5: Run the server
+:: Step 5: Start the frontend using Yarn
+echo Starting frontend...
+cd ui
+start yarn start
+cd ..
+
+:: Step 6: Wait for frontend to start and open browser
+timeout /t 2
+start http://localhost:1234
+
+:: Step 7: Run the Flask server
 set CLEANUP=1
 python server\main.py
 
-:: Step 6: Deactivate the virtual environment
+:: Step 8: Deactivate the virtual environment
 set CLEANUP=
 call .\venv\Scripts\deactivate
 
