@@ -1,5 +1,9 @@
 ### Candy Machine.
 
+<div style="max-width: 200px;">
+  <img src="assets/logo.png" alt="Logo" style="width: 100%; height: auto;">
+</div>
+
 A better image tagger for creating LORAs.
 
 ## Requirements:
@@ -9,12 +13,14 @@ A better image tagger for creating LORAs.
 ## Run Locally (Windows)
 
 ```sh
+cd candy-machine
 run
 ```
 
 ## Run Locally (MacOS/Unix)
 
 ```sh
+cd candy-machine
 chmod +x dev.sh
 ./dev.sh
 ```
