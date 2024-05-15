@@ -16,7 +16,7 @@ call .\venv\Scripts\activate
 pip install -r requirements.txt
 
 :: Step 4: Set environment variable
-set CANDY_MACHINE_ENV=prod
+set FLASK_ENV=production
 
 :: Define a label to handle cleanup
 :cleanup

@@ -6,9 +6,9 @@ from flask import Flask, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder="dist")
 
-CANDY_MACHINE_ENV = os.environ.get("CANDY_MACHINE_ENV")
+FLASK_ENV = os.environ.get("FLASK_ENV")
 PORT = 5000
-IS_PROD = CANDY_MACHINE_ENV == "prod"
+IS_PROD = FLASK_ENV == "production"
 WORKING_DIR = os.path.join("..", "working")
 
 
@@ -33,10 +33,12 @@ def open_browser():
 
 
 if __name__ == "__main__":
+    print(f"Is Prod: {IS_PROD}")
+
     if not os.path.exists(WORKING_DIR):
         print(f"Creating working directory: {WORKING_DIR}")
         os.makedirs(WORKING_DIR, exist_ok=True)
 
     threading.Timer(1.25, open_browser).start()
 
-    app.run(debug=IS_PROD, port=PORT)
+    app.run(debug=not IS_PROD, port=PORT)

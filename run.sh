@@ -18,7 +18,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Set environment variable
-export CANDY_MACHINE_ENV=prod
+export FLASK_ENV=production
 
 # Define a function to deactivate the virtual environment on script exit
 function cleanup {
