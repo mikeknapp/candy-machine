@@ -9,7 +9,7 @@ app = Flask(__name__, static_folder="dist")
 FLASK_ENV = os.environ.get("FLASK_ENV")
 PORT = 5000
 IS_PROD = FLASK_ENV == "production"
-WORKING_DIR = os.path.join("..", "working")
+WORKING_DIR = os.path.join(os.path.dirname(__file__), "..", "working")
 
 
 @app.route("/api/hello", methods=["GET"])
@@ -33,10 +33,7 @@ def open_browser():
 
 
 if __name__ == "__main__":
-    print(f"Is Prod: {IS_PROD}")
-
     if not os.path.exists(WORKING_DIR):
-        print(f"Creating working directory: {WORKING_DIR}")
         os.makedirs(WORKING_DIR, exist_ok=True)
 
     threading.Timer(1.25, open_browser).start()
