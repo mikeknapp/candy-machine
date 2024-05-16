@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .form-error {
-  @apply mt-1 rounded-md bg-red-50 px-3 py-1 text-sm text-red-500;
+  @apply mt-1 rounded-md bg-pink-50 px-3 py-1 text-sm text-pink-500;
 }

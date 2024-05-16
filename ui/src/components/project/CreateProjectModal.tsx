@@ -70,9 +70,7 @@ export function CreateProjectModal() {
           </div>
 
           <div>
-            <Label htmlFor="importDirPath">
-              Path to Import Images (optional)
-            </Label>
+            <Label htmlFor="importDirPath">Import Images (optional)</Label>
             <TextInput
               id="importDirPath"
               placeholder="C:\Documents\My Images"
@@ -80,7 +78,7 @@ export function CreateProjectModal() {
             />
           </div>
 
-          <div className="my-3 flex max-w-md flex-col gap-4">
+          <div className="mb-1 mt-3 flex max-w-md flex-col gap-4">
             <div className="flex items-center gap-2">
               <Checkbox
                 id="autoFileFormat"
@@ -88,7 +86,7 @@ export function CreateProjectModal() {
                 {...register("autoFileFormat")}
               />
               <Label htmlFor="autoFileFormat" className="flex">
-                Auto manage file format (convert to .png)
+                Auto manage file formats (convert to .png)
               </Label>
             </div>
             <div className="flex items-center gap-2">
