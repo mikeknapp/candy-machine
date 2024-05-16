@@ -34,7 +34,7 @@ class Project {
     return response;
   }
 
-  static async list(): Promise<ApiResponse<Project[]>> {
+  static async list(): Promise<Project[]> {
     const response = await apiRequest<ProjectData[]>("/projects/list", {
       method: "GET",
       headers: {
@@ -42,14 +42,13 @@ class Project {
       },
     });
     if (response.success && response.data) {
-      return {
-        success: true,
-        data: response.data.map(
-          (projectData: ProjectData) => new Project(projectData),
-        ),
-      };
+      return response.data.map(
+        (projectData: ProjectData) => new Project(projectData),
+      );
+    } else {
+      console.error(`Error fetching projects: ${response.errors}`);
     }
-    return response;
+    return [];
   }
 }
 
