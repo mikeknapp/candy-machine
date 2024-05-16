@@ -18,6 +18,7 @@ export function CreateProjectModal() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<ProjectData>();
   const [isOpen, setIsOpen] = useRecoilState(showNewProjectDialog);
@@ -25,13 +26,23 @@ export function CreateProjectModal() {
 
   const onSubmit: SubmitHandler<ProjectData> = async (data) => {
     setIsProcessing(true);
-    const resp = await Project.create(data);
-    if (resp.success) {
-      setIsOpen(false);
-    } else {
-      console.error(resp.errors);
+    try {
+      const resp = await Project.create(data);
+      if (resp.errors) {
+        for (const [field, message] of Object.entries(resp.errors)) {
+          setError(field as keyof ProjectData, {
+            type: "manual",
+            message: message as string,
+          });
+        }
+      } else {
+        setIsOpen(false);
+      }
+    } catch (error) {
+      alert(`Failed to create project: ${error}`);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   useEffect(() => {

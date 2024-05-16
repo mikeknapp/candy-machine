@@ -1,8 +1,9 @@
 import os
 import threading
 import webbrowser
+from typing import Any, Dict
 
-from flask import Flask, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder="dist")
@@ -16,14 +17,54 @@ WORKING_DIR = os.path.join(os.path.dirname(__file__), "..", "working")
 
 @app.route("/projects/create", methods=["POST"])
 def create_project():
-    request_data = request.get_json()
-    print(request_data)
+    if not request.json:
+        return jsonify(errors={"dirName": "Invalid JSON data"}), 400
+    data: Dict[str, Any] = request.json
+    dirName = str(data.get("dirName", "")).strip()
+    importDirPath = str(data.get("importDirPath", "")).strip()
+    autoFileFormat = data.get("autoFileFormat")
+    autoFileNaming = data.get("autoFileNaming")
 
-    return {
-        "message": "Project created successfully",
-        "success": True,
-        "errors": None,
-    }
+    # Validate the directory name.
+    if not dirName:
+        return jsonify(errors={"dirName": "A directory name is required"}), 400
+
+    if not all(c.isalnum() or c in ("_", "-") for c in dirName):
+        return (
+            jsonify(
+                errors={
+                    "dirName": "Only alphanumeric characters, underscores, and hyphens allowed"
+                }
+            ),
+            400,
+        )
+
+    project_path = os.path.join(WORKING_DIR, dirName)
+    if os.path.exists(project_path):
+        return (
+            jsonify(errors={"dirName": "A project with this name already exists"}),
+            400,
+        )
+
+    os.makedirs(project_path)
+    # Further logic for handling importDirPath, autoFileFormat, and autoFileNaming
+
+    return jsonify(data), 200
+
+
+@app.route("/projects/list", methods=["GET"])
+def list_projects():
+    project_dirs = os.listdir(WORKING_DIR)
+    projects = [
+        {
+            "dirName": dirName,
+            "importDirPath": "",  # TODO: Fix.
+            "autoFileFormat": False,
+            "autoFileNaming": False,
+        }
+        for dirName in project_dirs
+    ]
+    return jsonify(projects), 200
 
 
 @app.route("/", defaults={"path": ""})
