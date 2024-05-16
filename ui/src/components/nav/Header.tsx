@@ -11,7 +11,11 @@ export function Header() {
   return (
     <div className="flex w-full flex-row items-center justify-between bg-brand p-3 dark:bg-slate-600">
       <span className="text-gray text-base font-bold text-gray-700 dark:text-white">
-        CANDY MACHINE
+        <img
+          src={require("../../assets/logo.png")}
+          alt="Candy Machine Logo"
+          className="aspect-square h-12"
+        />
       </span>
       <div className="flex flex-row gap-2">
         <Tooltip content="New Project">

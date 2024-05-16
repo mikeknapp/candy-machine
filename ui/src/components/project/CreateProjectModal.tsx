@@ -12,25 +12,26 @@ import { useRecoilState } from "recoil";
 import { showNewProjectDialog } from "../../state/atoms";
 
 import { SubmitHandler, useForm } from "react-hook-form";
-
-interface IFormInput {
-  dirName: string;
-  importDirPath: string;
-  autoFileFormat: boolean;
-  autoFileNaming: boolean;
-}
+import Project, { ProjectData } from "../../models/project";
 
 export function CreateProjectModal() {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<IFormInput>();
+  } = useForm<ProjectData>();
   const [isOpen, setIsOpen] = useRecoilState(showNewProjectDialog);
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
 
-  const onSubmit: SubmitHandler<IFormInput> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<ProjectData> = async (data) => {
+    setIsProcessing(true);
+    const resp = await Project.create(data);
+    if (resp.success) {
+      setIsOpen(false);
+    } else {
+      console.error(resp.errors);
+    }
+    setIsProcessing(false);
   };
 
   useEffect(() => {

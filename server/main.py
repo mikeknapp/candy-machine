@@ -2,9 +2,11 @@ import os
 import threading
 import webbrowser
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, request, send_from_directory
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder="dist")
+CORS(app)
 
 FLASK_ENV = os.environ.get("FLASK_ENV")
 PORT = 5000
@@ -12,9 +14,16 @@ IS_PROD = FLASK_ENV == "production"
 WORKING_DIR = os.path.join(os.path.dirname(__file__), "..", "working")
 
 
-@app.route("/api/hello", methods=["GET"])
-def hello():
-    return jsonify(message="HELLO")
+@app.route("/projects/create", methods=["POST"])
+def create_project():
+    request_data = request.get_json()
+    print(request_data)
+
+    return {
+        "message": "Project created successfully",
+        "success": True,
+        "errors": None,
+    }
 
 
 @app.route("/", defaults={"path": ""})

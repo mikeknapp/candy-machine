@@ -2,7 +2,7 @@ import { Button } from "flowbite-react";
 import React from "react";
 import { useSetRecoilState } from "recoil";
 import { showNewProjectDialog } from "../../state/atoms";
-import { CreateProjectModal } from "../projects/CreateProjectModal";
+import { CreateProjectModal } from "../project/CreateProjectModal";
 
 export function NoSelectedProject() {
   const openNewProjectDialog = useSetRecoilState(showNewProjectDialog);
