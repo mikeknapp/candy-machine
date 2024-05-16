@@ -9,6 +9,7 @@ module.exports = {
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
     "plugin:tailwindcss/recommended",
+    "plugin:react-hooks/recommended",
     "prettier",
   ],
   overrides: [
@@ -37,5 +38,12 @@ module.exports = {
   },
   plugins: ["react"],
   ignorePatterns: ["dist"],
-  rules: {},
+  rules: {
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        additionalHooks: "(useRecoilCallback|useRecoilTransaction_UNSTABLE)",
+      },
+    ],
+  },
 };

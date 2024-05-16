@@ -1,12 +1,14 @@
 import type { CustomFlowbiteTheme } from "flowbite-react";
-import { Flowbite } from "flowbite-react";
+import { DarkThemeToggle, Flowbite } from "flowbite-react";
 import React from "react";
-import { Header } from "./components/Header.js";
+import { RecoilRoot } from "recoil";
+import { NoSelectedProject } from "./components/layout/NoSelectedProject.js";
+import { Header } from "./components/nav/Header.js";
 
 const customTheme: CustomFlowbiteTheme = {
   button: {
     color: {
-      none: "bg-none",
+      default: "bg-green-500",
     },
   },
 };
@@ -14,10 +16,13 @@ const customTheme: CustomFlowbiteTheme = {
 export function App() {
   return (
     <Flowbite theme={{ theme: customTheme }}>
-      <main className="flex min-h-screen flex-col gap-2 dark:bg-gray-800">
-        <Header />
-        <h1 className="text-2xl dark:text-white">Hello world!</h1>
-      </main>
+      <RecoilRoot>
+        <main className="flex h-screen w-screen flex-col overflow-hidden dark:bg-gray-800">
+          <Header />
+          <NoSelectedProject />
+          <DarkThemeToggle className="fixed bottom-2 left-2" />
+        </main>
+      </RecoilRoot>
     </Flowbite>
   );
 }

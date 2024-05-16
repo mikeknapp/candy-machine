@@ -1,9 +1,17 @@
 import React from "react";
 
-export function Cog() {
+interface CogSvgProps {
+  className?: string;
+  size?: number;
+}
+
+export function CogSvg({
+  className = "text-gray-800 dark:text-white",
+  size = 6,
+}: CogSvgProps) {
   return (
     <svg
-      className="h-6 w-6 text-gray-800 dark:text-white"
+      className={`h-${size} w-${size} ${className}`}
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
