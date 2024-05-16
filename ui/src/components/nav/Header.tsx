@@ -9,7 +9,7 @@ export function Header() {
   const openNewProjectDialog = useSetRecoilState(showNewProjectDialog);
 
   return (
-    <div className="bg-accent flex w-full flex-row items-center justify-between p-3 dark:bg-slate-600">
+    <div className="bg-accent flex w-full flex-row items-center justify-between p-3 dark:bg-slate-900">
       <span className="text-gray text-base font-bold text-gray-700 dark:text-white">
         <img
           src={require("../../assets/logo.png")}
@@ -22,6 +22,7 @@ export function Header() {
 
         <Tooltip content="New Project">
           <Button
+            size="lg"
             gradientDuoTone="pinkToOrange"
             onClick={() => openNewProjectDialog(true)}
           >
@@ -29,7 +30,7 @@ export function Header() {
           </Button>
         </Tooltip>
         <Tooltip content="Settings">
-          <Button gradientDuoTone="pinkToOrange">
+          <Button size="lg" gradientDuoTone="pinkToOrange">
             <HiCog6Tooth className="text-2xl font-bold" />
           </Button>
         </Tooltip>

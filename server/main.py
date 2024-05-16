@@ -54,6 +54,9 @@ def create_project():
 
 @app.route("/projects/list", methods=["GET"])
 def list_projects():
+    if not os.path.exists(WORKING_DIR):
+        return jsonify([]), 200
+
     project_dirs = os.listdir(WORKING_DIR)
     projects = [
         {
