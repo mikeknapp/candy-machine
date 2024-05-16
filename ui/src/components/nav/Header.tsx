@@ -10,7 +10,7 @@ export function Header() {
 
   return (
     <div className="flex w-full flex-row items-center justify-between bg-brand p-3 dark:bg-slate-600">
-      <span className="text-gray text-base font-bold text-pink-900 dark:text-white">
+      <span className="text-gray text-base font-bold text-gray-700 dark:text-white">
         CANDY MACHINE
       </span>
       <div className="flex flex-row gap-2">

@@ -1,5 +1,5 @@
 import type { CustomFlowbiteTheme } from "flowbite-react";
-import { DarkThemeToggle, Flowbite } from "flowbite-react";
+import { DarkThemeToggle, Flowbite, Tooltip } from "flowbite-react";
 import React from "react";
 import { RecoilRoot } from "recoil";
 import { NoSelectedProject } from "./components/layout/NoSelectedProject.js";
@@ -20,7 +20,11 @@ export function App() {
         <main className="flex h-screen w-screen flex-col overflow-hidden dark:bg-gray-800">
           <Header />
           <NoSelectedProject />
-          <DarkThemeToggle className="fixed bottom-2 left-2" />
+          <div className="fixed bottom-2 left-2 w-52">
+            <Tooltip content="Toggle Dark Mode">
+              <DarkThemeToggle />
+            </Tooltip>
+          </div>
         </main>
       </RecoilRoot>
     </Flowbite>
