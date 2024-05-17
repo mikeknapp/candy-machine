@@ -38,3 +38,19 @@ export const selectedImageAtom = atom<string | null>({
     },
   }),
 });
+
+// Auto update selected image when current project changes.
+export const selectedImageSelector = selector<string | null>({
+  key: "selectedImageSelector",
+  get: ({ get }) => {
+    return get(selectedImageAtom);
+  },
+  set: ({ get, set }) => {
+    const currentProject = get(currentProjectAtom);
+    if (currentProject) {
+      set(selectedImageAtom, currentProject.images[0]);
+    } else {
+      set(selectedImageAtom, null);
+    }
+  },
+});
