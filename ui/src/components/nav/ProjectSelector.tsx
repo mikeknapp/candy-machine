@@ -20,7 +20,7 @@ export function ProjectSelector() {
       className="min-w-[200px]"
       label={
         <div className="flex flex-row items-center gap-2">
-          <HiFolderOpen className="text-primary-600 h-5 w-5" />{" "}
+          <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
           {projects.length > 0 ? projects[0].dirName : "No Projects"}
         </div>
       }

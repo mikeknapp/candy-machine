@@ -1,64 +1,16 @@
-import { Button, ButtonGroup } from "flowbite-react";
 import React from "react";
-import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
-import { MdCropRotate } from "react-icons/md";
-import { useRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import Project from "../../models/project";
 import { selectedImageAtom } from "../../state/atoms";
-import { scrollToThumbnail } from "./ImageThumbnails";
+import { ImageActionBar } from "./ImageActionBar";
 
 export function ImagePreview({ project }: { project: Project }) {
-  const [selectedImg, setSelectedImg] = useRecoilState(selectedImageAtom);
-
-  const selectNewImage = (img: string) => {
-    setSelectedImg(img);
-    scrollToThumbnail(img);
-  };
-
-  const navigateImages = (direction: "next" | "previous") => {
-    let imgToSelect = project.navigateImages(selectedImg, direction);
-    if (imgToSelect) {
-      selectNewImage(imgToSelect);
-    }
-  };
+  const selectedImg = useRecoilValue(selectedImageAtom);
 
   return (
     <div className="flex w-1/4 flex-col justify-start gap-5 p-5">
-      <div className="flex flex-row justify-center">
-        <ButtonGroup>
-          <Button
-            size="xl"
-            gradientDuoTone="pinkToOrange"
-            title="Previous Image [⬆️ or ⬅️ arrow]"
-            onClick={() => navigateImages("previous")}
-          >
-            <HiArrowLeft />
-          </Button>
-          <Button
-            size="xl"
-            gradientDuoTone="pinkToOrange"
-            title="Crop / Rotate Image [c]"
-          >
-            <MdCropRotate />
-          </Button>
-          <Button
-            size="xl"
-            gradientDuoTone="pinkToOrange"
-            title="Delete Image [DEL key]"
-          >
-            <HiMiniTrash />
-          </Button>
-          <Button
-            size="xl"
-            gradientDuoTone="pinkToOrange"
-            title="Next Image [⬇️ or ➡️ arrow]"
-            onClick={() => navigateImages("next")}
-          >
-            <HiArrowRight />
-          </Button>
-        </ButtonGroup>
-      </div>
+      <ImageActionBar project={project} />
 
       <div className="flex flex-row justify-center">
         <img

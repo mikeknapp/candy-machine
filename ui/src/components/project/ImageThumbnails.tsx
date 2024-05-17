@@ -3,6 +3,7 @@ import { useRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
 import Project from "../../models/project";
 import { selectedImageAtom } from "../../state/atoms";
+import { ProgressPieChart } from "../nav/ProgressPieChart";
 
 export const scrollToThumbnail = (img: string) => {
   const EXTRA_PADDING = 50;
@@ -59,6 +60,9 @@ export function ImageThumbnails({ project }: { project: Project }) {
           onClick={() => selectNewImage(img)}
         />
       ))}
+      <div className="absolute bottom-3 left-3">
+        <ProgressPieChart />
+      </div>
     </div>
   );
 }
