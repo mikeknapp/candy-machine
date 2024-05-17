@@ -1,11 +1,10 @@
 import { Button } from "flowbite-react";
 import React from "react";
 import { useSetRecoilState } from "recoil";
-import { showNewProjectDialog } from "../../state/atoms";
-import { CreateProjectModal } from "../project/CreateProjectModal";
+import { showNewProjectDialogAtom } from "../../state/atoms";
 
 export function NoSelectedProject() {
-  const openNewProjectDialog = useSetRecoilState(showNewProjectDialog);
+  const openNewProjectDialog = useSetRecoilState(showNewProjectDialogAtom);
 
   return (
     <div className="flex h-screen w-full flex-row items-center justify-center">
@@ -16,7 +15,6 @@ export function NoSelectedProject() {
       >
         Create Your First Project
       </Button>
-      <CreateProjectModal />
     </div>
   );
 }

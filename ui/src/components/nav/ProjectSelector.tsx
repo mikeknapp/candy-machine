@@ -1,15 +1,18 @@
 import { Dropdown } from "flowbite-react";
 import React from "react";
 import { HiFolderOpen } from "react-icons/hi2";
-import { useRecoilValue } from "recoil";
-import { projects } from "../../state/atoms";
+import { useRecoilValueLoadable } from "recoil";
+import Project from "../../models/project";
+import { projectsAtom } from "../../state/atoms";
 
 export function ProjectSelector() {
-  const allProjects = useRecoilValue(projects);
+  const projectsLoading = useRecoilValueLoadable(projectsAtom);
 
-  if (!allProjects.length) {
+  if (projectsLoading.state === "loading") {
     return null;
   }
+
+  const projects = projectsLoading.contents;
 
   return (
     <Dropdown
@@ -17,14 +20,13 @@ export function ProjectSelector() {
       className="min-w-[200px]"
       label={
         <div className="flex flex-row items-center gap-2">
-          <HiFolderOpen className="h-5 w-5" />{" "}
-          {allProjects.length > 0 ? allProjects[0].dirName : "No Projects"}
+          <HiFolderOpen className="text-primary-600 h-5 w-5" />{" "}
+          {projects.length > 0 ? projects[0].dirName : "No Projects"}
         </div>
       }
-      gradientDuoTone="pinkToOrange"
-      outline
+      color="gray"
     >
-      {allProjects.map((project) => (
+      {projects.map((project: Project) => (
         <Dropdown.Item
           key={project.dirName}
           value={project.dirName}

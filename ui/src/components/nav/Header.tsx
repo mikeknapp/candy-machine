@@ -1,15 +1,15 @@
-import { Button, Tooltip } from "flowbite-react";
+import { Button, DarkThemeToggle, Tooltip } from "flowbite-react";
 import React from "react";
 import { HiCog6Tooth, HiFolderPlus } from "react-icons/hi2";
 import { useSetRecoilState } from "recoil";
-import { showNewProjectDialog } from "../../state/atoms";
+import { showNewProjectDialogAtom } from "../../state/atoms";
 import { ProjectSelector } from "./ProjectSelector";
 
 export function Header() {
-  const openNewProjectDialog = useSetRecoilState(showNewProjectDialog);
+  const openNewProjectDialog = useSetRecoilState(showNewProjectDialogAtom);
 
   return (
-    <div className="bg-accent flex w-full flex-row items-center justify-between p-3 dark:bg-slate-900">
+    <div className="flex w-full flex-row items-center justify-between bg-accent p-3 shadow-xl dark:bg-slate-900">
       <span className="text-gray text-base font-bold text-gray-700 dark:text-white">
         <img
           src={require("../../assets/logo.png")}
@@ -33,6 +33,9 @@ export function Header() {
           <Button size="lg" gradientDuoTone="pinkToOrange">
             <HiCog6Tooth className="text-2xl font-bold" />
           </Button>
+        </Tooltip>
+        <Tooltip content="Toggle Dark Mode">
+          <DarkThemeToggle />
         </Tooltip>
       </div>
     </div>

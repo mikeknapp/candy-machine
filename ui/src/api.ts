@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5000";
+export const API_BASE_URL = "http://localhost:5000";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -8,8 +8,16 @@ export interface ApiResponse<T> {
 
 export const apiRequest = async <T>(
   endpoint: string,
-  options: RequestInit,
+  options: RequestInit = {},
 ): Promise<ApiResponse<T>> => {
+  const defaultOptions = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  };
+  options = { ...defaultOptions, ...options };
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {

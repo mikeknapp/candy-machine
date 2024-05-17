@@ -23,5 +23,26 @@ module.exports = {
       },
     },
   },
-  plugins: [flowbite.plugin()],
+  plugins: [
+    flowbite.plugin(),
+    function ({ addUtilities }) {
+      const newUtilities = {
+        ".scrollbar-thin::-webkit-scrollbar": {
+          width: "6px",
+        },
+        ".scrollbar-thin::-webkit-scrollbar-thumb": {
+          backgroundColor: "#888",
+          borderRadius: "10px",
+        },
+        ".scrollbar-thin::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: "#555",
+        },
+        ".scrollbar-thin": {
+          scrollbarWidth: "thin",
+          scrollbarColor: "#888 #f0f0f0",
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
+  ],
 };

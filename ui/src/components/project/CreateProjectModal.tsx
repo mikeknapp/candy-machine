@@ -9,10 +9,10 @@ import {
 } from "flowbite-react";
 import React, { useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { showNewProjectDialog } from "../../state/atoms";
+import { showNewProjectDialogAtom } from "../../state/atoms";
 
 import { SubmitHandler, useForm } from "react-hook-form";
-import Project, { ProjectData } from "../../models/project";
+import Project, { NewProjectData } from "../../models/project";
 
 export function CreateProjectModal() {
   const {
@@ -20,17 +20,17 @@ export function CreateProjectModal() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<ProjectData>();
-  const [isOpen, setIsOpen] = useRecoilState(showNewProjectDialog);
+  } = useForm<NewProjectData>();
+  const [isOpen, setIsOpen] = useRecoilState(showNewProjectDialogAtom);
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
 
-  const onSubmit: SubmitHandler<ProjectData> = async (data) => {
+  const onSubmit: SubmitHandler<NewProjectData> = async (data) => {
     setIsProcessing(true);
     try {
       const resp = await Project.create(data);
       if (resp.errors) {
         for (const [field, message] of Object.entries(resp.errors)) {
-          setError(field as keyof ProjectData, {
+          setError(field as keyof NewProjectData, {
             type: "manual",
             message: message as string,
           });

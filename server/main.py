@@ -13,6 +13,8 @@ FLASK_ENV = os.environ.get("FLASK_ENV")
 PORT = 5000
 IS_PROD = FLASK_ENV == "production"
 WORKING_DIR = os.path.join(os.path.dirname(__file__), "..", "working")
+IMGS_DIR = "imgs"
+IMG_EXT = ".jpg"
 
 
 @app.route("/projects/create", methods=["POST"])
@@ -52,22 +54,30 @@ def create_project():
     return jsonify(data), 200
 
 
-@app.route("/projects/list", methods=["GET"])
+@app.route("/projects/list", methods=["GET", "POST"])
 def list_projects():
     if not os.path.exists(WORKING_DIR):
         return jsonify([]), 200
+    return jsonify(os.listdir(WORKING_DIR)), 200
 
-    project_dirs = os.listdir(WORKING_DIR)
-    projects = [
-        {
-            "dirName": dirName,
-            "importDirPath": "",  # TODO: Fix.
-            "autoFileFormat": False,
-            "autoFileNaming": False,
-        }
-        for dirName in project_dirs
-    ]
-    return jsonify(projects), 200
+
+@app.route("/project/<string:dir_name>/get", methods=["GET", "POST"])
+def get_project(dir_name):
+    img_path = os.path.join(WORKING_DIR, dir_name, IMGS_DIR)
+    if not os.path.exists(img_path):
+        return jsonify(errors={"dirName": "Project image directory not found"}), 404
+    img_files = os.listdir(img_path)
+    img_files = [f for f in img_files if f.endswith(IMG_EXT)]
+    return jsonify({"dirName": dir_name, "images": img_files}), 200
+
+
+@app.route("/project/<string:dir_name>/imgs/<string:fname>", methods=["GET"])
+def serve_image(dir_name, fname):
+    img_dir = os.path.join(WORKING_DIR, dir_name, IMGS_DIR)
+    img_path = os.path.join(img_dir, fname)
+    if not os.path.exists(img_path):
+        return jsonify(errors={"fname": "Image file not found"}), 404
+    return send_from_directory(img_dir, fname)
 
 
 @app.route("/", defaults={"path": ""})
