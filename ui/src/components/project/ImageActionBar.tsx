@@ -2,13 +2,15 @@ import { Button, ButtonGroup } from "flowbite-react";
 import React from "react";
 import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
 import { MdCropRotate } from "react-icons/md";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import Project from "../../models/project";
-import { selectedImageAtom } from "../../state/atoms";
+import { selectedImageAtom, showEditImageModalAtom } from "../../state/atoms";
+import { EditImageModal } from "./EditImageModal";
 import { scrollToThumbnail } from "./ImageThumbnails";
 
 export function ImageActionBar({ project }: { project: Project }) {
   const [selectedImg, setSelectedImg] = useRecoilState(selectedImageAtom);
+  const setShowEditImageModal = useSetRecoilState(showEditImageModalAtom);
 
   const selectNewImage = (img: string) => {
     setSelectedImg(img);
@@ -38,6 +40,7 @@ export function ImageActionBar({ project }: { project: Project }) {
           size="xl"
           gradientDuoTone="pinkToOrange"
           title="Crop / Rotate Image [c]"
+          onClick={() => setShowEditImageModal(true)}
         >
           <MdCropRotate />
         </Button>
@@ -58,6 +61,8 @@ export function ImageActionBar({ project }: { project: Project }) {
           <HiArrowRight />
         </Button>
       </ButtonGroup>
+
+      <EditImageModal project={project} />
     </div>
   );
 }

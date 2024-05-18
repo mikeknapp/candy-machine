@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import Project from "../../models/project";
-import { selectedImageAtom } from "../../state/atoms";
+import { selectedImageAtom, showEditImageModalAtom } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
 export const scrollToThumbnail = (img: string) => {
@@ -18,6 +18,7 @@ export const scrollToThumbnail = (img: string) => {
 
 export function ImageThumbnails({ project }: { project: Project }) {
   const [selectedImg, setSelectedImg] = useRecoilState(selectedImageAtom);
+  const editImageModalIsOpen = useRecoilValue(showEditImageModalAtom);
 
   const selectNewImage = (img: string) => {
     setSelectedImg(img);
@@ -26,6 +27,8 @@ export function ImageThumbnails({ project }: { project: Project }) {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (editImageModalIsOpen) return;
+
       let imgToSelect;
       switch (event.key) {
         case "ArrowDown":

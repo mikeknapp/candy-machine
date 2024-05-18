@@ -1,8 +1,13 @@
 import { atom, selector } from "recoil";
 import Project from "../models/project";
 
-export const showNewProjectDialogAtom = atom({
-  key: "showNewProjectDialog",
+export const showNewProjectModalAtom = atom({
+  key: "showNewProjectModal",
+  default: false,
+});
+
+export const showEditImageModalAtom = atom({
+  key: "showEditImageModal",
   default: false,
 });
 

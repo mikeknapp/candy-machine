@@ -1,10 +1,10 @@
 import { Button } from "flowbite-react";
 import React from "react";
 import { useSetRecoilState } from "recoil";
-import { showNewProjectDialogAtom } from "../../state/atoms";
+import { showNewProjectModalAtom } from "../../state/atoms";
 
 export function NoSelectedProject() {
-  const openNewProjectDialog = useSetRecoilState(showNewProjectDialogAtom);
+  const openNewProjectDialog = useSetRecoilState(showNewProjectModalAtom);
 
   return (
     <div className="flex h-screen w-full flex-row items-center justify-center">

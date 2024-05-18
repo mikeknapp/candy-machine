@@ -9,7 +9,7 @@ import {
 } from "flowbite-react";
 import React, { useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { showNewProjectDialogAtom } from "../../state/atoms";
+import { showNewProjectModalAtom } from "../../state/atoms";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import Project, { NewProjectData } from "../../models/project";
@@ -21,7 +21,7 @@ export function CreateProjectModal() {
     setError,
     formState: { errors },
   } = useForm<NewProjectData>();
-  const [isOpen, setIsOpen] = useRecoilState(showNewProjectDialogAtom);
+  const [isOpen, setIsOpen] = useRecoilState(showNewProjectModalAtom);
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
 
   const onSubmit: SubmitHandler<NewProjectData> = async (data) => {
@@ -111,19 +111,20 @@ export function CreateProjectModal() {
               </Label>
             </div>
           </div>
+
+          <div className="flex flex-row justify-end gap-2 pt-4">
+            <Button color="gray" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              gradientDuoTone="greenToBlue"
+              isProcessing={isProcessing}
+            >
+              Create Project
+            </Button>
+          </div>
         </ModalBody>
-        <Modal.Footer>
-          <Button
-            type="submit"
-            gradientDuoTone="greenToBlue"
-            isProcessing={isProcessing}
-          >
-            Create Project
-          </Button>
-          <Button color="gray" onClick={() => setIsOpen(false)}>
-            Cancel
-          </Button>
-        </Modal.Footer>
       </form>
     </Modal>
   );
