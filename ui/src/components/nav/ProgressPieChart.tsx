@@ -36,7 +36,7 @@ export function ProgressPieChart() {
         background
         backgroundPadding={6}
         styles={buildStyles({
-          backgroundColor: "#cb3365",
+          backgroundColor: "#065f46",
           textColor: "#fff",
           pathColor: "#fff",
           trailColor: "transparent",

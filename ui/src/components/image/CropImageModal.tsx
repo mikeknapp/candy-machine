@@ -1,11 +1,15 @@
 import { Button, Dropdown, Modal, Spinner } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
+import { IconType } from "react-icons";
 import { BiShapeSquare } from "react-icons/bi";
 import { FcCheckmark } from "react-icons/fc";
 import { MdFlip, MdRotate90DegreesCw } from "react-icons/md";
 import {
+  TbCrop11,
   TbCrop11Filled,
+  TbCrop169,
   TbCrop169Filled,
+  TbCrop32,
   TbCrop32Filled,
 } from "react-icons/tb";
 import ReactCrop, {
@@ -19,7 +23,7 @@ import "react-image-crop/dist/ReactCrop.css";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import Project from "../../models/project";
-import { selectedImageAtom, showEditImageModalAtom } from "../../state/atoms";
+import { selectedImageAtom, showCropImageModalAtom } from "../../state/atoms";
 
 const INITIAL_CROP: PercentCrop = {
   unit: "%",
@@ -29,17 +33,10 @@ const INITIAL_CROP: PercentCrop = {
   height: 50,
 };
 
-type ImgSize = {
-  w: number; // True size of the image.
-  h: number;
-  imgTagW: number; // Scaled size inside a img tag.
-  imgTagH: number;
-};
-
-const INITIAL_SIZE: ImgSize = {
-  w: 0,
+const INITIAL_SIZE = {
+  w: 0, // Actual size of the image.
   h: 0,
-  imgTagW: 0,
+  imgTagW: 0, // Scaled size inside a img tag.
   imgTagH: 0,
 };
 
@@ -73,10 +70,11 @@ enum Rotation {
   TWO_SEVENTY = 270,
 }
 
-export function EditImageModal({ project }: { project: Project }) {
+export function CropImageModal({ project }: { project: Project }) {
   const selectedImg = useRecoilValue(selectedImageAtom);
-  const [showModal, setShowModal] = useRecoilState(showEditImageModalAtom);
+  const [showModal, setShowModal] = useRecoilState(showCropImageModalAtom);
 
+  const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<PercentCrop>(INITIAL_CROP);
   const [aspect, setAspect] = useState<AspectRatio>(AspectRatio.SQUARE);
   const [rotate, setRotate] = useState<Rotation>(Rotation.ZERO);
@@ -105,33 +103,50 @@ export function EditImageModal({ project }: { project: Project }) {
     }
   };
 
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const {
-      naturalWidth: w,
-      naturalHeight: h,
-      width: imgTagW,
-      height: imgTagH,
-    } = e.currentTarget;
-    setImgSize({ w, h, imgTagW, imgTagH });
+  const onImageLoad = () => {
     setTimeout(() => {
+      const imgEl = imgRef.current as HTMLImageElement;
+      const {
+        naturalWidth: w,
+        naturalHeight: h,
+        width: imgTagW,
+        height: imgTagH,
+      } = imgEl;
+      setImgSize({
+        w,
+        h,
+        imgTagW: Math.round(imgTagW),
+        imgTagH: Math.round(imgTagH),
+      });
       setIsRotating(false);
     }, 100);
   };
 
-  const getAspectRatioIcon = (aspect: AspectRatio) => {
-    const cls = "h-6 w-6 mr-2";
+  const getAspectRatioIcon = (
+    aspect: AspectRatio,
+    outline = false,
+  ): ReactNode => {
+    let styling = "h-6 w-6 mr-2";
+    let icon: IconType;
     switch (aspect) {
       case AspectRatio.CUSTOM:
-        return <BiShapeSquare className={cls} />;
+        icon = BiShapeSquare;
+        break;
       case AspectRatio.SQUARE:
-        return <TbCrop11Filled className={cls} />;
+        icon = outline ? TbCrop11 : TbCrop11Filled;
+        break;
       case AspectRatio.FOUR_THREE:
-        return <TbCrop32Filled className={cls} />;
+        icon = outline ? TbCrop32 : TbCrop32Filled;
+        break;
       case AspectRatio.SIXTEEN_NINE:
-        return <TbCrop169Filled className={cls} />;
+        icon = outline ? TbCrop169 : TbCrop169Filled;
+        break;
       case AspectRatio.NINE_SIXTEEN:
-        return <TbCrop169Filled className={`${cls} rotate-90`} />;
+        styling = `${styling} rotate-90`;
+        icon = outline ? TbCrop169 : TbCrop169Filled;
+        break;
     }
+    return React.createElement(icon, { className: styling });
   };
 
   const saveImage = () => {
@@ -142,7 +157,7 @@ export function EditImageModal({ project }: { project: Project }) {
 
   useEffect(() => {
     if (showModal) {
-      setAspect(AspectRatio.CUSTOM);
+      setAspect(AspectRatio.SQUARE);
     }
   }, [showModal]);
 
@@ -198,11 +213,7 @@ export function EditImageModal({ project }: { project: Project }) {
           <Dropdown
             disabled={isRotating}
             color="light"
-            label={
-              <>
-                <BiShapeSquare className="mr-2 h-6 w-6" /> Crop Shape
-              </>
-            }
+            label={<>{getAspectRatioIcon(aspect, true)} Crop Shape</>}
             size="lg"
           >
             {Object.values(AspectRatio).map((a) => (
@@ -220,6 +231,11 @@ export function EditImageModal({ project }: { project: Project }) {
             crop={crop}
             key={`edit-image-${project.dirName}-${selectedImg}-${imgSize.w}x${imgSize.h}`}
             onChange={(c) => {
+              // Prevent crop from going out of bounds. (There seems to be bug with click and drag.)
+              c.x = Math.max(0, c.x);
+              c.y = Math.max(0, c.y);
+              c.width = Math.min(imgSize.imgTagW, c.width);
+              c.height = Math.min(imgSize.imgTagH, c.height);
               setCrop(
                 convertToPercentCrop(c, imgSize.imgTagW, imgSize.imgTagH),
               );
@@ -232,7 +248,8 @@ export function EditImageModal({ project }: { project: Project }) {
             className={`flex ${isRotating ? "hidden" : ""}`}
           >
             <img
-              key={`edit-image-${project.dirName}-${selectedImg}-${rotate}`}
+              ref={imgRef}
+              key={`edit-image-${selectedImg}-${rotate}`}
               style={{
                 transform: `scaleX(${flipHorizontal ? -1 : 1})`,
               }}

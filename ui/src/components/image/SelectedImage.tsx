@@ -3,14 +3,14 @@ import { useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import Project from "../../models/project";
 import { selectedImageAtom } from "../../state/atoms";
-import { ImageActionBar } from "./ImageActionBar";
+import { QuickActions } from "../project/QuickActions";
 
-export function ImagePreview({ project }: { project: Project }) {
+export function SelectedImage({ project }: { project: Project }) {
   const selectedImg = useRecoilValue(selectedImageAtom);
 
   return (
     <div className="flex w-1/4 flex-col justify-start gap-5 p-5">
-      <ImageActionBar project={project} />
+      <QuickActions project={project} />
 
       <div className="flex flex-row justify-center">
         <img

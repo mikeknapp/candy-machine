@@ -9,7 +9,7 @@ export function Header() {
   const openNewProjectDialog = useSetRecoilState(showNewProjectModalAtom);
 
   return (
-    <div className="flex w-full flex-row items-center justify-between bg-accent p-3 shadow-xl dark:bg-slate-900">
+    <div className="flex w-full flex-row items-center justify-between bg-accent p-3 shadow-xl dark:bg-slate-950">
       <div className="text-gray text-base font-bold text-gray-700 dark:text-white">
         <img
           src={require("../../assets/logo.png")}

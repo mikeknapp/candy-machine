@@ -6,8 +6,8 @@ export const showNewProjectModalAtom = atom({
   default: false,
 });
 
-export const showEditImageModalAtom = atom({
-  key: "showEditImageModal",
+export const showCropImageModalAtom = atom({
+  key: "showCropImageModal",
   default: false,
 });
 

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import Project from "../../models/project";
-import { selectedImageAtom, showEditImageModalAtom } from "../../state/atoms";
+import { selectedImageAtom, showCropImageModalAtom } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
 export const scrollToThumbnail = (img: string) => {
@@ -16,9 +16,9 @@ export const scrollToThumbnail = (img: string) => {
   }
 };
 
-export function ImageThumbnails({ project }: { project: Project }) {
+export function Thumbnails({ project }: { project: Project }) {
   const [selectedImg, setSelectedImg] = useRecoilState(selectedImageAtom);
-  const editImageModalIsOpen = useRecoilValue(showEditImageModalAtom);
+  const editImageModalIsOpen = useRecoilValue(showCropImageModalAtom);
 
   const selectNewImage = (img: string) => {
     setSelectedImg(img);
@@ -52,7 +52,7 @@ export function ImageThumbnails({ project }: { project: Project }) {
   }, [project, selectNewImage]);
 
   return (
-    <div className="scrollbar-thin flex h-full w-[220px] flex-col overflow-y-auto bg-slate-300 pb-20 dark:bg-slate-500">
+    <div className="flex h-full w-[220px] flex-col overflow-y-auto bg-slate-800 pb-20 scrollbar-thin dark:bg-slate-900">
       {project.images.map((img) => (
         <img
           key={img}

@@ -3,8 +3,8 @@ import React from "react";
 import { useRecoilValueLoadable } from "recoil";
 import Project from "../../models/project";
 import { currentProjectAtom } from "../../state/atoms";
-import { ImagePreview } from "../project/ImagePreview";
-import { ImageThumbnails } from "../project/ImageThumbnails";
+import { SelectedImage } from "../image/SelectedImage";
+import { Thumbnails } from "../project/Thumbnails";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
@@ -26,8 +26,8 @@ export function Editor() {
 
   return (
     <div className="flex h-full flex-row">
-      <ImageThumbnails project={project} />
-      <ImagePreview project={project} />
+      <Thumbnails project={project} />
+      <SelectedImage project={project} />
     </div>
   );
 }
