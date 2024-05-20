@@ -30,7 +30,7 @@ export function ImageActionBar({ project }: { project: Project }) {
         <Button
           size="xl"
           disabled={!project.navigateImages(selectedImg, "previous")}
-          gradientDuoTone="pinkToOrange"
+          color="light"
           title="Previous Image [⬆️ or ⬅️ arrow]"
           onClick={() => navigateImages("previous")}
         >
@@ -38,23 +38,19 @@ export function ImageActionBar({ project }: { project: Project }) {
         </Button>
         <Button
           size="xl"
-          gradientDuoTone="pinkToOrange"
+          color="light"
           title="Crop / Rotate Image [c]"
           onClick={() => setShowEditImageModal(true)}
         >
           <MdCropRotate />
         </Button>
-        <Button
-          size="xl"
-          gradientDuoTone="pinkToOrange"
-          title="Delete Image [DEL key]"
-        >
+        <Button size="xl" color="light" title="Delete Image [DEL key]">
           <HiMiniTrash />
         </Button>
         <Button
           size="xl"
           disabled={!project.navigateImages(selectedImg, "next")}
-          gradientDuoTone="pinkToOrange"
+          color="light"
           title="Next Image [⬇️ or ➡️ arrow]"
           onClick={() => navigateImages("next")}
         >
