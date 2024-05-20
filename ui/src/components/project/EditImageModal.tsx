@@ -3,6 +3,11 @@ import React, { useEffect, useState } from "react";
 import { BiShapeSquare } from "react-icons/bi";
 import { FcCheckmark } from "react-icons/fc";
 import { MdFlip, MdRotate90DegreesCw } from "react-icons/md";
+import {
+  TbCrop11Filled,
+  TbCrop169Filled,
+  TbCrop32Filled,
+} from "react-icons/tb";
 import ReactCrop, {
   PercentCrop,
   centerCrop,
@@ -42,6 +47,7 @@ enum AspectRatio {
   SQUARE = "Square",
   FOUR_THREE = "4:3",
   SIXTEEN_NINE = "16:9",
+  NINE_SIXTEEN = "9:16",
   CUSTOM = "Custom",
 }
 
@@ -55,6 +61,8 @@ function getAspectRatioValue(aspect: AspectRatio): number | undefined {
       return 4 / 3;
     case AspectRatio.SIXTEEN_NINE:
       return 16 / 9;
+    case AspectRatio.NINE_SIXTEEN:
+      return 9 / 16;
   }
 }
 
@@ -108,6 +116,22 @@ export function EditImageModal({ project }: { project: Project }) {
     setTimeout(() => {
       setIsRotating(false);
     }, 100);
+  };
+
+  const getAspectRatioIcon = (aspect: AspectRatio) => {
+    const cls = "h-6 w-6 mr-2";
+    switch (aspect) {
+      case AspectRatio.CUSTOM:
+        return <BiShapeSquare className={cls} />;
+      case AspectRatio.SQUARE:
+        return <TbCrop11Filled className={cls} />;
+      case AspectRatio.FOUR_THREE:
+        return <TbCrop32Filled className={cls} />;
+      case AspectRatio.SIXTEEN_NINE:
+        return <TbCrop169Filled className={cls} />;
+      case AspectRatio.NINE_SIXTEEN:
+        return <TbCrop169Filled className={`${cls} rotate-90`} />;
+    }
   };
 
   const saveImage = () => {
@@ -183,6 +207,7 @@ export function EditImageModal({ project }: { project: Project }) {
           >
             {Object.values(AspectRatio).map((a) => (
               <Dropdown.Item key={a} onClick={() => setAspect(a)}>
+                {getAspectRatioIcon(a)}
                 {a} {aspect === a && <FcCheckmark className="ml-2" />}
               </Dropdown.Item>
             ))}
