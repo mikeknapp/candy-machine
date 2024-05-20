@@ -1,10 +1,12 @@
+import io
 import os
 import threading
 import webbrowser
 from typing import Any, Dict
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
+from PIL import Image
 
 app = Flask(__name__, static_folder="dist")
 CORS(app)
@@ -77,6 +79,17 @@ def serve_image(dir_name, fname):
     img_path = os.path.join(img_dir, fname)
     if not os.path.exists(img_path):
         return jsonify(errors={"fname": "Image file not found"}), 404
+
+    # Preview rotation
+    left_rotate = int(request.args.get("rotate", 0))
+    if left_rotate > 0:
+        rotated_image = Image.open(img_path)
+        if left_rotate:
+            rotated_image = rotated_image.rotate(-left_rotate, expand=True)
+        img_io = io.BytesIO()
+        rotated_image.save(img_io, "PNG")
+        img_io.seek(0)
+        return send_file(img_io, mimetype="image/png")
     return send_from_directory(img_dir, fname)
 
 
