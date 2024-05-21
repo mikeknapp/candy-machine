@@ -3,6 +3,7 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { useRecoilValueLoadable } from "recoil";
 import { currentProjectAtom, selectedImageAtom } from "../../state/atoms";
 
+import { Tooltip } from "flowbite-react";
 import "react-circular-progressbar/dist/styles.css";
 
 export function ProgressPieChart() {
@@ -29,20 +30,22 @@ export function ProgressPieChart() {
   percentage = Math.round(((imageIndex + 1) / project.images.length) * 100);
 
   return (
-    <div className="h-12 w-12">
-      <CircularProgressbar
-        value={percentage}
-        text={`${percentage}%`}
-        background
-        backgroundPadding={6}
-        styles={buildStyles({
-          backgroundColor: "#065f46",
-          textColor: "#fff",
-          pathColor: "#fff",
-          trailColor: "transparent",
-          textSize: "24px",
-        })}
-      />
-    </div>
+    <Tooltip content={`${project.images.length}\u00A0images`}>
+      <div className="h-12 w-12">
+        <CircularProgressbar
+          value={percentage}
+          text={`${percentage}%`}
+          background
+          backgroundPadding={6}
+          styles={buildStyles({
+            backgroundColor: "#065f46",
+            textColor: "#fff",
+            pathColor: "#fff",
+            trailColor: "transparent",
+            textSize: "24px",
+          })}
+        />
+      </div>
+    </Tooltip>
   );
 }
