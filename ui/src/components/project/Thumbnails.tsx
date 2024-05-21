@@ -58,7 +58,7 @@ export function Thumbnails({ project }: { project: Project }) {
           key={img}
           id={`thumb-img-${img}`}
           className={`m-4 cursor-pointer rounded-md border-4 shadow-md ${selectedImg != img ? "opacity-30 hover:border-gray-800" : "border-primary-600"} `}
-          src={`${API_BASE_URL}/project/${project.dirName}/imgs/${img}`}
+          src={`${API_BASE_URL}/project/${project.name}/imgs/${img}`}
           alt={img}
           onClick={() => selectNewImage(img)}
         />

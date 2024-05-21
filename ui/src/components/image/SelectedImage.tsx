@@ -14,7 +14,7 @@ export function SelectedImage({ project }: { project: Project }) {
 
       <div className="flex flex-row justify-center">
         <img
-          src={`${API_BASE_URL}/project/${project.dirName}/imgs/${selectedImg}`}
+          src={`${API_BASE_URL}/project/${project.name}/imgs/${selectedImg}`}
           className="aspect-auto max-h-[700px] w-auto rounded-md shadow-md"
           alt="Preview"
         />

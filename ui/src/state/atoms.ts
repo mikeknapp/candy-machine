@@ -23,7 +23,7 @@ export const currentProjectAtom = atom<Project | null>({
     get: async ({ get }) => {
       const projectList = get(projectsAtom);
       if (projectList.length > 0) {
-        return await Project.load(projectList[0].dirName);
+        return await Project.load(projectList[0].name);
       }
       return null;
     },

@@ -1,23 +1,23 @@
 import { ApiResponse, apiRequest } from "../api";
 
 export interface NewProjectData {
-  dirName: string;
+  name: string;
   importDirPath: string;
   autoFileFormat: boolean;
   autoFileNaming: boolean;
 }
 
 export interface ProjectData {
-  dirName: string;
+  name: string;
   images: string[];
 }
 
 class Project {
-  dirName: string;
+  name: string;
   images: string[] = [];
 
-  constructor(dirName: string, images: string[] = []) {
-    this.dirName = dirName;
+  constructor(name: string, images: string[] = []) {
+    this.name = name;
     this.images = images;
   }
 
@@ -49,7 +49,7 @@ class Project {
   static async load(dirName: string): Promise<Project> {
     const response = await apiRequest<ProjectData>(`/project/${dirName}/get`);
     if (response.success && response.data) {
-      return new Project(response.data.dirName, response.data.images);
+      return new Project(response.data.name, response.data.images);
     }
     return null;
   }
@@ -59,7 +59,7 @@ class Project {
       body: JSON.stringify(data),
     });
     if (response.success && response.data) {
-      return { success: true, data: new Project(response.data.dirName) };
+      return { success: true, data: new Project(response.data.name) };
     }
     return response;
   }

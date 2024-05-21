@@ -62,11 +62,11 @@ export function CreateProjectModal() {
         <ModalHeader>Create New Project</ModalHeader>
         <ModalBody className="flex flex-col gap-5">
           <div>
-            <Label htmlFor="dirName">Directory Name</Label>
+            <Label htmlFor="name">Directory Name</Label>
             <TextInput
-              id="dirName"
+              id="name"
               placeholder="my_project"
-              {...register("dirName", {
+              {...register("name", {
                 required: "A directory name is required",
                 pattern: {
                   value: /^[a-zA-Z0-9_-]*$/,
@@ -75,9 +75,7 @@ export function CreateProjectModal() {
                 },
               })}
             />
-            {errors.dirName && (
-              <p className="form-error">{errors.dirName.message}</p>
-            )}
+            {errors.name && <p className="form-error">{errors.name.message}</p>}
           </div>
 
           <div>

@@ -21,18 +21,14 @@ export function ProjectSelector() {
       label={
         <div className="flex flex-row items-center gap-2">
           <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
-          {projects.length > 0 ? projects[0].dirName : "No Projects"}
+          {projects.length > 0 ? projects[0].name : "No Projects"}
         </div>
       }
       color="gray"
     >
       {projects.map((project: Project) => (
-        <Dropdown.Item
-          key={project.dirName}
-          value={project.dirName}
-          className="p-3"
-        >
-          {project.dirName}
+        <Dropdown.Item key={project.name} value={project.name} className="p-3">
+          {project.name}
         </Dropdown.Item>
       ))}
     </Dropdown>

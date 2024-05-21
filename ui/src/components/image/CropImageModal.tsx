@@ -229,7 +229,7 @@ export function CropImageModal({ project }: { project: Project }) {
           {isRotating && <Spinner size="lg" />}
           <ReactCrop
             crop={crop}
-            key={`edit-image-${project.dirName}-${selectedImg}-${imgSize.w}x${imgSize.h}`}
+            key={`edit-image-${project.name}-${selectedImg}-${imgSize.w}x${imgSize.h}`}
             onChange={(c) => {
               // Prevent crop from going out of bounds. (There seems to be bug with click and drag.)
               c.x = Math.max(0, c.x);
@@ -254,7 +254,7 @@ export function CropImageModal({ project }: { project: Project }) {
                 transform: `scaleX(${flipHorizontal ? -1 : 1})`,
               }}
               className="h-[500px]"
-              src={`${API_BASE_URL}/project/${project.dirName}/imgs/${selectedImg}${rotate > 0 ? `?rotate=${rotate}` : ""}`}
+              src={`${API_BASE_URL}/project/${project.name}/imgs/${selectedImg}${rotate > 0 ? `?rotate=${rotate}` : ""}`}
               onLoad={onImageLoad}
             />
           </ReactCrop>
