@@ -2,7 +2,7 @@ import { Dropdown } from "flowbite-react";
 import React from "react";
 import { HiFolderOpen } from "react-icons/hi2";
 import { useRecoilValueLoadable } from "recoil";
-import Project from "../../models/project";
+import { Project } from "../../models/project";
 import { projectsAtom } from "../../state/atoms";
 
 export function ProjectSelector() {
@@ -12,7 +12,7 @@ export function ProjectSelector() {
     return null;
   }
 
-  const projects = projectsLoading.contents;
+  const projects = projectsLoading.contents as Project[];
 
   return (
     <Dropdown
@@ -26,7 +26,7 @@ export function ProjectSelector() {
       }
       color="gray"
     >
-      {projects.map((project: Project) => (
+      {projects.map((project) => (
         <Dropdown.Item key={project.name} value={project.name} className="p-3">
           {project.name}
         </Dropdown.Item>

@@ -3,14 +3,15 @@ import React, { useEffect, useState } from "react";
 import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
 import { MdCropRotate } from "react-icons/md";
 import { useRecoilState } from "recoil";
-import Project from "../../models/project";
-import { selectedImageAtom, showCropImageModalAtom } from "../../state/atoms";
+import { Project, navigateImages } from "../../models/project";
+import { currentProjectAtom, showCropImageModalAtom } from "../../state/atoms";
 import { CropImageModal } from "../image/CropImageModal";
 import { DeleteImageModal } from "../image/DeleteImageModal";
 import { scrollToThumbnail } from "./Thumbnails";
 
 export function QuickActions({ project }: { project: Project }) {
-  const [selectedImg, setSelectedImg] = useRecoilState(selectedImageAtom);
+  const [currentProject, setCurrentProject] =
+    useRecoilState(currentProjectAtom);
   const [editImageModalIsOpen, setShowEditImageModal] = useRecoilState(
     showCropImageModalAtom,
   );
@@ -18,12 +19,12 @@ export function QuickActions({ project }: { project: Project }) {
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
   const selectNewImage = (img: string) => {
-    setSelectedImg(img);
+    setCurrentProject({ ...currentProject, selectedImage: img });
     scrollToThumbnail(img);
   };
 
-  const navigateImages = (direction: "next" | "previous") => {
-    let imgToSelect = project.navigateImages(selectedImg, direction);
+  const navigate = (direction: "next" | "prev") => {
+    let imgToSelect = navigateImages(project, direction);
     if (imgToSelect) {
       selectNewImage(imgToSelect);
     }
@@ -54,10 +55,10 @@ export function QuickActions({ project }: { project: Project }) {
       <ButtonGroup>
         <Button
           size="xl"
-          disabled={!project.navigateImages(selectedImg, "previous")}
+          disabled={!navigateImages(project, "prev")}
           color="light"
           title="Prev Image [⬆️⬅️]"
-          onClick={() => navigateImages("previous")}
+          onClick={() => navigate("prev")}
         >
           <HiArrowLeft />
         </Button>
@@ -79,10 +80,10 @@ export function QuickActions({ project }: { project: Project }) {
         </Button>
         <Button
           size="xl"
-          disabled={!project.navigateImages(selectedImg, "next")}
+          disabled={!navigateImages(project, "next")}
           color="light"
           title="Next Image [⬇️➡️]"
-          onClick={() => navigateImages("next")}
+          onClick={() => navigate("next")}
         >
           <HiArrowRight />
         </Button>
@@ -92,7 +93,7 @@ export function QuickActions({ project }: { project: Project }) {
 
       <DeleteImageModal
         project={project}
-        selectedImg={selectedImg}
+        selectedImg={project.selectedImage}
         show={showDeleteImageModal}
         onClose={() => setShowDeleteImageModal(false)}
       />

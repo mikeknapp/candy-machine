@@ -20,10 +20,10 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
-import Project from "../../models/project";
-import { selectedImageAtom, showCropImageModalAtom } from "../../state/atoms";
+import { Project } from "../../models/project";
+import { showCropImageModalAtom } from "../../state/atoms";
 
 const INITIAL_CROP: PercentCrop = {
   unit: "%",
@@ -71,7 +71,6 @@ enum Rotation {
 }
 
 export function CropImageModal({ project }: { project: Project }) {
-  const selectedImg = useRecoilValue(selectedImageAtom);
   const [showModal, setShowModal] = useRecoilState(showCropImageModalAtom);
 
   const imgRef = useRef<HTMLImageElement>(null);
@@ -162,20 +161,20 @@ export function CropImageModal({ project }: { project: Project }) {
   }, [showModal]);
 
   useEffect(() => {
-    if (showModal && selectedImg) {
+    if (showModal && project.selectedImage) {
       refreshCrop();
     }
   }, [imgSize, aspect]);
 
   useEffect(() => {
-    if (showModal && selectedImg) {
+    if (showModal && project.selectedImage) {
       setCrop(INITIAL_CROP);
       setAspect(AspectRatio.SQUARE);
       setRotate(Rotation.ZERO);
       setFlipHorizontal(false);
       setImgSize(INITIAL_SIZE);
     }
-  }, [selectedImg]);
+  }, [project.selectedImage]);
 
   const pixelCrop = convertToPixelCrop(crop, imgSize.w, imgSize.h);
 
@@ -229,7 +228,7 @@ export function CropImageModal({ project }: { project: Project }) {
           {isRotating && <Spinner size="lg" />}
           <ReactCrop
             crop={crop}
-            key={`edit-image-${project.name}-${selectedImg}-${imgSize.w}x${imgSize.h}`}
+            key={`edit-image-${project.name}-${project.selectedImage}-${imgSize.w}x${imgSize.h}`}
             onChange={(c) => {
               // Prevent crop from going out of bounds. (There seems to be bug with click and drag.)
               c.x = Math.max(0, c.x);
@@ -249,12 +248,12 @@ export function CropImageModal({ project }: { project: Project }) {
           >
             <img
               ref={imgRef}
-              key={`edit-image-${selectedImg}-${rotate}`}
+              key={`edit-image-${project.selectedImage}-${rotate}`}
               style={{
                 transform: `scaleX(${flipHorizontal ? -1 : 1})`,
               }}
               className="h-[500px]"
-              src={`${API_BASE_URL}/project/${project.name}/imgs/${selectedImg}${rotate > 0 ? `?rotate=${rotate}` : ""}`}
+              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage}${rotate > 0 ? `?rotate=${rotate}` : ""}`}
               onLoad={onImageLoad}
             />
           </ReactCrop>

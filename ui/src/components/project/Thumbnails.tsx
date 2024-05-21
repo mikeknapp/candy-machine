@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
-import Project from "../../models/project";
-import { selectedImageAtom, showCropImageModalAtom } from "../../state/atoms";
+import { Project, navigateImages } from "../../models/project";
+import { currentProjectAtom, showCropImageModalAtom } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
 export const scrollToThumbnail = (img: string) => {
@@ -17,11 +17,12 @@ export const scrollToThumbnail = (img: string) => {
 };
 
 export function Thumbnails({ project }: { project: Project }) {
-  const [selectedImg, setSelectedImg] = useRecoilState(selectedImageAtom);
+  const [currentProject, setCurrentProject] =
+    useRecoilState(currentProjectAtom);
   const editImageModalIsOpen = useRecoilValue(showCropImageModalAtom);
 
   const selectNewImage = (img: string) => {
-    setSelectedImg(img);
+    setCurrentProject({ ...currentProject, selectedImage: img });
     scrollToThumbnail(img);
   };
 
@@ -33,11 +34,11 @@ export function Thumbnails({ project }: { project: Project }) {
       switch (event.key) {
         case "ArrowDown":
         case "ArrowRight":
-          imgToSelect = project.navigateImages(selectedImg, "next");
+          imgToSelect = navigateImages(project, "next");
           break;
         case "ArrowUp":
         case "ArrowLeft":
-          imgToSelect = project.navigateImages(selectedImg, "previous");
+          imgToSelect = navigateImages(project, "prev");
       }
       if (imgToSelect) {
         selectNewImage(imgToSelect);
@@ -57,7 +58,7 @@ export function Thumbnails({ project }: { project: Project }) {
         <img
           key={img}
           id={`thumb-img-${img}`}
-          className={`m-4 cursor-pointer rounded-md border-4 shadow-md ${selectedImg != img ? "opacity-30 hover:border-gray-800" : "border-primary-600"} `}
+          className={`m-4 cursor-pointer rounded-md border-4 shadow-md ${project.selectedImage != img ? "opacity-30 hover:border-gray-800" : "border-primary-600"} `}
           src={`${API_BASE_URL}/project/${project.name}/imgs/${img}`}
           alt={img}
           onClick={() => selectNewImage(img)}

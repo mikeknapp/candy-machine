@@ -1,7 +1,7 @@
 import { Button, Modal } from "flowbite-react";
 import React from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
-import Project from "../../models/project";
+import { Project } from "../../models/project";
 
 type DeleteImageModalProps = {
   project: Project;

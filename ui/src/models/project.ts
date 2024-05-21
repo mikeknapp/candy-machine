@@ -1,78 +1,71 @@
 import { ApiResponse, apiRequest } from "../api";
 
-export interface NewProjectData {
+export interface NewProject {
   name: string;
   importDirPath: string;
-  autoFileFormat: boolean;
-  autoFileNaming: boolean;
 }
 
-export interface ProjectData {
+export interface Project {
   name: string;
   images: string[];
+  selectedImage: string;
 }
 
-class Project {
-  name: string;
-  images: string[] = [];
-
-  constructor(name: string, images: string[] = []) {
-    this.name = name;
-    this.images = images;
+export async function createProject(
+  data: NewProject,
+): Promise<ApiResponse<Project>> {
+  const response = await apiRequest<Project>("/projects/create", {
+    body: JSON.stringify(data),
+  });
+  if (response.success && response.data) {
+    return { success: true, data: response.data };
   }
+  return response;
+}
 
-  navigateImages(
-    selectedImage: string,
-    direction: "next" | "previous",
-  ): string {
-    // Returns the name of the next or previous image in the list.
-    const currentIndex = this.images.indexOf(selectedImage);
-    if (currentIndex === -1) {
-      return;
-    }
-    switch (direction) {
-      case "next":
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < this.images.length) {
-          return this.images[nextIndex];
-        }
-        break;
-      case "previous":
-        const previousIndex = currentIndex - 1;
-        if (previousIndex >= 0) {
-          return this.images[previousIndex];
-        }
-        break;
-    }
+export async function listProjects(): Promise<Project[]> {
+  const response = await apiRequest<string[]>("/projects/list");
+  if (response.success && response.data) {
+    return response.data.map((name) => ({
+      name: name,
+      images: [],
+      selectedImage: "",
+    }));
+  } else {
+    console.error(`Error fetching projects: ${response.errors}`);
   }
+  return [];
+}
 
-  static async load(dirName: string): Promise<Project> {
-    const response = await apiRequest<ProjectData>(`/project/${dirName}/get`);
-    if (response.success && response.data) {
-      return new Project(response.data.name, response.data.images);
-    }
-    return null;
-  }
-
-  static async create(data: NewProjectData): Promise<ApiResponse<Project>> {
-    const response = await apiRequest<Project>("/projects/create", {
-      body: JSON.stringify(data),
-    });
-    if (response.success && response.data) {
-      return { success: true, data: new Project(response.data.name) };
-    }
-    return response;
-  }
-
-  static async list(): Promise<Project[]> {
-    const response = await apiRequest<string[]>("/projects/list");
-    if (response.success && response.data) {
-      return response.data.map((name) => new Project(name));
-    } else {
-      console.error(`Error fetching projects: ${response.errors}`);
-    }
-    return [];
+export async function loadProject(name: string): Promise<Project> {
+  const response = await apiRequest<Project>(`/project/${name}/get`);
+  if (response.success && response.data) {
+    console.log(response.data);
+    return { ...response.data, selectedImage: response.data.images[0] ?? "" };
   }
 }
 
-export default Project;
+export function navigateImages(
+  project: Project,
+  direction: "next" | "prev",
+): string {
+  // Returns the name of the next or previous image in the list.
+  const currentIndex = project.images.indexOf(project.selectedImage);
+  if (currentIndex === -1) {
+    return;
+  }
+  switch (direction) {
+    case "next":
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < project.images.length) {
+        return project.images[nextIndex];
+      }
+      break;
+    case "prev":
+      const previousIndex = currentIndex - 1;
+      if (previousIndex >= 0) {
+        return project.images[previousIndex];
+      }
+      break;
+  }
+}

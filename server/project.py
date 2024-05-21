@@ -74,7 +74,7 @@ class Project:
     def list_all_imgs(self) -> list[str]:
         if not os.path.exists(self._img_dir):
             return []
-        return [f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)]
+        return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
 
     @staticmethod
     def create_new_project(name: str) -> Tuple[bool, str]:

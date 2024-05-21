@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import Project from "../models/project";
+import { Project, listProjects, loadProject } from "../models/project";
 
 export const showNewProjectModalAtom = atom({
   key: "showNewProjectModal",
@@ -13,7 +13,7 @@ export const showCropImageModalAtom = atom({
 
 export const projectsAtom = atom<Project[]>({
   key: "projects",
-  default: Project.list(),
+  default: listProjects(),
 });
 
 export const currentProjectAtom = atom<Project | null>({
@@ -23,39 +23,9 @@ export const currentProjectAtom = atom<Project | null>({
     get: async ({ get }) => {
       const projectList = get(projectsAtom);
       if (projectList.length > 0) {
-        return await Project.load(projectList[0].name);
+        return await loadProject(projectList[0].name);
       }
       return null;
     },
   }),
-});
-
-export const selectedImageAtom = atom<string | null>({
-  key: "selectedImage",
-  default: selector({
-    key: "selectedImage/Default",
-    get: ({ get }) => {
-      const currentProject = get(currentProjectAtom);
-      if (currentProject) {
-        return currentProject.images[0];
-      }
-      return null;
-    },
-  }),
-});
-
-// Auto update selected image when current project changes.
-export const selectedImageSelector = selector<string | null>({
-  key: "selectedImageSelector",
-  get: ({ get }) => {
-    return get(selectedImageAtom);
-  },
-  set: ({ get, set }) => {
-    const currentProject = get(currentProjectAtom);
-    if (currentProject) {
-      set(selectedImageAtom, currentProject.images[0]);
-    } else {
-      set(selectedImageAtom, null);
-    }
-  },
 });

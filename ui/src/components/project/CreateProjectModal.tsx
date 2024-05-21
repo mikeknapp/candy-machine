@@ -1,6 +1,5 @@
 import {
   Button,
-  Checkbox,
   Label,
   Modal,
   ModalBody,
@@ -12,7 +11,7 @@ import { useRecoilState } from "recoil";
 import { showNewProjectModalAtom } from "../../state/atoms";
 
 import { SubmitHandler, useForm } from "react-hook-form";
-import Project, { NewProjectData } from "../../models/project";
+import { NewProject, createProject } from "../../models/project";
 
 export function CreateProjectModal() {
   const {
@@ -20,17 +19,17 @@ export function CreateProjectModal() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<NewProjectData>();
+  } = useForm<NewProject>();
   const [isOpen, setIsOpen] = useRecoilState(showNewProjectModalAtom);
   const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
 
-  const onSubmit: SubmitHandler<NewProjectData> = async (data) => {
+  const onSubmit: SubmitHandler<NewProject> = async (data) => {
     setIsProcessing(true);
     try {
-      const resp = await Project.create(data);
+      const resp = await createProject(data);
       if (resp.errors) {
         for (const [field, message] of Object.entries(resp.errors)) {
-          setError(field as keyof NewProjectData, {
+          setError(field as keyof NewProject, {
             type: "manual",
             message: message as string,
           });
@@ -85,29 +84,6 @@ export function CreateProjectModal() {
               placeholder="C:\Documents\My Images"
               {...register("importDirPath")}
             />
-          </div>
-
-          <div className="mb-1 mt-3 flex max-w-md flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="autoFileFormat"
-                defaultChecked
-                {...register("autoFileFormat")}
-              />
-              <Label htmlFor="autoFileFormat" className="flex">
-                Auto manage file formats (convert to .png)
-              </Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="autoFileNaming"
-                defaultChecked
-                {...register("autoFileNaming")}
-              />
-              <Label htmlFor="autoFileNaming" className="flex">
-                Auto manage file names (i.e. 0001.png)
-              </Label>
-            </div>
           </div>
 
           <div className="flex flex-row justify-end gap-2 pt-4">
