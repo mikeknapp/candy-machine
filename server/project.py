@@ -11,15 +11,24 @@ from PIL import Image
 class Project:
     def __init__(self, name: str):
         self.name = name  # Assumed to be a valid name
-        self._base_path = os.path.join(WORKING_DIR, name)
-        self._img_path = os.path.join(self._base_path, IMGS_DIR)
+        self._base_dir = os.path.join(WORKING_DIR, name)
+        self._img_dir = os.path.join(self._base_dir, IMGS_DIR)
 
     def make_dirs(self):
-        os.makedirs(self._base_path, exist_ok=True)
-        os.makedirs(self._img_path, exist_ok=True)
+        os.makedirs(self._base_dir, exist_ok=True)
+        os.makedirs(self._img_dir, exist_ok=True)
+
+    def base_dir(self) -> str:
+        return self._base_dir
+
+    def img_dir(self) -> str:
+        return self._img_dir
+
+    def img_path(self, fname) -> str:
+        return os.path.join(self._img_dir, fname)
 
     def delete(self):
-        shutil.rmtree(self._base_path)
+        shutil.rmtree(self._base_dir)
 
     def import_unqiue_images(self, from_path):
         candidates = {}
@@ -57,15 +66,15 @@ class Project:
             img = img.convert("RGB")
             new_file_name = f"{data['hash']}_{img.width}x{img.height}.{IMG_EXT}"
             num_saved += 1
-            img.save(os.path.join(self._img_path, new_file_name))
+            img.save(os.path.join(self._img_dir, new_file_name))
             num_saved += 1
             yield round(num_saved / num_candidates * 100)
         yield 100
 
     def list_all_imgs(self) -> list[str]:
-        if not os.path.exists(self._img_path):
+        if not os.path.exists(self._img_dir):
             return []
-        return [f for f in os.listdir(self._img_path) if f.endswith(IMG_EXT)]
+        return [f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)]
 
     @staticmethod
     def create_new_project(name: str) -> Tuple[bool, str]:

@@ -15,8 +15,8 @@ class TestProject(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual(self.project.name, self.project_name)
-        self.assertTrue(os.path.exists(self.project._base_path))
-        self.assertTrue(os.path.exists(self.project._img_path))
+        self.assertTrue(os.path.exists(self.project._base_dir))
+        self.assertTrue(os.path.exists(self.project._img_dir))
 
     def test_is_valid_name(self):
         self.assertEqual(
