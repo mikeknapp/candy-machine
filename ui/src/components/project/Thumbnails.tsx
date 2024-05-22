@@ -106,8 +106,22 @@ export function Thumbnails({ project }: { project: Project }) {
     return width / height;
   };
 
+  useEffect(() => {
+    // Steal focus away from the project selector so keyboard shortcuts will work immediately.
+    // This is hacky, but I couldn't work out how to do this otherwise.
+    const focusStealer = document.getElementById("focus-stealer");
+    focusStealer?.focus();
+    setTimeout(() => {
+      focusStealer?.blur();
+    }, 100);
+  }, [currentProject]);
+
   return (
     <>
+      <button
+        id="focus-stealer"
+        className="fixed left-0 top-0 h-[1px] w-[1px] bg-transparent focus:outline-none"
+      />
       {project.images.length > 0 && (
         <div
           className={`flex h-full w-[${CONTAINER_WIDTH}px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}

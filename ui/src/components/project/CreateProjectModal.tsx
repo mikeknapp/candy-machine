@@ -156,7 +156,7 @@ export function CreateProjectModal() {
             {totalImages <= 0 && (
               <>Checking {totalFiles} images for duplicates...</>
             )}
-            {totalImages > 0 && <>Writing {totalImages} images...</>}
+            {totalImages > 0 && <>Converting {totalImages} images to .png...</>}
           </p>
           <Progress size="xl" color="green" progress={importPercent} />
         </ModalBody>
