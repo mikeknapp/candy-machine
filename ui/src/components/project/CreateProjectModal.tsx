@@ -10,12 +10,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import {
-  NewProject,
-  createProject,
-  importImages,
-  loadProject,
-} from "../../models/project";
+import { NewProject, createProject, importImages } from "../../models/project";
 import {
   currentProjectSelector,
   showNewProjectModalAtom,
@@ -33,51 +28,56 @@ export function CreateProjectModal() {
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importPercent, setImportPercent] = useState<number>(-1);
+  const [totalFiles, setTotalFiles] = useState<number>(0);
+  const [totalImages, setTotalImages] = useState<number>(0);
 
-  const refreshNewProject = (name: string) => {
-    setTimeout(async () => {
-      const p = await loadProject(name);
-      setCurrentProject(p);
-    }, 0);
+  const addProjectImage = (name: string, imgUrl: string) => {
+    setCurrentProject((prev) => {
+      if (prev.name === name) {
+        const images = [...prev.images, imgUrl];
+        return { ...prev, images: images, selectedImage: images[0] };
+      }
+      return prev;
+    });
   };
 
   const onSubmit: SubmitHandler<NewProject> = async (data) => {
     setIsProcessing(true);
-    try {
-      const resp = await createProject(data);
-      if (resp.errors) {
-        for (const [field, message] of Object.entries(resp.errors)) {
-          setError(field as keyof NewProject, {
-            type: "manual",
-            message: message as string,
-          });
-        }
-      }
 
-      const newProject = resp.data;
-      refreshNewProject(newProject.name);
-      setIsOpen(false);
-
-      // Import the images if a directory path was provided and show a progress bar.
-      if (data.importDirPath) {
-        setImportPercent(1);
-        await importImages(
-          newProject,
-          data.importDirPath,
-          async (msg: string) => {
-            const pc = parseInt(msg.trim());
-            if (pc % 5 === 0 || pc === 100) {
-              refreshNewProject(newProject.name);
-            }
-            setImportPercent(pc >= 100 ? -1 : pc);
-          },
-        );
+    const resp = await createProject(data);
+    if (resp.errors) {
+      for (const [field, message] of Object.entries(resp.errors)) {
+        setError(field as keyof NewProject, {
+          type: "manual",
+          message: message as string,
+        });
       }
-    } catch (error) {
-      alert(`Failed to create project: ${error}`);
-    } finally {
-      setIsProcessing(false);
     }
+
+    const newProject = resp.data;
+    setCurrentProject(newProject);
+    setIsOpen(false);
+
+    // Import the images if a directory path was provided and show a progress bar.
+    if (data.importDirPath) {
+      await importImages(
+        newProject,
+        data.importDirPath,
+        async (jsonStr: string) => {
+          const data = JSON.parse(jsonStr);
+          setTotalFiles(data.totalFiles ?? 0);
+          setTotalImages(data.totalImages ?? 0);
+          const lastImg = data["lastImg"] ?? null;
+          if (lastImg) {
+            addProjectImage(newProject.name, lastImg);
+          }
+          const pc = Math.max(1, data.percentComplete);
+          setImportPercent(pc < 100 ? pc : -1);
+        },
+      );
+    }
+
+    setIsProcessing(false);
   };
 
   useEffect(() => {
@@ -144,7 +144,10 @@ export function CreateProjectModal() {
       <Modal dismissible={false} show={importPercent > -1}>
         <ModalBody>
           <p className="mb-4 text-center text-2xl font-bold">
-            Importing images...
+            {totalImages <= 0 && (
+              <>Checking {totalFiles} files for duplicates...</>
+            )}
+            {totalImages > 0 && <>Writing {totalImages} images...</>}
           </p>
           <Progress size="lg" progress={importPercent} />
         </ModalBody>

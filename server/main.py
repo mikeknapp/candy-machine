@@ -5,7 +5,7 @@ import webbrowser
 from urllib.parse import unquote
 
 from consts import IMGS_DIR, WORKING_DIR
-from flask import Flask, jsonify, request, send_file, send_from_directory
+from flask import Flask, json, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 from PIL import Image
 from project import Project
@@ -25,6 +25,7 @@ def create_project():
     is_valid, msg = Project.is_valid_name(name)
     if not is_valid:
         return {"errors": {"name": msg}}
+    # TODO: Check if we can access the directory (if supplied), and it has valid images.
     Project.create_new_project(name)
     return {"name": name}
 
@@ -35,8 +36,8 @@ def import_to_project(project_name):
     project = Project(project_name)
 
     def generate():
-        for percent in project.import_unqiue_images(import_path):
-            yield f"data:{percent}\n\n"
+        for data in project.import_unqiue_images(import_path):
+            yield f"data:{json.dumps(data)}\n\n"
 
     return app.response_class(generate(), mimetype="text/event-stream")
 

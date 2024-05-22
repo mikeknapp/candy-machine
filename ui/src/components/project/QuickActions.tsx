@@ -2,7 +2,7 @@ import { Button, ButtonGroup } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
 import { MdCropRotate } from "react-icons/md";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { Project, navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
@@ -17,9 +17,7 @@ export function QuickActions({ project }: { project: Project }) {
   const [currentProject, setCurrentProject] = useRecoilState(
     currentProjectSelector,
   );
-  const [editImageModalIsOpen, setShowEditImageModal] = useRecoilState(
-    showCropImageModalAtom,
-  );
+  const setShowEditImageModal = useSetRecoilState(showCropImageModalAtom);
   const disableKeyboardShortcuts = useRecoilValue(
     disableKeyboardShortcutsSelector,
   );

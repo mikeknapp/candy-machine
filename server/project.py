@@ -35,7 +35,7 @@ class Project:
         files: list[str] = [f for f in os.listdir(from_path) if is_supported_image(f)]
 
         # 1) Build a list of candidate images.
-        for f in files:
+        for i, f in enumerate(files):
             img_path = os.path.join(from_path, f)
 
             # Gather information about the image.
@@ -53,23 +53,36 @@ class Project:
                 candidates[img_path] = {
                     "hash": hash,
                     "num_pixels": num_pixels,
+                    "new_filename": f"{hash}_{img.width}x{img.height}.{IMG_EXT}",
                 }
+            yield {
+                "percentComplete": round((i + 1) / len(files) * 50),
+                "totalFiles": len(files),
+            }
+
         num_candidates = len(candidates)
         if num_candidates == 0:
-            yield 100
+            yield {"percentComplete": 100}
             return
 
-        # 2) Output the unique images.
+        # 2) Output the unique images, sorted by filename.
+        candidates = dict(
+            sorted(candidates.items(), key=lambda x: x[1]["new_filename"])
+        )
         num_saved = 0
         for img_path, data in candidates.items():
             img = Image.open(img_path)
             img = img.convert("RGB")
-            new_file_name = f"{data['hash']}_{img.width}x{img.height}.{IMG_EXT}"
-            if not os.path.exists(os.path.join(self._img_dir, new_file_name)):
-                img.save(os.path.join(self._img_dir, new_file_name))
+            new_filename = data["new_filename"]
+            if not os.path.exists(os.path.join(self._img_dir, new_filename)):
+                img.save(os.path.join(self._img_dir, new_filename))
             num_saved += 1
-            yield round(num_saved / num_candidates * 100)
-        yield 100
+            yield {
+                "percentComplete": 50 + round(num_saved / num_candidates * 50),
+                "totalFiles": len(files),
+                "totalImages": num_candidates,
+                "lastImg": new_filename,
+            }
 
     def list_all_imgs(self) -> list[str]:
         if not os.path.exists(self._img_dir):
