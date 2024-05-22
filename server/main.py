@@ -7,6 +7,7 @@ from urllib.parse import unquote
 from consts import IMGS_DIR, WORKING_DIR
 from flask import Flask, json, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
+from image import valid_import_directory
 from PIL import Image
 from project import Project
 
@@ -21,18 +22,27 @@ IS_PROD = FLASK_ENV == "production"
 @app.route("/projects/create", methods=["POST"])
 def create_project():
     data = request.json if request.json else {}
+
+    # Check the name is valid.
     name = str(data.get("name", "")).strip()
     is_valid, msg = Project.is_valid_name(name)
     if not is_valid:
-        return {"errors": {"name": msg}}
-    # TODO: Check if we can access the directory (if supplied), and it has valid images.
+        return {"errors": {"name": msg}}, 400
+
+    # Check the import directory looks fine.
+    import_dir = str(data.get("importDirPath", "")).strip()
+    if import_dir and not valid_import_directory(import_dir):
+        return {
+            "errors": {"importDirPath": "No valid images found in the directory"}
+        }, 400
+
     Project.create_new_project(name)
-    return {"name": name}
+    return {"name": name}, 200
 
 
 @app.route("/project/<string:project_name>/import", methods=["GET"])
 def import_to_project(project_name):
-    import_path = unquote(request.args.get("path", ""))
+    import_path = unquote(request.args.get("path", "")).strip()
     project = Project(project_name)
 
     def generate():

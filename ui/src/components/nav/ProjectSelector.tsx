@@ -28,6 +28,7 @@ export function ProjectSelector() {
         </div>
       }
       color="gray"
+      dismissOnClick
     >
       {projects.map((project) => (
         <Dropdown.Item

@@ -18,6 +18,7 @@ import {
 
 export function CreateProjectModal() {
   const {
+    reset,
     register,
     handleSubmit,
     setError,
@@ -52,6 +53,8 @@ export function CreateProjectModal() {
           message: message as string,
         });
       }
+      setIsProcessing(false);
+      return;
     }
 
     const newProject = resp.data;
@@ -82,7 +85,10 @@ export function CreateProjectModal() {
 
   useEffect(() => {
     if (isOpen) {
+      reset();
       setTimeout(() => document.getElementById("name")?.focus(), 100);
+    } else {
+      setIsProcessing(false);
     }
   }, [isOpen]);
 
@@ -123,6 +129,9 @@ export function CreateProjectModal() {
                 placeholder="C:\Documents\My Images"
                 {...register("importDirPath")}
               />
+              {errors.importDirPath && (
+                <p className="form-error">{errors.importDirPath.message}</p>
+              )}
             </div>
 
             <div className="flex flex-row justify-end gap-2 pt-4">
@@ -143,13 +152,13 @@ export function CreateProjectModal() {
 
       <Modal dismissible={false} show={importPercent > -1}>
         <ModalBody>
-          <p className="mb-4 text-center text-2xl font-bold">
+          <p className="mb-4 text-center text-2xl font-bold dark:text-white">
             {totalImages <= 0 && (
-              <>Checking {totalFiles} files for duplicates...</>
+              <>Checking {totalFiles} images for duplicates...</>
             )}
             {totalImages > 0 && <>Writing {totalImages} images...</>}
           </p>
-          <Progress size="lg" progress={importPercent} />
+          <Progress size="xl" color="green" progress={importPercent} />
         </ModalBody>
       </Modal>
     </>

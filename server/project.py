@@ -4,7 +4,7 @@ from typing import Tuple
 
 import imagehash
 from consts import IMG_EXT, IMGS_DIR, WORKING_DIR
-from image import is_supported_image
+from image import valid_images_for_import
 from PIL import Image
 
 
@@ -32,7 +32,7 @@ class Project:
 
     def import_unqiue_images(self, from_path):
         candidates = {}
-        files: list[str] = [f for f in os.listdir(from_path) if is_supported_image(f)]
+        files = valid_images_for_import(from_path)
 
         # 1) Build a list of candidate images.
         for i, f in enumerate(files):
