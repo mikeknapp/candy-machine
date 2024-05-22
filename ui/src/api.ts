@@ -35,20 +35,20 @@ export const eventRequest = async (
 ): Promise<boolean> => {
   const eventSource = new EventSource(`${API_BASE_URL}${endpoint}`);
 
-  eventSource.addEventListener("message", (event) => {
+  eventSource.onmessage = (event) => {
     onMessage(event.data);
-  });
-
-  eventSource.addEventListener("error", (event) => {
-    console.error("EventSource failed:", event);
-    eventSource.close();
-  });
+  };
 
   // Return a promise that resolves when the event source is closed.
   return new Promise(async (resolve) => {
-    while (eventSource.readyState !== EventSource.CLOSED) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    resolve(true);
+    // Also, log any errors.
+    eventSource.onerror = (event) => {
+      if (eventSource.readyState === EventSource.CLOSED) {
+        resolve(true);
+        return;
+      }
+      console.error("EventSource failed:", event);
+      eventSource.close();
+    };
   });
 };

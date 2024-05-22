@@ -10,7 +10,12 @@ import {
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { NewProject, createProject, importImages } from "../../models/project";
+import {
+  NewProject,
+  createProject,
+  importImages,
+  loadProject,
+} from "../../models/project";
 import {
   currentProjectSelector,
   showNewProjectModalAtom,
@@ -29,6 +34,13 @@ export function CreateProjectModal() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importPercent, setImportPercent] = useState<number>(-1);
 
+  const refreshNewProject = (name: string) => {
+    setTimeout(async () => {
+      const p = await loadProject(name);
+      setCurrentProject(p);
+    }, 0);
+  };
+
   const onSubmit: SubmitHandler<NewProject> = async (data) => {
     setIsProcessing(true);
     try {
@@ -42,21 +54,24 @@ export function CreateProjectModal() {
         }
       }
 
-      const project = resp.data;
-      setCurrentProject(project);
+      const newProject = resp.data;
+      refreshNewProject(newProject.name);
       setIsOpen(false);
 
       // Import the images if a directory path was provided and show a progress bar.
       if (data.importDirPath) {
-        importImages(project, data.importDirPath, (msg: string) => {
-          const pc = parseInt(msg.trim());
-          if (pc <= 100) {
-            setImportPercent(pc);
-          }
-          if (pc === 100) {
-            setImportPercent(-1);
-          }
-        });
+        setImportPercent(1);
+        await importImages(
+          newProject,
+          data.importDirPath,
+          async (msg: string) => {
+            const pc = parseInt(msg.trim());
+            if (pc % 5 === 0 || pc === 100) {
+              refreshNewProject(newProject.name);
+            }
+            setImportPercent(pc >= 100 ? -1 : pc);
+          },
+        );
       }
     } catch (error) {
       alert(`Failed to create project: ${error}`);

@@ -36,7 +36,7 @@ def import_to_project(project_name):
 
     def generate():
         for percent in project.import_unqiue_images(import_path):
-            yield f"message:{percent}\n\n"
+            yield f"data:{percent}\n\n"
 
     return app.response_class(generate(), mimetype="text/event-stream")
 

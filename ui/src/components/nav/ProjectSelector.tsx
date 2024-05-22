@@ -1,13 +1,15 @@
 import { Dropdown } from "flowbite-react";
 import React from "react";
 import { HiFolderOpen } from "react-icons/hi2";
-import { useRecoilValueLoadable, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValueLoadable } from "recoil";
 import { Project, loadProject } from "../../models/project";
 import { currentProjectSelector, projectsAtom } from "../../state/atoms";
 
 export function ProjectSelector() {
   const projectsLoading = useRecoilValueLoadable(projectsAtom);
-  const setCurrentProject = useSetRecoilState(currentProjectSelector);
+  const [currentProject, setCurrentProject] = useRecoilState(
+    currentProjectSelector,
+  );
 
   if (projectsLoading.state === "loading") {
     return null;
@@ -22,7 +24,7 @@ export function ProjectSelector() {
       label={
         <div className="flex flex-row items-center gap-2">
           <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
-          {projects.length > 0 ? projects[0].name : "No Projects"}
+          {currentProject ? currentProject.name : "No Projects"}
         </div>
       }
       color="gray"

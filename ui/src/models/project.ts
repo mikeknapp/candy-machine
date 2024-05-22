@@ -59,7 +59,6 @@ export async function listProjects(): Promise<Project[]> {
 export async function loadProject(name: string): Promise<Project> {
   const response = await apiRequest<Project>(`/project/${name}/get`);
   if (response.success && response.data) {
-    console.log(response.data);
     return { ...response.data, selectedImage: response.data.images[0] ?? "" };
   }
 }

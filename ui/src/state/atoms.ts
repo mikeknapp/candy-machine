@@ -26,20 +26,22 @@ export const currentProjectSelector = selector<Project | null>({
   set: ({ set, get }, newValue) => {
     if (!(newValue instanceof DefaultValue)) {
       const projectList = get(projectsAtom);
-
-      // If the project isn't in the projects list, add it.
-      if (!projectList.find((project) => project.name === newValue?.name)) {
-        set(projectsAtom, [...projectList, newValue]);
-      }
-
-      // Set the isSelected flag and any other changes.
+      let foundProject = false;
       const updatedProjectList = projectList.map((project) => {
         if (project.name === newValue?.name) {
+          foundProject = true;
           return { ...project, ...newValue, isSelected: true };
         } else {
           return { ...project, isSelected: false };
         }
       });
+      // Add the project if we didn't find it.
+      if (!foundProject) {
+        updatedProjectList.push({
+          ...newValue,
+          isSelected: true,
+        });
+      }
       set(projectsAtom, updatedProjectList);
     }
   },
