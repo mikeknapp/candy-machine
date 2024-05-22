@@ -1,12 +1,13 @@
 import { Dropdown } from "flowbite-react";
 import React from "react";
 import { HiFolderOpen } from "react-icons/hi2";
-import { useRecoilValueLoadable } from "recoil";
-import { Project } from "../../models/project";
-import { projectsAtom } from "../../state/atoms";
+import { useRecoilValueLoadable, useSetRecoilState } from "recoil";
+import { Project, loadProject } from "../../models/project";
+import { currentProjectSelector, projectsAtom } from "../../state/atoms";
 
 export function ProjectSelector() {
   const projectsLoading = useRecoilValueLoadable(projectsAtom);
+  const setCurrentProject = useSetRecoilState(currentProjectSelector);
 
   if (projectsLoading.state === "loading") {
     return null;
@@ -27,7 +28,14 @@ export function ProjectSelector() {
       color="gray"
     >
       {projects.map((project) => (
-        <Dropdown.Item key={project.name} value={project.name} className="p-3">
+        <Dropdown.Item
+          key={project.name}
+          value={project.name}
+          className="p-3"
+          onClick={async () =>
+            setCurrentProject(await loadProject(project.name))
+          }
+        >
           {project.name}
         </Dropdown.Item>
       ))}

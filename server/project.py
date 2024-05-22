@@ -65,8 +65,8 @@ class Project:
             img = Image.open(img_path)
             img = img.convert("RGB")
             new_file_name = f"{data['hash']}_{img.width}x{img.height}.{IMG_EXT}"
-            num_saved += 1
-            img.save(os.path.join(self._img_dir, new_file_name))
+            if not os.path.exists(os.path.join(self._img_dir, new_file_name)):
+                img.save(os.path.join(self._img_dir, new_file_name))
             num_saved += 1
             yield round(num_saved / num_candidates * 100)
         yield 100

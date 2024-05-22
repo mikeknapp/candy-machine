@@ -4,14 +4,17 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
+  Progress,
   TextInput,
 } from "flowbite-react";
-import React, { useEffect } from "react";
-import { useRecoilState } from "recoil";
-import { showNewProjectModalAtom } from "../../state/atoms";
-
+import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { NewProject, createProject } from "../../models/project";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { NewProject, createProject, importImages } from "../../models/project";
+import {
+  currentProjectSelector,
+  showNewProjectModalAtom,
+} from "../../state/atoms";
 
 export function CreateProjectModal() {
   const {
@@ -21,7 +24,10 @@ export function CreateProjectModal() {
     formState: { errors },
   } = useForm<NewProject>();
   const [isOpen, setIsOpen] = useRecoilState(showNewProjectModalAtom);
-  const [isProcessing, setIsProcessing] = React.useState<boolean>(false);
+  const setCurrentProject = useSetRecoilState(currentProjectSelector);
+
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [importPercent, setImportPercent] = useState<number>(-1);
 
   const onSubmit: SubmitHandler<NewProject> = async (data) => {
     setIsProcessing(true);
@@ -34,8 +40,23 @@ export function CreateProjectModal() {
             message: message as string,
           });
         }
-      } else {
-        setIsOpen(false);
+      }
+
+      const project = resp.data;
+      setCurrentProject(project);
+      setIsOpen(false);
+
+      // Import the images if a directory path was provided and show a progress bar.
+      if (data.importDirPath) {
+        importImages(project, data.importDirPath, (msg: string) => {
+          const pc = parseInt(msg.trim());
+          if (pc <= 100) {
+            setImportPercent(pc);
+          }
+          if (pc === 100) {
+            setImportPercent(-1);
+          }
+        });
       }
     } catch (error) {
       alert(`Failed to create project: ${error}`);
@@ -46,60 +67,73 @@ export function CreateProjectModal() {
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => document.getElementById("dirName")?.focus(), 100);
+      setTimeout(() => document.getElementById("name")?.focus(), 100);
     }
   }, [isOpen]);
 
   return (
-    <Modal
-      show={isOpen}
-      dismissible={true}
-      onClose={() => setIsOpen(false)}
-      size="lg"
-    >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <ModalHeader>Create New Project</ModalHeader>
-        <ModalBody className="flex flex-col gap-5">
-          <div>
-            <Label htmlFor="name">Directory Name</Label>
-            <TextInput
-              id="name"
-              placeholder="my_project"
-              {...register("name", {
-                required: "A directory name is required",
-                pattern: {
-                  value: /^[a-zA-Z0-9_-]*$/,
-                  message:
-                    "Only alphanumeric characters, underscores, and hyphens allowed",
-                },
-              })}
-            />
-            {errors.name && <p className="form-error">{errors.name.message}</p>}
-          </div>
+    <>
+      <Modal
+        show={isOpen}
+        dismissible={true}
+        onClose={() => setIsOpen(false)}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <ModalHeader>Create New Project</ModalHeader>
+          <ModalBody className="flex flex-col gap-5">
+            <div>
+              <Label htmlFor="name">Directory Name</Label>
+              <TextInput
+                id="name"
+                placeholder="my_project"
+                {...register("name", {
+                  required: "A directory name is required",
+                  pattern: {
+                    value: /^[a-zA-Z0-9_-]*$/,
+                    message:
+                      "Only alphanumeric characters, underscores, and hyphens allowed",
+                  },
+                })}
+              />
+              {errors.name && (
+                <p className="form-error">{errors.name.message}</p>
+              )}
+            </div>
 
-          <div>
-            <Label htmlFor="importDirPath">Import Images (optional)</Label>
-            <TextInput
-              id="importDirPath"
-              placeholder="C:\Documents\My Images"
-              {...register("importDirPath")}
-            />
-          </div>
+            <div>
+              <Label htmlFor="importDirPath">Import Images (optional)</Label>
+              <TextInput
+                id="importDirPath"
+                placeholder="C:\Documents\My Images"
+                {...register("importDirPath")}
+              />
+            </div>
 
-          <div className="flex flex-row justify-end gap-2 pt-4">
-            <Button color="gray" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              gradientDuoTone="greenToBlue"
-              isProcessing={isProcessing}
-            >
-              Create Project
-            </Button>
-          </div>
+            <div className="flex flex-row justify-end gap-2 pt-4">
+              <Button color="gray" onClick={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                gradientDuoTone="greenToBlue"
+                isProcessing={isProcessing}
+              >
+                Create Project
+              </Button>
+            </div>
+          </ModalBody>
+        </form>
+      </Modal>
+
+      <Modal dismissible={false} show={importPercent > -1}>
+        <ModalBody>
+          <p className="mb-4 text-center text-2xl font-bold">
+            Importing images...
+          </p>
+          <Progress size="lg" progress={importPercent} />
         </ModalBody>
-      </form>
-    </Modal>
+      </Modal>
+    </>
   );
 }

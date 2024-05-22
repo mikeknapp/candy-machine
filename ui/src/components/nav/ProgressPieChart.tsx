@@ -1,7 +1,7 @@
 import React from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { useRecoilValueLoadable } from "recoil";
-import { currentProjectAtom } from "../../state/atoms";
+import { currentProjectSelector } from "../../state/atoms";
 
 import { Tooltip } from "flowbite-react";
 import "react-circular-progressbar/dist/styles.css";
@@ -9,7 +9,7 @@ import "react-circular-progressbar/dist/styles.css";
 export function ProgressPieChart() {
   let percentage = 0;
 
-  const projectLoadable = useRecoilValueLoadable(currentProjectAtom);
+  const projectLoadable = useRecoilValueLoadable(currentProjectSelector);
 
   if (projectLoadable.state !== "hasValue") {
     return;

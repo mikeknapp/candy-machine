@@ -1,4 +1,4 @@
-import { ApiResponse, apiRequest } from "../api";
+import { ApiResponse, apiRequest, eventRequest } from "../api";
 
 export interface NewProject {
   name: string;
@@ -7,6 +7,7 @@ export interface NewProject {
 
 export interface Project {
   name: string;
+  isSelected: boolean;
   images: string[];
   selectedImage: string;
 }
@@ -14,23 +15,41 @@ export interface Project {
 export async function createProject(
   data: NewProject,
 ): Promise<ApiResponse<Project>> {
-  const response = await apiRequest<Project>("/projects/create", {
+  const response = await apiRequest<string>("/projects/create", {
     body: JSON.stringify(data),
   });
   if (response.success && response.data) {
-    return { success: true, data: response.data };
+    return {
+      success: true,
+      data: {
+        name: data.name,
+        isSelected: false,
+        images: [],
+        selectedImage: "",
+      },
+    };
+  } else {
+    return { success: false, errors: response.errors };
   }
-  return response;
 }
 
 export async function listProjects(): Promise<Project[]> {
   const response = await apiRequest<string[]>("/projects/list");
   if (response.success && response.data) {
-    return response.data.map((name) => ({
-      name: name,
-      images: [],
-      selectedImage: "",
-    }));
+    return await Promise.all(
+      response.data.map(async (name, i) => {
+        if (i === 0) {
+          const p = await loadProject(name);
+          return { ...p, isSelected: true };
+        }
+        return {
+          name: name,
+          isSelected: false,
+          images: [],
+          selectedImage: "",
+        };
+      }),
+    );
   } else {
     console.error(`Error fetching projects: ${response.errors}`);
   }
@@ -43,6 +62,17 @@ export async function loadProject(name: string): Promise<Project> {
     console.log(response.data);
     return { ...response.data, selectedImage: response.data.images[0] ?? "" };
   }
+}
+
+export async function importImages(
+  project: Project,
+  importPath: string,
+  onMessage: (msg: string) => void,
+): Promise<boolean> {
+  return await eventRequest(
+    `/project/${project.name}/import?path=${encodeURIComponent(importPath)}`,
+    onMessage,
+  );
 }
 
 export function navigateImages(

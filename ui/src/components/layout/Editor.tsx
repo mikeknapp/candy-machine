@@ -1,14 +1,14 @@
 import { Spinner } from "flowbite-react";
 import React from "react";
 import { useRecoilValueLoadable } from "recoil";
-import Project from "../../models/project";
-import { currentProjectAtom } from "../../state/atoms";
+import { Project } from "../../models/project";
+import { currentProjectSelector } from "../../state/atoms";
 import { SelectedImage } from "../image/SelectedImage";
 import { Thumbnails } from "../project/Thumbnails";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
-  const projectLoading = useRecoilValueLoadable(currentProjectAtom);
+  const projectLoading = useRecoilValueLoadable(currentProjectSelector);
 
   if (projectLoading.state === "loading") {
     return (

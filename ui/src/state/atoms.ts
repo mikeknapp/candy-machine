@@ -1,5 +1,5 @@
-import { atom, selector } from "recoil";
-import { Project, listProjects, loadProject } from "../models/project";
+import { DefaultValue, atom, selector } from "recoil";
+import { Project, listProjects } from "../models/project";
 
 export const showNewProjectModalAtom = atom({
   key: "showNewProjectModal",
@@ -16,16 +16,31 @@ export const projectsAtom = atom<Project[]>({
   default: listProjects(),
 });
 
-export const currentProjectAtom = atom<Project | null>({
-  key: "currentProject",
-  default: selector({
-    key: "currentProject/Default",
-    get: async ({ get }) => {
+export const currentProjectSelector = selector<Project | null>({
+  key: "currentProjectSelector",
+  get: ({ get }) => {
+    const projectList = get(projectsAtom);
+    const selectedProject = projectList.find((project) => project.isSelected);
+    return selectedProject || null;
+  },
+  set: ({ set, get }, newValue) => {
+    if (!(newValue instanceof DefaultValue)) {
       const projectList = get(projectsAtom);
-      if (projectList.length > 0) {
-        return await loadProject(projectList[0].name);
+
+      // If the project isn't in the projects list, add it.
+      if (!projectList.find((project) => project.name === newValue?.name)) {
+        set(projectsAtom, [...projectList, newValue]);
       }
-      return null;
-    },
-  }),
+
+      // Set the isSelected flag and any other changes.
+      const updatedProjectList = projectList.map((project) => {
+        if (project.name === newValue?.name) {
+          return { ...project, ...newValue, isSelected: true };
+        } else {
+          return { ...project, isSelected: false };
+        }
+      });
+      set(projectsAtom, updatedProjectList);
+    }
+  },
 });

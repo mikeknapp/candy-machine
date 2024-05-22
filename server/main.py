@@ -2,6 +2,7 @@ import io
 import os
 import threading
 import webbrowser
+from urllib.parse import unquote
 
 from consts import IMGS_DIR, WORKING_DIR
 from flask import Flask, jsonify, request, send_file, send_from_directory
@@ -19,13 +20,25 @@ IS_PROD = FLASK_ENV == "production"
 
 @app.route("/projects/create", methods=["POST"])
 def create_project():
-    data = request.json or {}
+    data = request.json if request.json else {}
     name = str(data.get("name", "")).strip()
     is_valid, msg = Project.is_valid_name(name)
     if not is_valid:
         return {"errors": {"name": msg}}
     Project.create_new_project(name)
-    return "OK"
+    return {"name": name}
+
+
+@app.route("/project/<string:project_name>/import", methods=["GET"])
+def import_to_project(project_name):
+    import_path = unquote(request.args.get("path", ""))
+    project = Project(project_name)
+
+    def generate():
+        for percent in project.import_unqiue_images(import_path):
+            yield f"message:{percent}\n\n"
+
+    return app.response_class(generate(), mimetype="text/event-stream")
 
 
 @app.route("/projects/list", methods=["GET", "POST"])

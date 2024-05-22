@@ -4,29 +4,29 @@ import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
 import { MdCropRotate } from "react-icons/md";
 import { useRecoilState } from "recoil";
 import { Project, navigateImages } from "../../models/project";
-import { currentProjectAtom, showCropImageModalAtom } from "../../state/atoms";
+import {
+  currentProjectSelector,
+  showCropImageModalAtom,
+} from "../../state/atoms";
 import { CropImageModal } from "../image/CropImageModal";
 import { DeleteImageModal } from "../image/DeleteImageModal";
 import { scrollToThumbnail } from "./Thumbnails";
 
 export function QuickActions({ project }: { project: Project }) {
-  const [currentProject, setCurrentProject] =
-    useRecoilState(currentProjectAtom);
+  const [currentProject, setCurrentProject] = useRecoilState(
+    currentProjectSelector,
+  );
   const [editImageModalIsOpen, setShowEditImageModal] = useRecoilState(
     showCropImageModalAtom,
   );
 
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
-  const selectNewImage = (img: string) => {
-    setCurrentProject({ ...currentProject, selectedImage: img });
-    scrollToThumbnail(img);
-  };
-
   const navigate = (direction: "next" | "prev") => {
-    let imgToSelect = navigateImages(project, direction);
-    if (imgToSelect) {
-      selectNewImage(imgToSelect);
+    let img = navigateImages(project, direction);
+    if (img) {
+      setCurrentProject({ ...currentProject, selectedImage: img });
+      scrollToThumbnail(img);
     }
   };
 
