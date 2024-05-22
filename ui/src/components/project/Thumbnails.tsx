@@ -10,6 +10,7 @@ import { ProgressPieChart } from "../nav/ProgressPieChart";
 
 const CONTAINER_WIDTH = 220;
 const THUMBNAIL_WIDTH = 170;
+const BORDER_WIDTH = 4;
 
 export const scrollToThumbnail = (img: string) => {
   const EXTRA_PADDING = 50;
@@ -90,7 +91,7 @@ export function Thumbnails({ project }: { project: Project }) {
     };
   }, [project]);
 
-  const getHeight = (img: string) => {
+  const getImageAspectRatio = (img: string) => {
     // Extract the height and width from the image ID i.e. f4227273f1f071f_589x753.png
     const matches = img.match(/_(\d+)x(\d+)\./);
     if (!matches) {
@@ -98,21 +99,25 @@ export function Thumbnails({ project }: { project: Project }) {
     }
     const width = parseInt(matches[1]);
     const height = parseInt(matches[2]);
-    const scaledHeight = Math.round((THUMBNAIL_WIDTH * height) / width);
-    return { height: `${scaledHeight}px` };
+    return width / height;
   };
 
   return (
     <div
-      className={`flex h-full w-[${CONTAINER_WIDTH}px] flex-col overflow-y-auto bg-slate-800 pb-20 scrollbar-thin dark:bg-slate-900`}
+      className={`flex h-full w-[${CONTAINER_WIDTH}px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
     >
       {project.images.map((img, index) => (
         <img
           ref={(el) => (imgRefs.current[index] = el)}
           key={img}
           id={`thumb-img-${img}`}
-          style={getHeight(img)}
-          className={`m-4 cursor-pointer rounded-md border-4 shadow-md ${project.selectedImage != img ? "opacity-30 hover:border-gray-800" : "border-primary-600"} `}
+          style={{
+            width: `${THUMBNAIL_WIDTH + BORDER_WIDTH}px`,
+            height: "auto",
+            aspectRatio: getImageAspectRatio(img),
+            borderWidth: `${BORDER_WIDTH}px`,
+          }}
+          className={`cursor-pointer rounded-md bg-gray-500  shadow-md ${project.selectedImage != img ? "opacity-30 hover:border-gray-800" : "border-primary-600"}`}
           data-src={`${API_BASE_URL}/project/${project.name}/imgs/${img}`}
           src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
           alt={img}
