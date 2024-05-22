@@ -2,10 +2,11 @@ import { Button, ButtonGroup } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
 import { MdCropRotate } from "react-icons/md";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { Project, navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
+  disableKeyboardShortcutsSelector,
   showCropImageModalAtom,
 } from "../../state/atoms";
 import { CropImageModal } from "../image/CropImageModal";
@@ -18,6 +19,9 @@ export function QuickActions({ project }: { project: Project }) {
   );
   const [editImageModalIsOpen, setShowEditImageModal] = useRecoilState(
     showCropImageModalAtom,
+  );
+  const disableKeyboardShortcuts = useRecoilValue(
+    disableKeyboardShortcutsSelector,
   );
 
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
@@ -32,7 +36,7 @@ export function QuickActions({ project }: { project: Project }) {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (editImageModalIsOpen || showDeleteImageModal) return;
+      if (disableKeyboardShortcuts || showDeleteImageModal) return;
 
       switch (event.key) {
         case "c":
@@ -48,7 +52,7 @@ export function QuickActions({ project }: { project: Project }) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [editImageModalIsOpen]);
+  }, [disableKeyboardShortcuts, showDeleteImageModal]);
 
   return (
     <div className="flex flex-row justify-center">

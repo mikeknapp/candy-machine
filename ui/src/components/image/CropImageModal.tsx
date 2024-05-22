@@ -27,10 +27,10 @@ import { showCropImageModalAtom } from "../../state/atoms";
 
 const INITIAL_CROP: PercentCrop = {
   unit: "%",
-  x: 25,
-  y: 25,
-  width: 50,
-  height: 50,
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 100,
 };
 
 const INITIAL_SIZE = {
@@ -75,21 +75,23 @@ export function CropImageModal({ project }: { project: Project }) {
 
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<PercentCrop>(INITIAL_CROP);
-  const [aspect, setAspect] = useState<AspectRatio>(AspectRatio.SQUARE);
+  const [aspect, setAspect] = useState<AspectRatio>(AspectRatio.CUSTOM);
   const [rotate, setRotate] = useState<Rotation>(Rotation.ZERO);
   const [isRotating, setIsRotating] = useState<boolean>(false);
   const [flipHorizontal, setFlipHorizontal] = useState<boolean>(false);
   const [imgSize, setImgSize] = useState(INITIAL_SIZE);
 
   const refreshCrop = () => {
-    if (aspect !== AspectRatio.CUSTOM) {
+    if (aspect === AspectRatio.CUSTOM) {
+      setCrop(INITIAL_CROP);
+    } else {
       const newCrop = centerCrop(
         makeAspectCrop(
           {
             unit: "%",
-            x: 25,
-            y: 25,
-            width: 50,
+            x: 0,
+            y: 0,
+            width: 100,
           },
           getAspectRatioValue(aspect),
           imgSize.w,
@@ -156,7 +158,7 @@ export function CropImageModal({ project }: { project: Project }) {
 
   useEffect(() => {
     if (showModal) {
-      setAspect(AspectRatio.SQUARE);
+      setAspect(AspectRatio.CUSTOM);
     }
   }, [showModal]);
 
@@ -169,7 +171,7 @@ export function CropImageModal({ project }: { project: Project }) {
   useEffect(() => {
     if (showModal && project.selectedImage) {
       setCrop(INITIAL_CROP);
-      setAspect(AspectRatio.SQUARE);
+      setAspect(AspectRatio.CUSTOM);
       setRotate(Rotation.ZERO);
       setFlipHorizontal(false);
       setImgSize(INITIAL_SIZE);

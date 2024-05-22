@@ -11,6 +11,15 @@ export const showCropImageModalAtom = atom({
   default: false,
 });
 
+export const disableKeyboardShortcutsSelector = selector<boolean>({
+  key: "disableKeyboardShortcuts",
+  get: ({ get }) => {
+    const modal1 = get(showNewProjectModalAtom);
+    const modal2 = get(showCropImageModalAtom);
+    return modal1 || modal2;
+  },
+});
+
 export const projectsAtom = atom<Project[]>({
   key: "projects",
   default: listProjects(),

@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../../api";
 import { Project, navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
-  showCropImageModalAtom,
+  disableKeyboardShortcutsSelector,
 } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
@@ -13,13 +13,15 @@ const THUMBNAIL_WIDTH = 170;
 const BORDER_WIDTH = 4;
 
 export const scrollToThumbnail = (img: string) => {
-  const EXTRA_PADDING = 50;
+  const EXTRA_PADDING = 100;
   const imgElement = document.getElementById(`thumb-img-${img}`);
   const parentNode = imgElement?.parentNode as HTMLElement;
   if (imgElement) {
     // Scroll to the image.
     parentNode.scrollTop =
-      imgElement.offsetTop - imgElement.clientHeight - EXTRA_PADDING;
+      imgElement.offsetTop -
+      parentNode.getBoundingClientRect().height / 2 +
+      EXTRA_PADDING;
   }
 };
 
@@ -30,7 +32,9 @@ export function Thumbnails({ project }: { project: Project }) {
   const [currentProject, setCurrentProject] = useRecoilState(
     currentProjectSelector,
   );
-  const editImageModalIsOpen = useRecoilValue(showCropImageModalAtom);
+  const disableKeyboardShortcuts = useRecoilValue(
+    disableKeyboardShortcutsSelector,
+  );
 
   const selectNewImage = (img: string) => {
     setCurrentProject({ ...currentProject, selectedImage: img });
@@ -40,7 +44,7 @@ export function Thumbnails({ project }: { project: Project }) {
   // Keyboard navigation.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (editImageModalIsOpen) return;
+      if (disableKeyboardShortcuts) return;
 
       let imgToSelect;
       switch (event.key) {
