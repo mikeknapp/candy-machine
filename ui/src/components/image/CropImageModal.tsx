@@ -179,6 +179,8 @@ export function CropImageModal({ project }: { project: Project }) {
   useEffect(() => {
     if (showModal) {
       setAspect(AspectRatio.CUSTOM);
+      setRotate(0);
+      setFlipHorizontal(false);
     }
   }, [showModal]);
 
