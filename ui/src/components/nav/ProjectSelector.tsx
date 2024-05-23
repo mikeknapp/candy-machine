@@ -1,11 +1,13 @@
-import { Dropdown } from "flowbite-react";
-import React from "react";
+import { Dropdown, Spinner } from "flowbite-react";
+import React, { useState } from "react";
 import { HiFolderOpen } from "react-icons/hi2";
 import { useRecoilState, useRecoilValueLoadable } from "recoil";
 import { Project, loadProject } from "../../models/project";
 import { currentProjectSelector, projectsAtom } from "../../state/atoms";
 
 export function ProjectSelector() {
+  const [isLoadingProject, setIsLoadingProject] = useState(false);
+
   const projectsLoading = useRecoilValueLoadable(projectsAtom);
   const [currentProject, setCurrentProject] = useRecoilState(
     currentProjectSelector,
@@ -23,8 +25,19 @@ export function ProjectSelector() {
       className="min-w-[200px]"
       label={
         <div className="flex flex-row items-center gap-2">
-          <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
-          {currentProject ? currentProject.name : "No Projects"}
+          {isLoadingProject ? (
+            <>
+              <Spinner size="sm" color="success" />
+              <span className="text-sm text-gray-700 dark:text-gray-400">
+                Loading Project...
+              </span>
+            </>
+          ) : (
+            <>
+              <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
+              {currentProject ? currentProject.name : "No Projects"}
+            </>
+          )}
         </div>
       }
       color="gray"
@@ -35,9 +48,12 @@ export function ProjectSelector() {
           key={project.name}
           value={project.name}
           className="p-3"
-          onClick={async () =>
-            setCurrentProject(await loadProject(project.name))
-          }
+          onClick={async () => {
+            setIsLoadingProject(true);
+            const p = await loadProject(project.name);
+            setCurrentProject(p);
+            setIsLoadingProject(false);
+          }}
         >
           {project.name}
         </Dropdown.Item>
