@@ -66,7 +66,7 @@ export function Thumbnails({ project }: { project: Project }) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [project]);
+  }, [project, disableKeyboardShortcutsSelector]);
 
   // Lazy load the thumbnails.
   useEffect(() => {
