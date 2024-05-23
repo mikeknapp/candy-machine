@@ -96,8 +96,8 @@ export function Thumbnails({ project }: { project: Project }) {
   }, [project]);
 
   const getImageAspectRatio = (img: string) => {
-    // Extract the height and width from the image ID i.e. f4227273f1f071f_589x753.png
-    const matches = img.match(/_(\d+)x(\d+)\./);
+    // Extract the height and width from the image ID i.e. f4227273f1f071f_589x753_0.png
+    const matches = img.match(/_(\d+)x(\d+)_/);
     if (!matches) {
       return undefined;
     }
