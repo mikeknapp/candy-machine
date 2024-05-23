@@ -1,4 +1,4 @@
-import { DefaultValue, atom, selector } from "recoil";
+import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { Project, listProjects } from "../models/project";
 
 export const showNewProjectModalAtom = atom({
@@ -54,4 +54,42 @@ export const currentProjectSelector = selector<Project | null>({
       set(projectsAtom, updatedProjectList);
     }
   },
+});
+
+export type DeleteImageProps = {
+  projectName: string;
+  filenameToDelete: string;
+};
+
+export const deleteImageSelectorFamily = selectorFamily({
+  key: "deleteImage",
+  get: () => () => {}, // This is no-op
+  set:
+    (props: DeleteImageProps) =>
+    ({ set }) => {
+      set(projectsAtom, (projects) => {
+        return projects.map((project) => {
+          if (project.name === props.projectName) {
+            // Store the index for selecting an adjacent image.
+            const oldIndex = project.images.indexOf(props.filenameToDelete);
+
+            // Remove the old image.
+            const images = project.images.filter(
+              (fname) => fname !== props.filenameToDelete,
+            );
+
+            return {
+              ...project,
+              images,
+              selectedImage:
+                images[oldIndex - 1] ||
+                images[oldIndex] ||
+                images[oldIndex + 1],
+            };
+          } else {
+            return project;
+          }
+        });
+      });
+    },
 });

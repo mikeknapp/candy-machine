@@ -1,7 +1,10 @@
 import { Button, Modal } from "flowbite-react";
-import React from "react";
+import React, { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
+import { useSetRecoilState } from "recoil";
+import { deleteImage } from "../../models/image";
 import { Project } from "../../models/project";
+import { deleteImageSelectorFamily } from "../../state/atoms";
 
 type DeleteImageModalProps = {
   project: Project;
@@ -11,11 +14,14 @@ type DeleteImageModalProps = {
 };
 
 export function DeleteImageModal({ ...props }: DeleteImageModalProps) {
-  const deleteImage = async () => {
-    // Delete the image
-    alert("delete coming soon!");
-    props.onClose();
-  };
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteImageSF = useSetRecoilState(
+    deleteImageSelectorFamily({
+      projectName: props.project.name,
+      filenameToDelete: props.selectedImg,
+    }),
+  );
 
   return (
     <Modal
@@ -33,7 +39,18 @@ export function DeleteImageModal({ ...props }: DeleteImageModalProps) {
             Are you sure you want to delete this image? This can't be undone.
           </h3>
           <div className="flex justify-center gap-4">
-            <Button color="failure" onClick={deleteImage}>
+            <Button
+              color="failure"
+              disabled={isDeleting}
+              isProcessing={isDeleting}
+              onClick={async () => {
+                setIsDeleting(true);
+                await deleteImage(props.project, props.selectedImg);
+                deleteImageSF();
+                props.onClose();
+                setIsDeleting(false);
+              }}
+            >
               {"Yes, I'm sure"}
             </Button>
             <Button color="gray" onClick={props.onClose}>

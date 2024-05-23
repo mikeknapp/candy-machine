@@ -19,7 +19,7 @@ PORT = 5000
 IS_PROD = FLASK_ENV == "production"
 
 
-@app.route("/projects/create", methods=["POST"])
+@app.route("/project/create", methods=["POST"])
 def create_project():
     data = request.json if request.json else {}
 
@@ -87,6 +87,15 @@ def serve_image(dir_name, fname):
         img_io.seek(0)
         return send_file(img_io, mimetype="image/png")
     return send_from_directory(img_dir, fname)
+
+
+@app.route("/project/<string:project_name>/img/delete", methods=["POST"])
+def delete_image(project_name):
+    data = request.json if request.json else {}
+    filename = str(data.get("filename", "")).strip()
+    project = Project(project_name)
+    project.delete_image(filename)
+    return {"result": "OK"}, 200
 
 
 @app.route("/", defaults={"path": ""})

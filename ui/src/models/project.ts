@@ -16,7 +16,7 @@ export interface Project {
 export async function createProject(
   data: NewProject,
 ): Promise<ApiResponse<Project>> {
-  const response = await apiRequest<string>("/projects/create", {
+  const response = await apiRequest<string>("/project/create", {
     body: JSON.stringify(data),
   });
   if (response.success && response.data) {

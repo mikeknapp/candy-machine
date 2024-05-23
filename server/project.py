@@ -48,6 +48,11 @@ class Project:
     def delete(self):
         shutil.rmtree(self._base_dir)
 
+    def delete_image(self, fname):
+        img_path = self.img_path(fname)
+        if os.path.exists(img_path):
+            os.remove(img_path)
+
     def import_images(self, from_path, remove_duplicates=False):
         candidates = {}
         files = valid_images_for_import(from_path)
