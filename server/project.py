@@ -53,7 +53,9 @@ class Project:
         if os.path.exists(img_path):
             os.remove(img_path)
 
-    def edit_image(self, fname: str, left_rotate: int, flip: bool, crop: Crop) -> str:
+    def edit_image(
+        self, fname: str, left_rotate: int, flip: bool, crop: Crop | None
+    ) -> str:
         """Edit Image.
 
         Rotates, flips and crops an image and saves the result.
@@ -77,11 +79,20 @@ class Project:
         # we want to keep a consistent order in the thumbnails side panel.
         new_fname_prefix = f"{old_image_hash}_{img.width}x{img.height}"
         new_fname = choose_image_filename(
-            self._img_dir, new_fname_prefix, remove_duplicates=True
+            self._img_dir,
+            new_fname_prefix,
+            remove_duplicates=False,
         )
 
         # Save new image and delete the old one.
         img.save(self.img_path(new_fname))
+
+        # Copy over any .txt file associated with the image.
+        old_txt_path = img_path[: -len(IMG_EXT)] + "txt"
+        if os.path.exists(old_txt_path):
+            new_txt_path = self.img_path(new_fname[: -len(IMG_EXT)] + "txt")
+            shutil.move(old_txt_path, new_txt_path)
+
         self.delete_image(fname)
         return new_fname
 

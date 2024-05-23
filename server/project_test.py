@@ -2,7 +2,9 @@ import os
 import tempfile
 import unittest
 
-from PIL import Image
+import imagehash
+from image import Crop
+from PIL import Image, ImageDraw
 from project import Project
 
 
@@ -118,8 +120,83 @@ class TestImportImages(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestEditImage(unittest.TestCase):
+    def setUp(self):
+        # Temp working directory.
+        self.temp_project_dir = tempfile.TemporaryDirectory()
+        self.temp_project_dir_path = self.temp_project_dir.name
+
+        self.project_name = "edit_image"
+        p, _ = Project.create_new_project(
+            self.project_name,
+            working_dir=self.temp_project_dir_path,
+        )
+        assert p is not None
+        self.project: Project = p
+
+        # Create a test image with a red rectangle in the top left corner.
+        self.img = Image.new("RGB", (100, 100), color="white")
+        draw = ImageDraw.Draw(self.img)
+        draw.rectangle([0, 0, 50, 50], fill="red")
+
+        self.hash = imagehash.average_hash(self.img)
+        self.fname_prefix = f"{self.hash}_100x100"
+        self.fname = self.fname_prefix + "_0.png"
+        self.img.save(self.project.img_path(self.fname))
+
+        # Create a fake keywords file.
+        self.old_kws_file = self.project.img_path(self.fname_prefix + "_0.txt")
+        with open(self.old_kws_file, "w") as f:
+            f.write("test, image")
+
+        self.new_kw_fname = self.project.img_path(self.fname_prefix + "_1.txt")
+
+    def tearDown(self):
+        # Check that the old keywords file has gone, and the new one is present.
+        self.assertFalse(os.path.exists(self.old_kws_file))
+        self.assertTrue(os.path.exists(self.new_kw_fname))
+
+        # Check the file is the same
+        with open(self.new_kw_fname, "r") as f:
+            self.assertEqual(f.read(), "test, image")
+
+        self.temp_project_dir.cleanup()
+
+    def test_rotate(self):
+        # Test rotation.
+        output_img_name = self.project.edit_image(self.fname, 90, False, None)
+        self.assertEqual(output_img_name, f"{self.fname_prefix}_1.png")
+
+        # Check that the top right corner is red (indicating a 90 degree rotation).
+        output_img = Image.open(self.project.img_path(output_img_name))
+        self.assertEqual(output_img.getpixel((99, 0)), (255, 0, 0))
+        output_img.close()
+
+    def test_flip(self):
+        # Test flipping.
+        output_img_name = self.project.edit_image(self.fname, 90, False, None)
+        self.assertEqual(output_img_name, f"{self.fname_prefix}_1.png")
+
+        # Check that the top right corner is red (indicating a flip).
+        output_img = Image.open(self.project.img_path(output_img_name))
+        self.assertEqual(output_img.getpixel((99, 0)), (255, 0, 0))
+        output_img.close()
+
+    def test_crop(self):
+        # Test cropping.
+        expected_prefix = f"{self.hash}_50x50"
+        output_img_name = self.project.edit_image(
+            self.fname, 0, False, Crop(0, 0, 50, 50)
+        )
+        self.assertEqual(output_img_name, f"{expected_prefix}_0.png")
+
+        # Check that the image size is as expected.
+        output_img = Image.open(self.project.img_path(output_img_name))
+        self.assertEqual(output_img.size, (50, 50))
+        output_img.close()
+
+        self.new_kw_fname = self.project.img_path(f"{self.hash}_50x50_0.txt")
+
 
 if __name__ == "__main__":
     unittest.main()
