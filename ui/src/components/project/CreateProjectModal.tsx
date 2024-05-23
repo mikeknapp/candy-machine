@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Label,
   Modal,
   ModalBody,
@@ -22,11 +23,13 @@ export function CreateProjectModal() {
     register,
     handleSubmit,
     setError,
+    watch,
     formState: { errors },
   } = useForm<NewProject>();
   const [isOpen, setIsOpen] = useRecoilState(showNewProjectModalAtom);
   const setCurrentProject = useSetRecoilState(currentProjectSelector);
 
+  const importDirPath = watch("importDirPath", "");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importPercent, setImportPercent] = useState<number>(-1);
   const [totalFiles, setTotalFiles] = useState<number>(0);
@@ -66,6 +69,7 @@ export function CreateProjectModal() {
       await importImages(
         newProject,
         data.importDirPath,
+        data.removeDuplicates,
         async (jsonStr: string) => {
           const data = JSON.parse(jsonStr);
           setTotalFiles(data.totalFiles ?? 0);
@@ -131,6 +135,18 @@ export function CreateProjectModal() {
               />
               {errors.importDirPath && (
                 <p className="form-error">{errors.importDirPath.message}</p>
+              )}
+              {importDirPath !== "" && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Checkbox
+                    {...register("removeDuplicates")}
+                    id="removeDuplicates"
+                    defaultChecked
+                  />
+                  <Label htmlFor="removeDuplicates">
+                    Automatically remove duplicates
+                  </Label>
+                </div>
               )}
             </div>
 

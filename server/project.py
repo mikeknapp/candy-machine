@@ -4,15 +4,33 @@ from typing import Tuple
 
 import imagehash
 from consts import IMG_EXT, IMGS_DIR, WORKING_DIR
-from image import valid_images_for_import
+from image import choose_image_filename, valid_images_for_import
 from PIL import Image
 
 
 class Project:
-    def __init__(self, name: str):
-        self.name = name  # Assumed to be a valid name
-        self._base_dir = os.path.join(WORKING_DIR, name)
+    def __init__(self, name: str, working_dir: str | None = None):
+        self.name = name
+
+        # Allow overrides for testing.
+        working_dir = working_dir if working_dir else WORKING_DIR
+
+        # Our base project directory.
+        self._base_dir = os.path.join(working_dir, name)
+
+        # The images subdirectory.
         self._img_dir = os.path.join(self._base_dir, IMGS_DIR)
+
+    @staticmethod
+    def create_new_project(
+        name: str, working_dir: str | None = None
+    ) -> Tuple["Project | None", str]:
+        project = Project(name, working_dir)
+        is_valid, msg = Project.is_valid_name(name)
+        if not is_valid:
+            return None, msg
+        project.make_dirs()
+        return project, ""
 
     def make_dirs(self):
         os.makedirs(self._base_dir, exist_ok=True)
@@ -30,7 +48,7 @@ class Project:
     def delete(self):
         shutil.rmtree(self._base_dir)
 
-    def import_unqiue_images(self, from_path):
+    def import_images(self, from_path, remove_duplicates=False):
         candidates = {}
         files = valid_images_for_import(from_path)
 
@@ -43,17 +61,18 @@ class Project:
             hash = imagehash.average_hash(img)
             num_pixels = img.width * img.height
 
-            # Ignore image if there's already a duplicate with the same or greater number of pixels.
-            should_ignore = False
+            num_duplicates = 0
             for c in candidates.values():
                 if c["hash"] == hash and c["num_pixels"] >= num_pixels:
-                    should_ignore = True
-                    break
-            if not should_ignore:
+                    num_duplicates += 1
+
+            ignore_image = remove_duplicates and num_duplicates > 0
+            if not ignore_image:
                 candidates[img_path] = {
                     "hash": hash,
                     "num_pixels": num_pixels,
-                    "new_filename": f"{hash}_{img.width}x{img.height}.{IMG_EXT}",
+                    "num_duplicates": num_duplicates,
+                    "new_filename_prefix": f"{hash}_{img.width}x{img.height}",
                 }
             yield {
                 "percentComplete": round((i + 1) / len(files) * 50),
@@ -65,15 +84,20 @@ class Project:
             yield {"percentComplete": 100}
             return
 
-        # 2) Output the unique images, sorted by filename.
+        # 2) Output the unique images, sorted by new_filename_prefix.
         candidates = dict(
-            sorted(candidates.items(), key=lambda x: x[1]["new_filename"])
+            sorted(candidates.items(), key=lambda x: x[1]["new_filename_prefix"])
         )
         num_saved = 0
         for img_path, data in candidates.items():
             img = Image.open(img_path)
             img = img.convert("RGB")
-            new_filename = data["new_filename"]
+            new_filename = choose_image_filename(
+                self._img_dir,
+                data["new_filename_prefix"],
+                data["num_duplicates"],
+                remove_duplicates,
+            )
             if not os.path.exists(os.path.join(self._img_dir, new_filename)):
                 img.save(os.path.join(self._img_dir, new_filename))
             num_saved += 1
@@ -90,15 +114,6 @@ class Project:
         return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
 
     @staticmethod
-    def create_new_project(name: str) -> Tuple[bool, str]:
-        project = Project(name)
-        is_valid, msg = Project.is_valid_name(name)
-        if not is_valid:
-            return False, msg
-        project.make_dirs()
-        return True, ""
-
-    @staticmethod
     def is_valid_name(name: str) -> Tuple[bool, str]:
         if not name.strip():
             return False, "A directory name is required"
@@ -112,7 +127,8 @@ class Project:
         return True, ""
 
     @staticmethod
-    def list_all_projects() -> list:
-        if not os.path.exists(WORKING_DIR):
+    def list_all_projects(working_dir_override: str | None = None) -> list:
+        working_dir = working_dir_override if working_dir_override else WORKING_DIR
+        if not os.path.exists(working_dir):
             return []
-        return os.listdir(WORKING_DIR)
+        return os.listdir(working_dir)

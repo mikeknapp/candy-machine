@@ -3,6 +3,7 @@ import { ApiResponse, apiRequest, eventRequest } from "../api";
 export interface NewProject {
   name: string;
   importDirPath: string;
+  removeDuplicates: boolean;
 }
 
 export interface Project {
@@ -66,10 +67,11 @@ export async function loadProject(name: string): Promise<Project> {
 export async function importImages(
   project: Project,
   importPath: string,
+  removeDuplicates: boolean,
   onMessage: (msg: string) => void,
 ): Promise<boolean> {
   return await eventRequest(
-    `/project/${project.name}/import?path=${encodeURIComponent(importPath)}`,
+    `/project/${project.name}/import?path=${encodeURIComponent(importPath)}&remove_duplicates=${removeDuplicates}`,
     onMessage,
   );
 }

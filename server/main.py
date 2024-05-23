@@ -4,7 +4,7 @@ import threading
 import webbrowser
 from urllib.parse import unquote
 
-from consts import IMGS_DIR, WORKING_DIR
+from consts import IMGS_DIR, LOWERCASE_IS_TRUE, WORKING_DIR
 from flask import Flask, json, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 from image import valid_import_directory
@@ -43,10 +43,13 @@ def create_project():
 @app.route("/project/<string:project_name>/import", methods=["GET"])
 def import_to_project(project_name):
     import_path = unquote(request.args.get("path", "")).strip()
+    remove_duplicates = (
+        request.args.get("remove_duplicates", "").strip().lower() in LOWERCASE_IS_TRUE
+    )
     project = Project(project_name)
 
     def generate():
-        for data in project.import_unqiue_images(import_path):
+        for data in project.import_images(import_path, remove_duplicates):
             yield f"data:{json.dumps(data)}\n\n"
 
     return app.response_class(generate(), mimetype="text/event-stream")
