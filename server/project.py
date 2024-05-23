@@ -4,7 +4,7 @@ from typing import Tuple
 
 import imagehash
 from consts import IMG_EXT, IMGS_DIR, WORKING_DIR
-from image import choose_image_filename, valid_images_for_import
+from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
 
 
@@ -42,7 +42,7 @@ class Project:
     def img_dir(self) -> str:
         return self._img_dir
 
-    def img_path(self, fname) -> str:
+    def img_path(self, fname: str) -> str:
         return os.path.join(self._img_dir, fname)
 
     def delete(self):
@@ -52,6 +52,38 @@ class Project:
         img_path = self.img_path(fname)
         if os.path.exists(img_path):
             os.remove(img_path)
+
+    def edit_image(self, fname: str, left_rotate: int, flip: bool, crop: Crop) -> str:
+        """Edit Image.
+
+        Rotates, flips and crops an image and saves the result.
+        Deletes the old file and returns the new filename.
+        """
+        img_path = self.img_path(fname)
+        old_image_hash = fname.split("_")[0]
+        img = Image.open(img_path)
+
+        # Perform the edits.
+        if left_rotate:
+            img = img.rotate(-left_rotate, expand=True)
+
+        if flip:
+            img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+
+        if crop:
+            img = img.crop((crop.x, crop.y, crop.x + crop.width, crop.y + crop.height))
+
+        # Choose a new filename. Keep the old image hash because it's still the same image (!) and
+        # we want to keep a consistent order in the thumbnails side panel.
+        new_fname_prefix = f"{old_image_hash}_{img.width}x{img.height}"
+        new_fname = choose_image_filename(
+            self._img_dir, new_fname_prefix, remove_duplicates=True
+        )
+
+        # Save new image and delete the old one.
+        img.save(self.img_path(new_fname))
+        self.delete_image(fname)
+        return new_fname
 
     def import_images(self, from_path, remove_duplicates=False):
         candidates = {}

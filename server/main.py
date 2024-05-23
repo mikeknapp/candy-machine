@@ -4,10 +4,10 @@ import threading
 import webbrowser
 from urllib.parse import unquote
 
-from consts import IMGS_DIR, LOWERCASE_IS_TRUE, WORKING_DIR
+from consts import LOWERCASE_IS_TRUE, WORKING_DIR
 from flask import Flask, json, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
-from image import valid_import_directory
+from image import Crop, valid_import_directory
 from PIL import Image
 from project import Project
 
@@ -69,10 +69,12 @@ def get_project(project_name):
     }
 
 
-@app.route("/project/<string:dir_name>/imgs/<string:fname>", methods=["GET"])
-def serve_image(dir_name, fname):
-    img_dir = os.path.join(WORKING_DIR, dir_name, IMGS_DIR)
-    img_path = os.path.join(img_dir, fname)
+@app.route("/project/<string:project_name>/imgs/<string:fname>", methods=["GET"])
+def serve_image(project_name, fname):
+    project = Project(project_name)
+    img_path = project.img_path(fname)
+
+    # Check the file exists.
     if not os.path.exists(img_path):
         return jsonify(errors={"fname": "Image file not found"}), 404
 
@@ -86,7 +88,8 @@ def serve_image(dir_name, fname):
         rotated_image.save(img_io, "PNG")
         img_io.seek(0)
         return send_file(img_io, mimetype="image/png")
-    return send_from_directory(img_dir, fname)
+
+    return send_from_directory(project.img_dir(), fname)
 
 
 @app.route("/project/<string:project_name>/img/delete", methods=["POST"])
@@ -96,6 +99,27 @@ def delete_image(project_name):
     project = Project(project_name)
     project.delete_image(filename)
     return {"result": "OK"}, 200
+
+
+@app.route("/project/<string:project_name>/img/edit", methods=["POST"])
+def edit_image(project_name):
+    data = request.json if request.json else {}
+    filename = str(data.get("filename", "")).strip()
+    left_rotate = int(data.get("rotate", 0))
+    flip = data.get("flip", "")
+    crop_data: dict = data.get("crop", {})
+    assert crop_data["unit"] == "px", "Only pixel units are supported"
+    crop = Crop(
+        crop_data.get("x", 0),
+        crop_data.get("y", 0),
+        crop_data.get("width", 0),
+        crop_data.get("height", 0),
+    )
+    project = Project(project_name)
+    new_filename = project.edit_image(filename, left_rotate, flip, crop)
+    if not new_filename:
+        return {"errors": {"edit": "Error editing image"}}, 404
+    return {"newFilename": new_filename}, 200
 
 
 @app.route("/", defaults={"path": ""})

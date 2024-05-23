@@ -1,3 +1,4 @@
+import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
 import { Project } from "./project";
 
@@ -15,4 +16,29 @@ export const deleteImage = async (
     return false;
   }
   return true;
+};
+
+export const editImage = async (
+  project: Project,
+  filename: string,
+  rotate: number,
+  flip: boolean,
+  crop: PixelCrop,
+): Promise<string> => {
+  const response = await apiRequest<{ newFilename: string }>(
+    `/project/${project.name}/img/edit`,
+    {
+      body: JSON.stringify({
+        filename: filename,
+        rotate: rotate,
+        flip: flip,
+        crop: crop,
+      }),
+    },
+  );
+  if (!response.success) {
+    console.error("Error editing image:", response.errors);
+    return null;
+  }
+  return response.data.newFilename;
 };

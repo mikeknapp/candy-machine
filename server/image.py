@@ -3,6 +3,14 @@ import os
 from consts import IMG_EXT, SUPPORTED_IMG_EXTS
 
 
+class Crop:
+    def __init__(self, x: int, y: int, width: int, height: int):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+
 def is_supported_image(file_path: str) -> bool:
     if "." not in file_path:
         return False

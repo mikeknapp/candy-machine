@@ -150,7 +150,7 @@ export function CreateProjectModal() {
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-200">
-              Always keep a separate backup of images.
+              Always keep a separate backup of images
             </p>
 
             <div className="flex flex-row justify-end gap-2 pt-4">

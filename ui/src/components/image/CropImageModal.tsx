@@ -20,10 +20,14 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
+import { editImage } from "../../models/image";
 import { Project } from "../../models/project";
-import { showCropImageModalAtom } from "../../state/atoms";
+import {
+  replaceImageSelectorFamily,
+  showCropImageModalAtom,
+} from "../../state/atoms";
 
 const INITIAL_CROP: PercentCrop = {
   unit: "%",
@@ -72,6 +76,12 @@ enum Rotation {
 
 export function CropImageModal({ project }: { project: Project }) {
   const [showModal, setShowModal] = useRecoilState(showCropImageModalAtom);
+  const replaceImageSF = useSetRecoilState(
+    replaceImageSelectorFamily({
+      projectName: project.name,
+      oldFile: project.selectedImage,
+    }),
+  );
 
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<PercentCrop>(INITIAL_CROP);
@@ -80,6 +90,7 @@ export function CropImageModal({ project }: { project: Project }) {
   const [isRotating, setIsRotating] = useState<boolean>(false);
   const [flipHorizontal, setFlipHorizontal] = useState<boolean>(false);
   const [imgSize, setImgSize] = useState(INITIAL_SIZE);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const refreshCrop = () => {
     if (aspect === AspectRatio.CUSTOM) {
@@ -150,10 +161,19 @@ export function CropImageModal({ project }: { project: Project }) {
     return React.createElement(icon, { className: styling });
   };
 
-  const saveImage = () => {
+  const saveImage = async () => {
+    setIsSaving(true);
     const finalCrop = convertToPixelCrop(crop, imgSize.w, imgSize.h);
-    console.log("Final crop", finalCrop);
-    alert("Save!");
+    const resp = await editImage(
+      project,
+      project.selectedImage,
+      rotate,
+      flipHorizontal,
+      finalCrop,
+    );
+    replaceImageSF((old) => resp || old);
+    setIsSaving(false);
+    setShowModal(false);
   };
 
   useEffect(() => {
@@ -195,7 +215,7 @@ export function CropImageModal({ project }: { project: Project }) {
             size="lg"
             onClick={() => {
               setIsRotating(true);
-              setAspect(AspectRatio.SQUARE);
+              setAspect(AspectRatio.CUSTOM);
               setRotate((rotate + 90) % 360);
             }}
           >
@@ -271,9 +291,10 @@ export function CropImageModal({ project }: { project: Project }) {
             Cancel
           </Button>
           <Button
-            disabled={isRotating}
             gradientDuoTone="greenToBlue"
             onClick={saveImage}
+            disabled={isRotating || isSaving}
+            isProcessing={isRotating || isSaving}
           >
             Save Modified Image
           </Button>

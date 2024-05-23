@@ -93,3 +93,34 @@ export const deleteImageSelectorFamily = selectorFamily({
       });
     },
 });
+
+export type ReplaceImageProps = {
+  projectName: string;
+  oldFile: string;
+};
+
+export const replaceImageSelectorFamily = selectorFamily({
+  key: "replaceImage",
+  get: () => () => {}, // This is no-op
+  set:
+    (props: ReplaceImageProps) =>
+    ({ set }, newValue) => {
+      set(projectsAtom, (projects) => {
+        const newFilename = String(newValue);
+        return projects.map((project) => {
+          if (project.name === props.projectName) {
+            const images = project.images.map((fname) =>
+              fname === props.oldFile ? newFilename : fname,
+            );
+            return {
+              ...project,
+              images,
+              selectedImage: newFilename,
+            };
+          } else {
+            return project;
+          }
+        });
+      });
+    },
+});
