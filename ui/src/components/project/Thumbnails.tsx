@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
+import { imgAspectRatio } from "../../models/image";
 import { Project, navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
@@ -95,17 +96,6 @@ export function Thumbnails({ project }: { project: Project }) {
     };
   }, [project]);
 
-  const getImageAspectRatio = (img: string) => {
-    // Extract the height and width from the image ID i.e. f4227273f1f071f_589x753_0.png
-    const matches = img.match(/_(\d+)x(\d+)_/);
-    if (!matches) {
-      return undefined;
-    }
-    const width = parseInt(matches[1]);
-    const height = parseInt(matches[2]);
-    return width / height;
-  };
-
   useEffect(() => {
     // Steal focus away from the project selector so keyboard shortcuts will work immediately.
     // This is hacky, but I couldn't work out how to do this otherwise.
@@ -134,7 +124,7 @@ export function Thumbnails({ project }: { project: Project }) {
               style={{
                 width: `${THUMBNAIL_WIDTH + BORDER_WIDTH}px`,
                 height: "auto",
-                aspectRatio: getImageAspectRatio(img),
+                aspectRatio: imgAspectRatio(img),
                 borderWidth: `${BORDER_WIDTH}px`,
               }}
               className={`cursor-pointer rounded-md bg-gray-500  shadow-md ${project.selectedImage != img ? "opacity-10 hover:border-gray-800" : "border-primary-600"}`}
