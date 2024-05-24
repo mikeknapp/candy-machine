@@ -10,6 +10,15 @@ A better image tagger for creating LORAs.
 
 - Python 3
 
+## Running Image Tagger on GPU
+
+Requires CUDA 12.2 and cuDNN8.x.
+
+```
+[activate venv]
+pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+```
+
 ## Run Locally (Windows)
 
 ```sh
@@ -25,19 +34,9 @@ chmod +x dev.sh
 ./dev.sh
 ```
 
-## Licensing
-
-### Personal Use
-
-For personal use, this project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-### Commercial Use
-
-A commercial license is required for commercial use. Please see [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for more details and contact @mikeknapp (Github) to inquire about commercial licensing terms.
-
 ## Feature List (Target Initial Release):
 
-- Import directory: convert files to .jpg and copy files to working directory, rename to 0001.jpg etc.
+- Import directory: convert files to .png and copy files to working directory, rename to 0001.jpg etc.
 - Global: Pre-built categories but you can modify them youself, including re-arranging the order, etc.
 - Project: Select which categories to include, and which tags to add by default (i.e. photography).
 - Project: Set min and max tags per category.
