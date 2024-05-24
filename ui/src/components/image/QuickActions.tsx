@@ -9,9 +9,9 @@ import {
   disableKeyboardShortcutsSelector,
   showCropImageModalAtom,
 } from "../../state/atoms";
-import { CropImageModal } from "../image/CropImageModal";
-import { DeleteImageModal } from "../image/DeleteImageModal";
-import { scrollToThumbnail } from "./Thumbnails";
+import { scrollToThumbnail } from "../project/Thumbnails";
+import { CropImageModal } from "./CropImageModal";
+import { DeleteImageModal } from "./DeleteImageModal";
 
 export function QuickActions({ project }: { project: Project }) {
   const [currentProject, setCurrentProject] = useRecoilState(

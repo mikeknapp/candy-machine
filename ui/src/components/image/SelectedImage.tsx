@@ -5,7 +5,7 @@ import { TbAlertTriangleFilled } from "react-icons/tb";
 import { API_BASE_URL } from "../../api";
 import { imgSize } from "../../models/image";
 import { Project } from "../../models/project";
-import { QuickActions } from "../project/QuickActions";
+import { QuickActions } from "./QuickActions";
 
 export function SelectedImage({ project }: { project: Project }) {
   const size = imgSize(project.selectedImage);
