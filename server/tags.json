@@ -1,0 +1,17 @@
+[
+  {
+    "title": "media",
+    "tags": ["photo", "drawing", "illustration", "portrait", "painting", "cartoon", "anime"],
+    "color": "#5311ff"
+  },
+  {
+    "title": "subject",
+    "tags": ["woman", "man", "landscape"],
+    "color": "#11ffcc"
+  },
+  {
+    "title": "clothing",
+    "tags": ["pants", "dress"],
+    "color": "#ffccff"
+  }
+]

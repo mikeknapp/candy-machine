@@ -16,14 +16,6 @@ export function SelectedImage({ project }: { project: Project }) {
         <>
           <QuickActions project={project} />
 
-          <div className="flex flex-row justify-center">
-            <img
-              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage}`}
-              className="aspect-auto max-h-[700px] w-auto rounded-md shadow-md"
-              alt="Preview"
-            />
-          </div>
-
           <div className="flex flex-row items-center justify-center gap-3 rounded-md bg-green-50 px-1 text-center font-mono text-sm dark:bg-slate-900 dark:text-blue-500 md:px-4 md:py-2 md:text-base">
             <span className="text-sm font-bold">{project.selectedImage}:</span>{" "}
             {size.width} x {size.height}
@@ -36,6 +28,14 @@ export function SelectedImage({ project }: { project: Project }) {
                 <TbAlertTriangleFilled className="pointer text-xl text-orange-500" />
               </Tooltip>
             )}
+          </div>
+
+          <div className="flex flex-row justify-center">
+            <img
+              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage}`}
+              className="aspect-auto max-h-[700px] w-auto rounded-md shadow-md"
+              alt="Preview"
+            />
           </div>
 
           <div className="rounded-md bg-yellow-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">

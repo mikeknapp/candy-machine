@@ -1,5 +1,5 @@
 import { Dropdown, Spinner } from "flowbite-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HiFolderOpen } from "react-icons/hi2";
 import { useRecoilState, useRecoilValueLoadable } from "recoil";
 import { Project, loadProject } from "../../models/project";
@@ -16,6 +16,14 @@ export function ProjectSelector() {
   if (projectsLoading.state === "loading") {
     return null;
   }
+
+  useEffect(() => {
+    let title = "Candy Machine";
+    if (currentProject) {
+      title += ` (${currentProject.images.length})`;
+    }
+    document.title = title;
+  }, [currentProject]);
 
   const projects = projectsLoading.contents as Project[];
 
