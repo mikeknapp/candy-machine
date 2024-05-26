@@ -11,7 +11,7 @@ export function SelectedImage({ project }: { project: Project }) {
   const size = imgSize(project.selectedImage);
 
   return (
-    <div className="flex w-1/4 flex-col justify-start gap-5 p-5">
+    <div className="flex w-1/4 min-w-[500px] flex-col justify-start gap-5 p-5">
       {project.selectedImage && (
         <>
           <QuickActions project={project} />

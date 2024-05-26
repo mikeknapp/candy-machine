@@ -5,6 +5,7 @@ import { Project } from "../../models/project";
 import { currentProjectSelector } from "../../state/atoms";
 import { SelectedImage } from "../image/SelectedImage";
 import { Thumbnails } from "../project/Thumbnails";
+import { Tagger } from "../tagger/Tagger";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
@@ -28,6 +29,7 @@ export function Editor() {
     <div className="flex h-full flex-row">
       <Thumbnails project={project} />
       <SelectedImage project={project} />
+      <Tagger project={project} />
     </div>
   );
 }

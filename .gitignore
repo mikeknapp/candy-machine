@@ -2,3 +2,4 @@ venv
 working
 *.pyc
 tags.csv
+suggestions.ts
