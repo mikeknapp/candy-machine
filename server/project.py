@@ -3,9 +3,24 @@ import shutil
 from typing import Tuple
 
 import imagehash
-from consts import IMG_EXT, IMGS_DIR, WORKING_DIR
+from consts import AUTO_TAGS, IMG_EXT, IMGS_DIR, WORKING_DIR
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
+from tags import common_suffixes
+
+
+class TagInfo:
+    def __init__(self, tag, count, examples):
+        self.tag = tag
+        self.count = count
+        self.examples = examples
+
+    def to_dict(self):
+        return {
+            "tag": self.tag,
+            "count": self.count,
+            "examples": self.examples,
+        }
 
 
 class Project:
@@ -21,6 +36,9 @@ class Project:
         # The images subdirectory.
         self._img_dir = os.path.join(self._base_dir, IMGS_DIR)
 
+        # The auto tags subdirectory.
+        self._auto_tags_dir = os.path.join(self._base_dir, AUTO_TAGS)
+
     @staticmethod
     def create_new_project(
         name: str, working_dir: str | None = None
@@ -35,6 +53,7 @@ class Project:
     def make_dirs(self):
         os.makedirs(self._base_dir, exist_ok=True)
         os.makedirs(self._img_dir, exist_ok=True)
+        os.makedirs(self._auto_tags_dir, exist_ok=True)
 
     def base_dir(self) -> str:
         return self._base_dir
@@ -160,6 +179,65 @@ class Project:
         if not os.path.exists(self._img_dir):
             return []
         return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
+
+    def get_all_auto_tags(self) -> dict[str, int]:
+        tags: dict[str, int] = {}
+        for f in os.listdir(self._auto_tags_dir):
+            if not f.endswith(".txt"):
+                continue
+            with open(os.path.join(self._auto_tags_dir, f), "r") as fp:
+                for tag in fp.read().split(","):
+                    tag = tag.strip()
+                    if not tag:
+                        continue
+                    tags[tag] = tags.get(tag, 0) + 1
+        return tags
+
+    def analyze_auto_tags(self) -> list[TagInfo]:
+        tags = self.get_all_auto_tags()
+
+        # Remove any tags with ( or ) in them.
+        tags = {k: v for k, v in tags.items() if "(" not in k and ")" not in k}
+
+        # Compress common suffixes to fill in tags, i.e. red head scarf -> {type} head scarf
+        suffixes = common_suffixes(tags)
+        tags_copy = tags.copy()
+        fill_in_examples = {}
+        for tag, count in tags_copy.items():
+            for ngram in suffixes.keys():
+                # Here's a tag we can compress...
+                if tag.endswith(f" {ngram}"):
+                    fill_in = "{type} " + ngram
+                    tags[fill_in] = tags.get(fill_in, 0) + count
+                    fill_in_examples[fill_in] = fill_in_examples.get(fill_in, []) + [
+                        tag
+                    ]
+                    del tags[tag]
+                # Remove the extact match too, because it's covered by the fill in.
+                if tag == ngram:
+                    del tags[tag]
+
+        # Remove any with 1 count.
+        tags = {k: v for k, v in tags.items() if v > 1}
+
+        # Find the median count.
+        counts = list(tags.values())
+        median = sorted(counts)[len(counts) // 2]
+
+        # Remove any tags with count < median.
+        tags = {k: v for k, v in tags.items() if v >= median}
+
+        # Sort by count.
+        results = sorted(tags.items(), key=lambda x: x[1], reverse=True)
+
+        # Add in the examples.
+        results_with_examples: list[TagInfo] = []
+        for tag, count in results:
+            examples = fill_in_examples.get(tag, [])
+            results_with_examples.append(
+                TagInfo(tag=tag, count=count, examples=examples)
+            )
+        return results_with_examples
 
     @staticmethod
     def is_valid_name(name: str) -> Tuple[bool, str]:

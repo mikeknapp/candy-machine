@@ -137,7 +137,7 @@ class TestEditImage(unittest.TestCase):
         # Create a test image with a red rectangle in the top left corner.
         self.img = Image.new("RGB", (100, 100), color="white")
         draw = ImageDraw.Draw(self.img)
-        draw.rectangle([0, 0, 50, 50], fill="red")
+        draw.rectangle((0, 0, 50, 50), fill="red")
 
         self.hash = imagehash.average_hash(self.img)
         self.fname_prefix = f"{self.hash}_100x100"

@@ -122,6 +122,12 @@ def edit_image(project_name):
     return {"newFilename": new_filename}, 200
 
 
+@app.route("/project/<string:project_name>/tags/analyze", methods=["GET"])
+def analyze_auto_tags(project_name):
+    project = Project(project_name)
+    return [tag_info.to_dict() for tag_info in project.analyze_auto_tags()]
+
+
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
