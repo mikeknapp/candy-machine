@@ -33,13 +33,13 @@ class TagInfo:
 
 class TagCategory:
     def __init__(self, title: str, tags: list[str], color: str):
-        self.name = title
+        self.title = title
         self.tags = tags
         self.color = color
 
     def to_dict(self):
         return {
-            "name": self.name,
+            "title": self.title,
             "tags": self.tags,
             "color": self.color,
         }

@@ -1,14 +1,16 @@
 import { Dropdown, Tooltip } from "flowbite-react";
-import React from "react";
-import { HiInformationCircle, HiPlusSmall } from "react-icons/hi2";
-import { AutoTag } from "../../models/project";
+import React, { useState } from "react";
+import { HiTag } from "react-icons/hi";
+import { HiInformationCircle, HiMiniPlus } from "react-icons/hi2";
+import { Project } from "../../models/project";
 import { Tag } from "./Tag";
-import { CATEGORIES } from "./Tagger";
 
-export function SuggestedAutoTags({ tags }: { tags: AutoTag[] }) {
+export function SuggestedAutoTags({ project }: { project: Project }) {
+  const [chosenTags, setChosenTags] = useState<Record<string, string>>({});
+
   return (
     <>
-      {tags.map((tag) => (
+      {project.autoTags.map((tag) => (
         <div
           key={`setup-tag-${tag.tag}`}
           className="flex flex-row justify-between p-10"
@@ -30,13 +32,43 @@ export function SuggestedAutoTags({ tags }: { tags: AutoTag[] }) {
             size="sm"
             color="light"
             label={
-              <div className="flex flex-row items-center">
-                <HiPlusSmall className="mr-1 h-5 w-5" /> Add to category
+              <div className="flex w-[180px] flex-row items-center">
+                {chosenTags[tag.tag] ? (
+                  <>
+                    <HiTag
+                      style={{
+                        color: project.tagLayout.find(
+                          (category) => category.title === chosenTags[tag.tag],
+                        )?.color,
+                      }}
+                      className="mr-2 h-5 w-5"
+                    />
+                    {chosenTags[tag.tag]}
+                  </>
+                ) : (
+                  <>
+                    <HiMiniPlus className="mr-2 h-5 w-5" /> Add to Category
+                  </>
+                )}
               </div>
             }
           >
-            {CATEGORIES.map((category) => (
-              <Dropdown.Item key={`${tag}-${category.title}`}>
+            {project.tagLayout.map((category) => (
+              <Dropdown.Item
+                key={`${tag}-${category.title}`}
+                onClick={() => {
+                  setChosenTags({
+                    ...chosenTags,
+                    [tag.tag]: category.title,
+                  });
+                }}
+              >
+                <HiTag
+                  style={{
+                    color: category.color,
+                  }}
+                  className="mr-2 h-5 w-5"
+                />
                 {category.title}
               </Dropdown.Item>
             ))}

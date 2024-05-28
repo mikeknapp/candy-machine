@@ -1,32 +1,27 @@
 [
   {
-    "title": "Quality",
-    "tags": [
-      "low quality",
-      "high quality",
-      "pixelated",
-      "blurry",
-      "realistic",
-      "depth of field",
-      "bokeh",
-      "motion blur"
-    ],
-    "color": "#ffccff"
+    "title": "Image Quality",
+    "tags": ["HD", "low quality", "blurry", "realistic", "pixel art"],
+    "color": "#FF69B4",
+    "light": "#FFD1DC"
   },
   {
     "title": "Image Type",
-    "tags": ["photo", "drawing", "illustration", "portrait", "painting", "render", "cartoon", "anime"],
-    "color": "#5311ff"
+    "tags": ["photo", "portrait", "drawing", "illustration", "painting", "render", "cartoon", "anime"],
+    "color": "#FF6347",
+    "light": "#FF8BA7"
   },
   {
-    "title": "Subject",
-    "tags": ["man", "woman", "mountain", "trees", "forest", "fantasy scene", "cityscape"],
-    "color": "#11ffcc"
+    "title": "Main Subject",
+    "tags": ["man", "woman", "mountain", "trees", "forest", "building", "fantasy scene", "cityscape"],
+    "color": "#FFD700",
+    "light": "#FFF275"
   },
   {
     "title": "Camera Shot",
-    "tags": ["full body shot", "medium shot", "close-up", "extreme close-up"],
-    "color": "#ffccff"
+    "tags": ["full body shot", "medium shot", "close-up", "extreme close-up", "macro shot"],
+    "color": "#32CD32",
+    "light": "#98FF98"
   },
   {
     "title": "Perspective",
@@ -42,59 +37,49 @@
       "forced perspective",
       "upside down"
     ],
-    "color": "#ffccff"
+    "color": "#4682B4",
+    "light": "#87CEEB"
   },
   {
     "title": "Pose",
-    "tags": [
-      "laying down",
-      "sitting",
-      "standing",
-      "leaning",
-      "walking",
-      "running",
-      "jumping",
-      "posing",
-      "bent over",
-      "head out of frame",
-      "squatting",
-      "on back"
-    ],
-    "color": "#ffccff"
-  },
-  {
-    "title": "Location",
-    "tags": ["indoors", "outdoors", "street", "forest", "mountains", "beach", "park", "car"],
-    "color": "#ffccff"
+    "tags": ["lying", "sitting", "standing", "leaning", "walking", "running", "bent over", "squatting"],
+    "color": "#FF4500",
+    "light": "#FFA07A"
   },
   {
     "title": "Action",
     "tags": [
       "posing",
-      "lying",
       "reading",
       "writing",
-      "talking",
+      "chatting",
       "singing",
       "dancing",
       "playing",
       "exercising",
       "sleeping",
-      "working",
-      "relaxing"
+      "working"
     ],
-    "color": "#ffccff"
+    "color": "#9370DB",
+    "light": "#E6E6FA"
+  },
+  {
+    "title": "Location",
+    "tags": ["indoors", "outdoors", "street", "office", "cafe", "forest", "mountains", "beach", "park", "car"],
+    "color": "#DAA520",
+    "light": "#FFE4B5"
   },
   {
     "title": "Gaze",
-    "tags": ["looking at viewer", "looking up", "looking down", "looking sideways", "looking back"],
-    "color": "#ffccff"
+    "tags": ["looking at viewer", "looking away", "looking up", "looking down", "looking sideways", "looking back"],
+    "color": "#FF1493",
+    "light": "#FF6EB4"
   },
   {
     "title": "Mouth",
     "tags": [
-      "open mouth",
       "closed mouth",
+      "open mouth",
       "slightly open mouth",
       "smirk",
       "slight smile",
@@ -104,12 +89,14 @@
       "grinning",
       "teeth"
     ],
-    "color": "#ffccff"
+    "color": "#8A2BE2",
+    "light": "#DDA0DD"
   },
   {
     "title": "Hair",
-    "tags": ["long {color} hair", "short {color} hair", "curly {color} hair", "straight {color} hair", "bangs"],
-    "color": "#ffccff"
+    "tags": ["long {color} hair", "short {color} hair", "curly {color} hair", "straight {color} hair", "bangs", "bald"],
+    "color": "#7FFF00",
+    "light": "#E0FFB0"
   },
   {
     "title": "Limbs",
@@ -118,14 +105,15 @@
       "crossed legs",
       "arms raised above head",
       "arms extended sideways",
-      "left palm on forehead",
-      "right arm on belly",
+      "{left|right} palm on forehead",
+      "{left|right} arm on belly",
       "feet",
       "hands",
       "fingers",
       "toes"
     ],
-    "color": "#ffccff"
+    "color": "#A586FF",
+    "light": "#E8D9FF"
   },
   {
     "title": "Clothing etc",
@@ -142,7 +130,6 @@
       "bracelet",
       "earrings",
       "handbag",
-      "cellphone",
       "smartphone",
       "barefoot",
       "sneakers",
@@ -152,7 +139,8 @@
       "ring",
       "loafers"
     ],
-    "color": "#ffccff"
+    "color": "#5F9EA0",
+    "light": "#B0E0E6"
   },
   {
     "title": "Scene Description",
@@ -172,16 +160,19 @@
       "grass",
       "stairs"
     ],
-    "color": "#ffccff"
+    "color": "#FF8C69",
+    "light": "#FFDAB9"
   },
   {
     "title": "Lighting",
     "tags": ["sunset", "strong shadows", "golden hour", "night", "day", "raining", "snowing"],
-    "color": "#ffccff"
+    "color": "#FFA500",
+    "light": "#FFE5B4"
   },
   {
     "title": "Other",
-    "tags": ["solo", "1girl", "1boy"],
-    "color": "#ffccff"
+    "tags": ["solo", "1girl", "1boy", "depth of field", "bokeh", "motion blur", "head out of frame"],
+    "color": "#2F4F4F",
+    "light": "#F0F0F0"
   }
 ]

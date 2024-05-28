@@ -1,6 +1,6 @@
 import { Button, Modal } from "flowbite-react";
 import React from "react";
-import { HiArrowRight } from "react-icons/hi2";
+import { HiArrowRight } from "react-icons/hi";
 import { useRecoilState } from "recoil";
 import { Project } from "../../models/project";
 import { projectRequiresSetupSelector } from "../../state/atoms";
@@ -17,25 +17,24 @@ export function ProjectCategoriesModal({ project }: { project: Project }) {
     <Modal
       show={isOpen}
       size="2xl"
-      onClose={() => setIsOpen(false)}
-      dismissible
+      dismissible={false}
       theme={{
         root: {
           base: "fixed inset-x-0 top-0 z-50 h-screen !overflow-hidden md:inset-0 md:h-full",
         },
       }}
     >
-      <Modal.Header>Setup Your Project Tags</Modal.Header>
       <Modal.Body>
+        <h1 className="mb-6 mt-4 text-3xl font-bold">Setup Project Tags</h1>
         <p className="pb-3 dark:text-white">
           Here are {project.autoTags.length} tags to consider adding to your
-          project's tag list. Remember, don't tag things that are already
-          implicit in your trigger word. For example, when training a face,
-          don't tag someone's mole or freckles. You want the model to learn
-          those things. Only tag things you want to be able to control in your
-          prompt.
+          project's tag list. Remember,{" "}
+          <b>don't tag things already implicit in your trigger word</b>. For
+          example, when training a face, don't tag someone's distinctive mole or
+          freckles. You want the model to learn those things by itself. Only tag
+          variables you want to be able to control in your prompt.
         </p>
-        <SuggestedAutoTags tags={project.autoTags} />
+        <SuggestedAutoTags project={project} />
       </Modal.Body>
       <Modal.Footer className="justify-end ">
         <Button

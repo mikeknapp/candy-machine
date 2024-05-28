@@ -1,4 +1,5 @@
 import { ApiResponse, apiRequest, eventRequest } from "../api";
+import { CategoryData } from "../components/tagger/TagCategory";
 
 export interface NewProject {
   name: string;
@@ -18,7 +19,7 @@ export interface Project {
   images: string[];
   selectedImage: string;
   autoTags: AutoTag[];
-  tagLayout: string[];
+  tagLayout: CategoryData[];
   requiresSetup: boolean;
 }
 
