@@ -182,6 +182,10 @@ class Project:
 
     def get_all_auto_tags(self) -> dict[str, int]:
         tags: dict[str, int] = {}
+
+        if not os.path.exists(self._auto_tags_dir):
+            return tags
+
         for f in os.listdir(self._auto_tags_dir):
             if not f.endswith(".txt"):
                 continue
@@ -195,6 +199,8 @@ class Project:
 
     def analyze_auto_tags(self) -> list[TagInfo]:
         tags = self.get_all_auto_tags()
+        if not tags:
+            return []
 
         # Remove any tags with ( or ) in them.
         tags = {k: v for k, v in tags.items() if "(" not in k and ")" not in k}

@@ -4,9 +4,9 @@ import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { RecoilRoot } from "recoil";
-import { Editor } from "./components/layout/Editor.js";
-import { Header } from "./components/nav/Header.js";
-import { CreateProjectModal } from "./components/project/CreateProjectModal.js";
+import { Editor } from "./components/layout/Editor";
+import { Header } from "./components/nav/Header";
+import { CreateProjectModal } from "./components/project/CreateProjectModal";
 
 const customTheme: CustomFlowbiteTheme = {
   button: {

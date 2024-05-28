@@ -56,6 +56,23 @@ export const currentProjectSelector = selector<Project | null>({
   },
 });
 
+export const projectRequiresSetupSelector = selector<boolean>({
+  key: "projectRequiresSetup",
+  get: ({ get }) => {
+    const currentProject = get(currentProjectSelector);
+    return currentProject ? currentProject.requiresSetup : false;
+  },
+  set: ({ get, set }, newValue) => {
+    const currentProject = get(currentProjectSelector);
+    if (currentProject) {
+      set(currentProjectSelector, {
+        ...currentProject,
+        requiresSetup: newValue,
+      });
+    }
+  },
+});
+
 export type DeleteImageProps = {
   projectName: string;
   filenameToDelete: string;

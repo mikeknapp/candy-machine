@@ -9,9 +9,9 @@ import {
 } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
-const CONTAINER_WIDTH = 220;
-const THUMBNAIL_WIDTH = 170;
 const BORDER_WIDTH = 4;
+const CONTAINER_WIDTH = 300;
+const THUMBNAIL_WIDTH = CONTAINER_WIDTH - BORDER_WIDTH * 2;
 
 export const scrollToThumbnail = (img: string) => {
   const EXTRA_PADDING = 100;
@@ -114,7 +114,7 @@ export function Thumbnails({ project }: { project: Project }) {
       />
       {project.images.length > 0 && (
         <div
-          className={`flex h-full w-[${CONTAINER_WIDTH}px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
+          className={`flex h-full w-[${CONTAINER_WIDTH}] min-w-[125px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
         >
           {project.images.map((img, index) => (
             <img

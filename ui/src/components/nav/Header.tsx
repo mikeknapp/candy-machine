@@ -9,12 +9,12 @@ export function Header() {
   const openNewProjectDialog = useSetRecoilState(showNewProjectModalAtom);
 
   return (
-    <div className="flex w-full flex-row items-center justify-between bg-accent p-3 shadow-xl dark:bg-slate-950">
+    <div className="flex h-[80px] w-full flex-row items-center justify-between bg-accent p-3 dark:bg-slate-950">
       <div className="text-gray text-base font-bold text-gray-700 dark:text-white">
         <img
           src={require("../../assets/logo.png")}
           alt="Candy Machine Logo"
-          className="aspect-square h-12 dark:rounded-full"
+          className="aspect-square h-20 dark:rounded-full"
         />
       </div>
       <div className="flex h-full flex-row items-center gap-2">

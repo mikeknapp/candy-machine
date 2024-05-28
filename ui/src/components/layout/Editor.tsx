@@ -26,7 +26,7 @@ export function Editor() {
   }
 
   return (
-    <div className="flex h-full flex-row">
+    <div className="flex h-[calc(100vh-80px)] flex-row">
       <Thumbnails project={project} />
       <SelectedImage project={project} />
       <Tagger project={project} />

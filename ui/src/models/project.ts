@@ -6,11 +6,20 @@ export interface NewProject {
   removeDuplicates: boolean;
 }
 
+export interface AutoTag {
+  tag: string;
+  count: number;
+  examples: string[];
+}
+
 export interface Project {
   name: string;
   isSelected: boolean;
   images: string[];
   selectedImage: string;
+  autoTags: AutoTag[];
+  tagLayout: string[];
+  requiresSetup: boolean;
 }
 
 export async function createProject(
@@ -27,6 +36,9 @@ export async function createProject(
         isSelected: false,
         images: [],
         selectedImage: "",
+        autoTags: [],
+        tagLayout: [],
+        requiresSetup: false,
       },
     };
   } else {
@@ -48,6 +60,9 @@ export async function listProjects(): Promise<Project[]> {
           isSelected: false,
           images: [],
           selectedImage: "",
+          autoTags: [],
+          tagLayout: [],
+          requiresSetup: false,
         };
       }),
     );

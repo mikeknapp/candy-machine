@@ -70,11 +70,11 @@ export function TagCategory(props: TagCategoryProps) {
   }, []);
 
   return (
-    <div key={props.category.title} className="mb-10 flex flex-col">
-      <h2 className="mb-2 text-base font-bold">
+    <div key={props.category.title} className="mb-10 flex w-full flex-col">
+      <h2 className="mb-2 text-base font-bold dark:text-white">
         {props.category.title.toUpperCase()}
       </h2>
-      <div className="flex flex-wrap">
+      <div className="flex w-[90%] flex-row flex-wrap">
         <ReactTags
           tags={tags}
           separators={[SEPARATORS.ENTER, SEPARATORS.COMMA]}

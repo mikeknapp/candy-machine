@@ -40,7 +40,8 @@
 
   .ReactTags__selected {
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
+    justify-content: start;
 
     span.ReactTags__tag {
       @apply flex items-center;

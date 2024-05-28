@@ -66,6 +66,9 @@ def get_project(project_name):
     return {
         "name": project_name,
         "images": project.list_all_imgs(),
+        "autoTags": [tag_info.to_dict() for tag_info in project.analyze_auto_tags()],
+        "tagLayout": [],
+        "requiresSetup": True,
     }
 
 
@@ -120,12 +123,6 @@ def edit_image(project_name):
     if not new_filename:
         return {"errors": {"edit": "Error editing image"}}, 404
     return {"newFilename": new_filename}, 200
-
-
-@app.route("/project/<string:project_name>/tags/analyze", methods=["GET"])
-def analyze_auto_tags(project_name):
-    project = Project(project_name)
-    return [tag_info.to_dict() for tag_info in project.analyze_auto_tags()]
 
 
 @app.route("/", defaults={"path": ""})
