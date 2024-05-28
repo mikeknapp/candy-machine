@@ -91,7 +91,7 @@ export function QuickActions({ project }: { project: Project }) {
         </Button>
       </ButtonGroup>
 
-      <CropImageModal project={project} />
+      <CropImageModal />
 
       <DeleteImageModal
         project={project}

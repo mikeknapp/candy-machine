@@ -2,12 +2,14 @@ import { Tooltip } from "flowbite-react";
 import React from "react";
 import { FaCheck } from "react-icons/fa";
 import { TbAlertTriangleFilled } from "react-icons/tb";
+import { useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { imgSize } from "../../models/image";
-import { Project } from "../../models/project";
+import { currentProjectSelector } from "../../state/atoms";
 import { QuickActions } from "./QuickActions";
 
-export function SelectedImage({ project }: { project: Project }) {
+export function SelectedImage() {
+  const project = useRecoilValue(currentProjectSelector);
   const size = imgSize(project.selectedImage);
 
   return (

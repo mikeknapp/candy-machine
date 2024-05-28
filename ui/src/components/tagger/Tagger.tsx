@@ -2,12 +2,11 @@ import React from "react";
 import { TagCategory } from "./TagCategory";
 
 import { useRecoilValue } from "recoil";
-import { currentProjectSelector, tagLayoutSelector } from "../../state/atoms";
+import { tagLayoutSelector } from "../../state/atoms";
 import { ProjectCategoriesModal } from "./ProjectCategoriesModal";
 import "./tags.css";
 
 export function Tagger() {
-  const currentProject = useRecoilValue(currentProjectSelector);
   const tagLayout = useRecoilValue(tagLayoutSelector);
 
   return (
@@ -18,7 +17,7 @@ export function Tagger() {
         ))}
       </div>
 
-      <ProjectCategoriesModal project={currentProject} />
+      <ProjectCategoriesModal />
     </div>
   );
 }

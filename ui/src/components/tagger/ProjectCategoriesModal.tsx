@@ -1,12 +1,15 @@
 import { Button, Modal } from "flowbite-react";
 import React from "react";
 import { HiArrowRight } from "react-icons/hi";
-import { useRecoilState } from "recoil";
-import { Project } from "../../models/project";
-import { projectRequiresSetupSelector } from "../../state/atoms";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  currentProjectSelector,
+  projectRequiresSetupSelector,
+} from "../../state/atoms";
 import { SuggestedAutoTags } from "./SuggestedAutoTags";
 
-export function ProjectCategoriesModal({ project }: { project: Project }) {
+export function ProjectCategoriesModal() {
+  const project = useRecoilValue(currentProjectSelector);
   const [isOpen, setIsOpen] = useRecoilState(projectRequiresSetupSelector);
 
   if (project.autoTags.length === 0) {

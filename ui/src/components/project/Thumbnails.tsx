@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { imgAspectRatio } from "../../models/image";
-import { Project, navigateImages } from "../../models/project";
+import { navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
   disableKeyboardShortcutsSelector,
@@ -26,19 +26,17 @@ export const scrollToThumbnail = (img: string) => {
   }
 };
 
-export function Thumbnails({ project }: { project: Project }) {
+export function Thumbnails() {
   const observer = useRef<IntersectionObserver | null>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  const [currentProject, setCurrentProject] = useRecoilState(
-    currentProjectSelector,
-  );
+  const [project, setCurrentProject] = useRecoilState(currentProjectSelector);
   const disableKeyboardShortcuts = useRecoilValue(
     disableKeyboardShortcutsSelector,
   );
 
   const selectNewImage = (img: string) => {
-    setCurrentProject({ ...currentProject, selectedImage: img });
+    setCurrentProject({ ...project, selectedImage: img });
     scrollToThumbnail(img);
   };
 
@@ -104,7 +102,7 @@ export function Thumbnails({ project }: { project: Project }) {
     setTimeout(() => {
       focusStealer?.blur();
     }, 100);
-  }, [currentProject]);
+  }, [project]);
 
   return (
     <>

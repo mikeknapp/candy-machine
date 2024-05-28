@@ -22,13 +22,10 @@ export function Editor() {
     return <NoSelectedProject />;
   }
 
-  // TODO: stop passing down project as a prop.
-  const project = projectLoading.contents;
-
   return (
     <div className="flex h-[calc(100vh-80px)] flex-row">
-      <Thumbnails project={project} />
-      <SelectedImage project={project} />
+      <Thumbnails />
+      <SelectedImage />
       <Tagger />
     </div>
   );

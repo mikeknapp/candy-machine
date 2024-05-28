@@ -20,11 +20,11 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { editImage } from "../../models/image";
-import { Project } from "../../models/project";
 import {
+  currentProjectSelector,
   replaceImageSelectorFamily,
   showCropImageModalAtom,
 } from "../../state/atoms";
@@ -74,7 +74,8 @@ enum Rotation {
   TWO_SEVENTY = 270,
 }
 
-export function CropImageModal({ project }: { project: Project }) {
+export function CropImageModal() {
+  const project = useRecoilValue(currentProjectSelector);
   const [showModal, setShowModal] = useRecoilState(showCropImageModalAtom);
   const replaceImageSF = useSetRecoilState(
     replaceImageSelectorFamily({
