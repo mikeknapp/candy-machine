@@ -94,6 +94,16 @@ def serve_image(project_name, fname):
         img_io.seek(0)
         return send_file(img_io, mimetype="image/png")
 
+    # Thumbnail?
+    thumbnail = request.args.get("thumbnail", "").strip().lower() in LOWERCASE_IS_TRUE
+    if thumbnail:
+        img = Image.open(img_path)
+        img.thumbnail((250, int(250 * img.height / img.width)))
+        img_io = io.BytesIO()
+        img.save(img_io, "PNG")
+        img_io.seek(0)
+        return send_file(img_io, mimetype="image/png")
+
     return send_from_directory(project.img_dir(), fname)
 
 
@@ -133,8 +143,9 @@ def serve(path):
     dist_dir = str(app.static_folder)
     if path != "" and os.path.exists(os.path.join(dist_dir, path)):
         return send_from_directory(dist_dir, path)
-    else:
+    elif path == "":
         return send_from_directory(dist_dir, "index.html")
+    return "Not found", 404
 
 
 def open_browser():

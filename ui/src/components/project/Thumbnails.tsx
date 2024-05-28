@@ -126,7 +126,7 @@ export function Thumbnails() {
                 borderWidth: `${BORDER_WIDTH}px`,
               }}
               className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${project.selectedImage != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
-              data-src={`${API_BASE_URL}/project/${project.name}/imgs/${img}`}
+              data-src={`${API_BASE_URL}/project/${project.name}/imgs/${img}?thumbnail=true`}
               src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
               alt={img}
               onClick={() => selectNewImage(img)}
