@@ -1,6 +1,6 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { Project, listProjects } from "../models/project";
+import { Project, listProjects, saveProject } from "../models/project";
 
 export const showNewProjectModalAtom = atom({
   key: "showNewProjectModal",
@@ -34,7 +34,7 @@ export const currentProjectSelector = selector<Project | null>({
     return selectedProject || null;
   },
   set: ({ set, get }, newValue) => {
-    if (!(newValue instanceof DefaultValue)) {
+    if (!(!newValue || newValue instanceof DefaultValue)) {
       const projectList = get(projectsAtom);
       let foundProject = false;
       const updatedProjectList = projectList.map((project) => {
@@ -53,6 +53,7 @@ export const currentProjectSelector = selector<Project | null>({
         });
       }
       set(projectsAtom, updatedProjectList);
+      saveProject(newValue);
     }
   },
 });
@@ -156,7 +157,6 @@ export const tagLayoutSelector = selector<CategoryData[]>({
         ...currentProject,
         tagLayout: newValue,
       });
-      // TODO: Auto save to the server.
     }
   },
 });

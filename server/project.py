@@ -109,6 +109,7 @@ class Project:
 
         # Load the auto tags.
         if len(self.project_layout) == 0:
+            self.project_layout = self._default_tag_categories()
             self.auto_tags = self._get_filtered_auto_tags(self.project_layout)
             self.requires_setup = len(self.auto_tags) > 0
 
@@ -119,11 +120,22 @@ class Project:
             with open(file_path, "w") as fp:
                 json.dump(data["tagLayout"], fp)
 
+        # Save the config file.
         if "selectedImage" in data:
             self.selected_image = data["selectedImage"]
 
         if "triggerPhrase" in data:
             self.trigger_phrase = data["triggerPhrase"]
+
+        file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
+        with open(file_path, "w") as fp:
+            json.dump(
+                {
+                    "selectedImage": self.selected_image,
+                    "triggerPhrase": self.trigger_phrase,
+                },
+                fp,
+            )
 
     def delete(self):
         shutil.rmtree(self._base_dir)
@@ -135,6 +147,7 @@ class Project:
             "autoTags": self.auto_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],
             "requiresSetup": self.requires_setup,
+            "selectedImage": self.selected_image or self.imgs[0] if self.imgs else "",
         }
 
     def _read_tag_category_file(self, file_path: str) -> list[TagCategory]:
@@ -159,10 +172,7 @@ class Project:
 
     def _project_tag_categories(self) -> list[TagCategory]:
         file_path = os.path.join(self._base_dir, PROJECT_CATEGORY_FILE)
-        results = self._read_tag_category_file(file_path)
-        if len(results) == 0:
-            results = self._default_tag_categories()
-        return results
+        return self._read_tag_category_file(file_path)
 
     def delete_image(self, fname):
         img_path = self.img_path(fname)

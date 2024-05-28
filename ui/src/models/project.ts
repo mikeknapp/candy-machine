@@ -76,7 +76,16 @@ export async function listProjects(): Promise<Project[]> {
 export async function loadProject(name: string): Promise<Project> {
   const response = await apiRequest<Project>(`/project/${name}/get`);
   if (response.success && response.data) {
-    return { ...response.data, selectedImage: response.data.images[0] ?? "" };
+    return response.data;
+  }
+}
+
+export async function saveProject(project: Project): Promise<boolean> {
+  const response = await apiRequest<string>(`/project/${project.name}/save`, {
+    body: JSON.stringify(project),
+  });
+  if (response.success && response.data) {
+    return response.data === "OK";
   }
 }
 
