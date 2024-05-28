@@ -84,7 +84,15 @@
   },
   {
     "title": "Hair",
-    "tags": ["long {color} hair", "short {color} hair", "curly {color} hair", "straight {color} hair", "bangs", "bald"],
+    "tags": [
+      "{type} hair",
+      "long {color} hair",
+      "short {color} hair",
+      "curly {color} hair",
+      "straight {color} hair",
+      "bangs",
+      "bald"
+    ],
     "color": "#16d0cb"
   },
   {

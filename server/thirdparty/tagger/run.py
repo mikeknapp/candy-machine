@@ -4,7 +4,10 @@ EXTENSION = ".txt"
 USE_CPU = False
 
 import os
+import sys
 from pathlib import Path
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from lib.interrogator import Interrogator
 from lib.interrogators import interrogators

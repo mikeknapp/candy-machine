@@ -4,8 +4,8 @@ import unittest
 from .run import interrogate_directory
 
 EXPECTED_TAGS = {
-    "apple_auto.txt": "fruit, food, apple, food focus, no humans, realistic, still life, blurry, simple background, close-up",
-    "teeth_auto.txt": "solo, open mouth, teeth, close-up, tongue, realistic, lips, nose, male focus",
+    "apple.txt": "fruit, food, apple, food focus, no humans, realistic, still life, blurry, simple background, close-up",
+    "teeth.txt": "solo, open mouth, teeth, close-up, tongue, realistic, lips, nose, male focus",
 }
 
 
@@ -25,8 +25,7 @@ class TestInterrogateDirectory(unittest.TestCase):
                 os.remove(os.path.join(self.img_path, f))
 
     def test_interrogate_directory(self):
-
-        interrogate_directory(self.img_path)
+        interrogate_directory(self.img_path, self.img_path)
 
         # Check if the correct .txt files were created.
         for f, tags in EXPECTED_TAGS.items():

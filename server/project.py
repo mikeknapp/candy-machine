@@ -10,6 +10,7 @@ from consts import (
     IMG_EXT,
     IMGS_DIR,
     PROJECT_CATEGORY_FILE,
+    PROJECT_CONFIG_FILE,
     WORKING_DIR,
 )
 from image import Crop, choose_image_filename, valid_images_for_import
@@ -61,6 +62,8 @@ class Project:
         # The auto tags subdirectory.
         self._auto_tags_dir = os.path.join(self._base_dir, AUTO_TAGS)
 
+        self.load()
+
     @staticmethod
     def create_new_project(
         name: str, working_dir: str | None = None
@@ -69,10 +72,10 @@ class Project:
         is_valid, msg = Project.is_valid_name(name)
         if not is_valid:
             return None, msg
-        project.make_dirs()
+        project._make_dirs()
         return project, ""
 
-    def make_dirs(self):
+    def _make_dirs(self):
         os.makedirs(self._base_dir, exist_ok=True)
         os.makedirs(self._img_dir, exist_ok=True)
         os.makedirs(self._auto_tags_dir, exist_ok=True)
@@ -86,32 +89,52 @@ class Project:
     def img_path(self, fname: str) -> str:
         return os.path.join(self._img_dir, fname)
 
+    def load(self):
+        self.project_layout = self._project_tag_categories()
+        self.imgs = self._list_all_imgs()
+        self.trigger_phrase = ""
+        self.selected_image = ""
+        self.auto_tags = []
+        self.requires_setup = False
+
+        # Load config file.
+        file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
+        if os.path.exists(file_path):
+            with open(file_path, "r") as fp:
+                data = json.load(fp)
+                if "selectedImage" in data:
+                    self.selected_image = data["selectedImage"]
+                if "triggerPhrase" in data:
+                    self.trigger_phrase = data["triggerPhrase"]
+
+        # Load the auto tags.
+        if len(self.project_layout) == 0:
+            self.auto_tags = self._get_filtered_auto_tags(self.project_layout)
+            self.requires_setup = len(self.auto_tags) > 0
+
+    def save(self, data: dict):
+        # Save the tag layout.
+        if "tagLayout" in data:
+            file_path = os.path.join(self._base_dir, PROJECT_CATEGORY_FILE)
+            with open(file_path, "w") as fp:
+                json.dump(data["tagLayout"], fp)
+
+        if "selectedImage" in data:
+            self.selected_image = data["selectedImage"]
+
+        if "triggerPhrase" in data:
+            self.trigger_phrase = data["triggerPhrase"]
+
     def delete(self):
         shutil.rmtree(self._base_dir)
 
     def to_dict(self):
-        requires_setup = False
-        auto_tags = []
-
-        project_layout = self.project_tag_categories()
-        if len(project_layout) == 0:
-            project_layout = self.default_tag_categories()
-            auto_tag_candidates = [
-                tag_info.to_dict() for tag_info in self.analyze_auto_tags()
-            ]
-            # Filter any auto tags that are already included in any category's list of tags.
-            for tag_info in auto_tag_candidates:
-                tag = tag_info["tag"]
-                if not any(tag in category.tags for category in project_layout):
-                    auto_tags.append(tag_info)
-            requires_setup = len(auto_tags) > 0
-
         return {
             "name": self.name,
-            "images": self.list_all_imgs(),
-            "autoTags": auto_tags,
-            "tagLayout": [category.to_dict() for category in project_layout],
-            "requiresSetup": requires_setup,
+            "images": self.imgs,
+            "autoTags": self.auto_tags,
+            "tagLayout": [c.to_dict() for c in self.project_layout],
+            "requiresSetup": self.requires_setup,
         }
 
     def _read_tag_category_file(self, file_path: str) -> list[TagCategory]:
@@ -130,13 +153,16 @@ class Project:
                 )
             return results
 
-    def default_tag_categories(self) -> list[TagCategory]:
+    def _default_tag_categories(self) -> list[TagCategory]:
         file_path = os.path.join(os.path.dirname(__file__), DEFAULT_CATEGORY_FILE)
         return self._read_tag_category_file(file_path)
 
-    def project_tag_categories(self) -> list[TagCategory]:
+    def _project_tag_categories(self) -> list[TagCategory]:
         file_path = os.path.join(self._base_dir, PROJECT_CATEGORY_FILE)
-        return self._read_tag_category_file(file_path)
+        results = self._read_tag_category_file(file_path)
+        if len(results) == 0:
+            results = self._default_tag_categories()
+        return results
 
     def delete_image(self, fname):
         img_path = self.img_path(fname)
@@ -246,12 +272,24 @@ class Project:
                 "lastImg": new_filename,
             }
 
-    def list_all_imgs(self) -> list[str]:
+    def _list_all_imgs(self) -> list[str]:
         if not os.path.exists(self._img_dir):
             return []
         return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
 
-    def get_all_auto_tags(self) -> dict[str, int]:
+    def _get_filtered_auto_tags(self, project_layout) -> list[TagInfo]:
+        results = []
+        auto_tag_candidates = [
+            tag_info.to_dict() for tag_info in self._analyze_auto_tags()
+        ]
+        # Filter any auto tags that are already included in any category's list of tags.
+        for tag_info in auto_tag_candidates:
+            tag = tag_info["tag"]
+            if not any(tag in category.tags for category in project_layout):
+                results.append(tag_info)
+        return results
+
+    def _get_all_auto_tags(self) -> dict[str, int]:
         tags: dict[str, int] = {}
 
         if not os.path.exists(self._auto_tags_dir):
@@ -268,8 +306,8 @@ class Project:
                     tags[tag] = tags.get(tag, 0) + 1
         return tags
 
-    def analyze_auto_tags(self) -> list[TagInfo]:
-        tags = self.get_all_auto_tags()
+    def _analyze_auto_tags(self) -> list[TagInfo]:
+        tags = self._get_all_auto_tags()
         if not tags:
             return []
 

@@ -66,6 +66,14 @@ def get_project(project_name):
     return jsonify(project.to_dict())
 
 
+@app.route("/project/<string:project_name>/save", methods=["GET", "POST"])
+def save_project(project_name):
+    project = Project(project_name)
+    data = request.json if request.json else {}
+    project.save(data)
+    return "OK"
+
+
 @app.route("/project/<string:project_name>/imgs/<string:fname>", methods=["GET"])
 def serve_image(project_name, fname):
     project = Project(project_name)
