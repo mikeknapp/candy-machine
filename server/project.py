@@ -1,9 +1,17 @@
+import json
 import os
 import shutil
 from typing import Tuple
 
 import imagehash
-from consts import AUTO_TAGS, IMG_EXT, IMGS_DIR, WORKING_DIR
+from consts import (
+    AUTO_TAGS,
+    DEFAULT_CATEGORY_FILE,
+    IMG_EXT,
+    IMGS_DIR,
+    PROJECT_CATEGORY_FILE,
+    WORKING_DIR,
+)
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
 from tags import common_suffixes
@@ -20,6 +28,20 @@ class TagInfo:
             "tag": self.tag,
             "count": self.count,
             "examples": self.examples,
+        }
+
+
+class TagCategory:
+    def __init__(self, title: str, tags: list[str], color: str):
+        self.name = title
+        self.tags = tags
+        self.color = color
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "tags": self.tags,
+            "color": self.color,
         }
 
 
@@ -66,6 +88,55 @@ class Project:
 
     def delete(self):
         shutil.rmtree(self._base_dir)
+
+    def to_dict(self):
+        requires_setup = False
+        auto_tags = []
+
+        project_layout = self.project_tag_categories()
+        if len(project_layout) == 0:
+            project_layout = self.default_tag_categories()
+            auto_tag_candidates = [
+                tag_info.to_dict() for tag_info in self.analyze_auto_tags()
+            ]
+            # Filter any auto tags that are already included in any category's list of tags.
+            for tag_info in auto_tag_candidates:
+                tag = tag_info["tag"]
+                if not any(tag in category.tags for category in project_layout):
+                    auto_tags.append(tag_info)
+            requires_setup = len(auto_tags) > 0
+
+        return {
+            "name": self.name,
+            "images": self.list_all_imgs(),
+            "autoTags": auto_tags,
+            "tagLayout": [category.to_dict() for category in project_layout],
+            "requiresSetup": requires_setup,
+        }
+
+    def _read_tag_category_file(self, file_path: str) -> list[TagCategory]:
+        if not os.path.exists(file_path):
+            return []
+        with open(file_path, "r") as fp:
+            data = json.load(fp)
+            results = []
+            for category in data:
+                results.append(
+                    TagCategory(
+                        title=category["title"],
+                        tags=category["tags"],
+                        color=category["color"],
+                    )
+                )
+            return results
+
+    def default_tag_categories(self) -> list[TagCategory]:
+        file_path = os.path.join(os.path.dirname(__file__), DEFAULT_CATEGORY_FILE)
+        return self._read_tag_category_file(file_path)
+
+    def project_tag_categories(self) -> list[TagCategory]:
+        file_path = os.path.join(self._base_dir, PROJECT_CATEGORY_FILE)
+        return self._read_tag_category_file(file_path)
 
     def delete_image(self, fname):
         img_path = self.img_path(fname)

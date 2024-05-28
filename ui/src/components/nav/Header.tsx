@@ -1,6 +1,6 @@
 import { Button, DarkThemeToggle, Tooltip } from "flowbite-react";
 import React from "react";
-import { HiCog6Tooth, HiFolderPlus } from "react-icons/hi2";
+import { HiFolderPlus } from "react-icons/hi2";
 import { useSetRecoilState } from "recoil";
 import { showNewProjectModalAtom } from "../../state/atoms";
 import { ProjectSelector } from "./ProjectSelector";
@@ -27,12 +27,6 @@ export function Header() {
             onClick={() => openNewProjectDialog(true)}
           >
             <HiFolderPlus className="text-2xl font-bold" />
-          </Button>
-        </Tooltip>
-
-        <Tooltip content="Settings">
-          <Button size="lg" gradientDuoTone="pinkToOrange">
-            <HiCog6Tooth className="text-2xl font-bold" />
           </Button>
         </Tooltip>
 

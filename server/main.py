@@ -63,13 +63,7 @@ def list_projects():
 @app.route("/project/<string:project_name>/get", methods=["GET", "POST"])
 def get_project(project_name):
     project = Project(project_name)
-    return {
-        "name": project_name,
-        "images": project.list_all_imgs(),
-        "autoTags": [tag_info.to_dict() for tag_info in project.analyze_auto_tags()],
-        "tagLayout": [],
-        "requiresSetup": True,
-    }
+    return jsonify(project.to_dict())
 
 
 @app.route("/project/<string:project_name>/imgs/<string:fname>", methods=["GET"])
