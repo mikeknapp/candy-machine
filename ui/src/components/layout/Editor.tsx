@@ -1,7 +1,6 @@
 import { Spinner } from "flowbite-react";
 import React from "react";
 import { useRecoilValueLoadable } from "recoil";
-import { Project } from "../../models/project";
 import { currentProjectSelector } from "../../state/atoms";
 import { SelectedImage } from "../image/SelectedImage";
 import { Thumbnails } from "../project/Thumbnails";
@@ -19,17 +18,18 @@ export function Editor() {
     );
   }
 
-  const project: Project = projectLoading.contents;
-
-  if (!project) {
+  if (!projectLoading.contents) {
     return <NoSelectedProject />;
   }
+
+  // TODO: stop passing down project as a prop.
+  const project = projectLoading.contents;
 
   return (
     <div className="flex h-[calc(100vh-80px)] flex-row">
       <Thumbnails project={project} />
       <SelectedImage project={project} />
-      <Tagger project={project} />
+      <Tagger />
     </div>
   );
 }

@@ -22,25 +22,35 @@ export function ProjectCategoriesModal({ project }: { project: Project }) {
         root: {
           base: "fixed inset-x-0 top-0 z-50 h-screen !overflow-hidden md:inset-0 md:h-full",
         },
+        header: {
+          close: {
+            base: "hidden",
+          },
+        },
       }}
     >
+      <Modal.Header className="text-center">
+        Setup Your Project Tags{" "}
+        <span className="text-sm text-gray-400 dark:text-gray-200">
+          (optional)
+        </span>
+      </Modal.Header>
       <Modal.Body>
-        <h1 className="mb-6 mt-4 text-3xl font-bold">Setup Project Tags</h1>
-        <p className="pb-3 dark:text-white">
-          Here are {project.autoTags.length} tags to consider adding to your
-          project's tag list. Remember,{" "}
-          <b>don't tag things already implicit in your trigger word</b>. For
-          example, when training a face, don't tag someone's distinctive mole or
-          freckles. You want the model to learn those things by itself. Only tag
-          variables you want to be able to control in your prompt.
+        <p className="p-1 dark:text-white">
+          Here are {project.autoTags.length} tags that might come in handy.
+          Generally you won't want to tag things already implicit in your
+          trigger word. For example, when training a face, if you tag someone's
+          distinctive mole or freckles, the model may not learn them to be part
+          of your trigger word.
         </p>
-        <SuggestedAutoTags project={project} />
+        <SuggestedAutoTags />
       </Modal.Body>
-      <Modal.Footer className="justify-end ">
+      <Modal.Footer className="justify-center ">
         <Button
           gradientDuoTone="greenToBlue"
           size="xl"
           onClick={() => setIsOpen(false)}
+          fullSized
         >
           Start Tagging <HiArrowRight className="ml-2 h-6 w-6" />
         </Button>

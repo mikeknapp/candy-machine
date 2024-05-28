@@ -67,7 +67,7 @@ export function TagCategory(props: TagCategoryProps) {
         return { id: tag, text: tag, className: "" };
       }),
     );
-  }, []);
+  }, [props.category]);
 
   return (
     <div key={props.category.title} className="mb-10 flex w-full flex-col">

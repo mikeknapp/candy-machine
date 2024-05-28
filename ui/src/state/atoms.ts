@@ -1,4 +1,5 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
+import { CategoryData } from "../components/tagger/TagCategory";
 import { Project, listProjects } from "../models/project";
 
 export const showNewProjectModalAtom = atom({
@@ -140,4 +141,65 @@ export const replaceImageSelectorFamily = selectorFamily({
         });
       });
     },
+});
+
+export const tagLayoutSelector = selector<CategoryData[]>({
+  key: "tagLayout",
+  get: ({ get }) => {
+    const currentProject = get(currentProjectSelector);
+    return currentProject ? currentProject.tagLayout : [];
+  },
+  set: ({ get, set }, newValue) => {
+    const currentProject = get(currentProjectSelector);
+    if (currentProject) {
+      set(currentProjectSelector, {
+        ...currentProject,
+        tagLayout: newValue,
+      });
+      // TODO: Auto save to the server.
+    }
+  },
+});
+
+export type TagAction = {
+  categoryTitle: string;
+  tag: string;
+} | void;
+
+export const addTagToCategorySelector = selector<TagAction>({
+  key: "AddTagToCategory",
+  get: () => {},
+  set: ({ get, set }, newValue) => {
+    if (!newValue || newValue instanceof DefaultValue) return;
+
+    const currentTagLayout = get(tagLayoutSelector);
+    const newTagLayout = currentTagLayout.map((cat) =>
+      cat.title === newValue.categoryTitle
+        ? {
+            ...cat,
+            tags: [newValue.tag, ...cat.tags],
+          }
+        : cat,
+    );
+    set(tagLayoutSelector, newTagLayout);
+  },
+});
+
+export const removeTagFromCategorySelector = selector<TagAction>({
+  key: "RemoveTagFromCategory",
+  get: () => {},
+  set: ({ get, set }, newValue) => {
+    if (!newValue || newValue instanceof DefaultValue) return;
+
+    const currentTagLayout = get(tagLayoutSelector);
+    const newTagLayout = currentTagLayout.map((cat) =>
+      cat.title === newValue.categoryTitle
+        ? {
+            ...cat,
+            tags: cat.tags.filter((tag) => tag !== newValue.tag),
+          }
+        : cat,
+    );
+    set(tagLayoutSelector, newTagLayout);
+  },
 });
