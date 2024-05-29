@@ -1,8 +1,5 @@
 import React, { useEffect } from "react";
 
-import { WithOutContext as ReactTags, SEPARATORS } from "react-tag-input";
-import { SUGGESTIONS } from "./suggestions";
-
 export interface Tag {
   id: string;
   className: string;
@@ -75,7 +72,8 @@ export function TagCategory(props: TagCategoryProps) {
         {props.category.title.toUpperCase()}
       </h2>
       <div className="flex w-[90%] flex-row flex-wrap">
-        <ReactTags
+        {tags.map((tag) => tag.text).join(", ")}
+        {/* <ReactTags
           tags={tags}
           separators={[SEPARATORS.ENTER, SEPARATORS.COMMA]}
           handleAddition={handleAddition}
@@ -85,7 +83,7 @@ export function TagCategory(props: TagCategoryProps) {
           allowUnique={true}
           allowDragDrop={false}
           placeholder={`${props.category.title} tags`}
-        />
+        /> */}
       </div>
     </div>
   );
