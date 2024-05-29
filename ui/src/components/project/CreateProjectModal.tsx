@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from "flowbite-react";
 import React, { useEffect, useState } from "react";
+import { isWindows } from "react-device-detect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
@@ -139,7 +140,11 @@ export function CreateProjectModal() {
               </Label>
               <TextInput
                 id="importDirPath"
-                placeholder="C:\Documents\My Images"
+                placeholder={
+                  isWindows
+                    ? "C:/Documents/My Images"
+                    : "/home/user/images/my_images"
+                }
                 {...register("importDirPath", {
                   required: "A directory path is required",
                 })}
