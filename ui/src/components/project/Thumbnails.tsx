@@ -78,8 +78,14 @@ export function Thumbnails() {
         if (entry.isIntersecting) {
           const img = entry.target as HTMLImageElement;
           if (img.dataset.src) {
-            img.src = img.dataset.src;
-            img.removeAttribute("data-src");
+            // Add a delay before loading the image
+            setTimeout(() => {
+              // Check if the image is still in the viewport
+              if (entry.isIntersecting) {
+                img.src = img.dataset.src;
+                img.removeAttribute("data-src");
+              }
+            }, 500); // 500 ms delay
           }
         }
       });
@@ -101,6 +107,7 @@ export function Thumbnails() {
     focusStealer?.focus();
     setTimeout(() => {
       focusStealer?.blur();
+      scrollToThumbnail(project.selectedImage);
     }, 100);
   }, [project]);
 

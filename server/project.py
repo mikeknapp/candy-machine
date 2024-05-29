@@ -378,8 +378,17 @@ class Project:
         return True, ""
 
     @staticmethod
-    def list_all_projects(working_dir_override: str | None = None) -> list:
+    def list_all_projects(working_dir_override: str | None = None) -> list[str]:
         working_dir = working_dir_override if working_dir_override else WORKING_DIR
         if not os.path.exists(working_dir):
             return []
-        return os.listdir(working_dir)
+        # Order by most recently modified config.json file.
+        return sorted(
+            os.listdir(working_dir),
+            key=lambda x: (
+                os.path.getmtime(os.path.join(working_dir, x, PROJECT_CONFIG_FILE))
+                if os.path.exists(os.path.join(working_dir, x, PROJECT_CONFIG_FILE))
+                else 0
+            ),
+            reverse=True,
+        )

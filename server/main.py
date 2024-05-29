@@ -5,7 +5,15 @@ import webbrowser
 from urllib.parse import unquote
 
 from consts import LOWERCASE_IS_TRUE, WORKING_DIR
-from flask import Flask, json, jsonify, request, send_file, send_from_directory
+from flask import (
+    Flask,
+    json,
+    jsonify,
+    make_response,
+    request,
+    send_file,
+    send_from_directory,
+)
 from flask_cors import CORS
 from image import Crop, valid_import_directory
 from PIL import Image
@@ -102,7 +110,9 @@ def serve_image(project_name, fname):
         img_io = io.BytesIO()
         img.save(img_io, "PNG")
         img_io.seek(0)
-        return send_file(img_io, mimetype="image/png")
+        response = make_response(send_file(img_io, mimetype="image/png"))
+        response.headers["Cache-Control"] = "public, max-age=31536000"  # 1 year
+        return response
 
     return send_from_directory(project.img_dir(), fname)
 
