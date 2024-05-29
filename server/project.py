@@ -66,13 +66,16 @@ class Project:
 
     @staticmethod
     def create_new_project(
-        name: str, working_dir: str | None = None
+        name: str, trigger_word: str, working_dir: str | None = None
     ) -> Tuple["Project | None", str]:
         project = Project(name, working_dir)
         is_valid, msg = Project.is_valid_name(name)
         if not is_valid:
             return None, msg
         project._make_dirs()
+        if trigger_word:
+            project.trigger_word = trigger_word
+            project.save()
         return project, ""
 
     def _make_dirs(self):
@@ -92,7 +95,7 @@ class Project:
     def load(self):
         self.project_layout = self._project_tag_categories()
         self.imgs = self._list_all_imgs()
-        self.trigger_phrase = ""
+        self.trigger_word = ""
         self.selected_image = ""
         self.auto_tags = []
         self.requires_setup = False
@@ -104,8 +107,8 @@ class Project:
                 data = json.load(fp)
                 if "selectedImage" in data:
                     self.selected_image = data["selectedImage"]
-                if "triggerPhrase" in data:
-                    self.trigger_phrase = data["triggerPhrase"]
+                if "triggerWord" in data:
+                    self.trigger_word = data["triggerWord"]
 
         # Load the auto tags.
         if len(self.project_layout) == 0:
@@ -113,7 +116,7 @@ class Project:
             self.auto_tags = self._get_filtered_auto_tags(self.project_layout)
             self.requires_setup = len(self.auto_tags) > 0
 
-    def save(self, data: dict):
+    def save(self, data: dict = {}):
         # Save the tag layout.
         if "tagLayout" in data:
             file_path = os.path.join(self._base_dir, PROJECT_CATEGORY_FILE)
@@ -124,15 +127,15 @@ class Project:
         if "selectedImage" in data:
             self.selected_image = data["selectedImage"]
 
-        if "triggerPhrase" in data:
-            self.trigger_phrase = data["triggerPhrase"]
+        if "triggerWord" in data:
+            self.trigger_word = data["triggerWord"]
 
         file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
         with open(file_path, "w") as fp:
             json.dump(
                 {
                     "selectedImage": self.selected_image,
-                    "triggerPhrase": self.trigger_phrase,
+                    "triggerWord": self.trigger_word,
                 },
                 fp,
             )
@@ -143,6 +146,7 @@ class Project:
     def to_dict(self):
         return {
             "name": self.name,
+            "triggerWord": self.trigger_word,
             "images": self.imgs,
             "autoTags": self.auto_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],

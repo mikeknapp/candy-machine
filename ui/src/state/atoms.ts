@@ -1,6 +1,11 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { Project, listProjects, saveProject } from "../models/project";
+import {
+  Project,
+  listProjects,
+  saveProject,
+  shouldSave,
+} from "../models/project";
 
 export const showNewProjectModalAtom = atom({
   key: "showNewProjectModal",
@@ -37,9 +42,11 @@ export const currentProjectSelector = selector<Project | null>({
     if (!(!newValue || newValue instanceof DefaultValue)) {
       const projectList = get(projectsAtom);
       let foundProject = false;
+      let sendSaveRequest = false;
       const updatedProjectList = projectList.map((project) => {
         if (project.name === newValue?.name) {
           foundProject = true;
+          sendSaveRequest = shouldSave(project, newValue);
           return { ...project, ...newValue, isSelected: true };
         } else {
           return { ...project, isSelected: false };
@@ -51,9 +58,12 @@ export const currentProjectSelector = selector<Project | null>({
           ...newValue,
           isSelected: true,
         });
+        sendSaveRequest = true;
       }
       set(projectsAtom, updatedProjectList);
-      saveProject(newValue);
+      if (sendSaveRequest) {
+        saveProject(newValue);
+      }
     }
   },
 });

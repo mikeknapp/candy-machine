@@ -37,15 +37,18 @@ def create_project():
     if not is_valid:
         return {"errors": {"name": msg}}, 400
 
-    # Check the import directory looks fine.
+    trigger_word = str(data.get("triggerWord", "")).strip()
+
+    # Check the import directory looks fine. We don't actually import the photos yet.
+    # That will happen later, and the frontend will pass us the path to import from.
     import_dir = str(data.get("importDirPath", "")).strip()
     if import_dir and not valid_import_directory(import_dir):
         return {
             "errors": {"importDirPath": "No valid images found in the directory"}
         }, 400
 
-    Project.create_new_project(name)
-    return {"name": name}, 200
+    Project.create_new_project(name, trigger_word)
+    return {"name": name, "triggerWord": trigger_word}, 200
 
 
 @app.route("/project/<string:project_name>/import", methods=["GET"])

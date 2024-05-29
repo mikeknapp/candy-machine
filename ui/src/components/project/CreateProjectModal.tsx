@@ -7,9 +7,12 @@ import {
   ModalHeader,
   Progress,
   TextInput,
+  Tooltip,
 } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { GoAlertFill } from "react-icons/go";
+import { HiInformationCircle } from "react-icons/hi2";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { NewProject, createProject, importImages } from "../../models/project";
 import {
@@ -23,6 +26,7 @@ export function CreateProjectModal() {
     register,
     handleSubmit,
     setError,
+    setFocus,
     watch,
     formState: { errors },
   } = useForm<NewProject>();
@@ -39,7 +43,7 @@ export function CreateProjectModal() {
     setCurrentProject((prev) => {
       if (prev.name === name) {
         const images = [...prev.images, imgUrl];
-        return { ...prev, images: images, selectedImage: images[0] };
+        return { ...prev, images: images };
       }
       return prev;
     });
@@ -90,7 +94,7 @@ export function CreateProjectModal() {
   useEffect(() => {
     if (isOpen) {
       reset();
-      setTimeout(() => document.getElementById("name")?.focus(), 100);
+      setTimeout(() => setFocus("name"), 500);
     } else {
       setIsProcessing(false);
     }
@@ -108,12 +112,14 @@ export function CreateProjectModal() {
           <ModalHeader>Create New Project</ModalHeader>
           <ModalBody className="flex flex-col gap-5">
             <div>
-              <Label htmlFor="name">Directory Name</Label>
+              <Label htmlFor="name" className="mb-2">
+                Project Name <span className="text-small text-red-500">*</span>
+              </Label>
               <TextInput
                 id="name"
                 placeholder="my_project"
                 {...register("name", {
-                  required: "A directory name is required",
+                  required: "A project name is required",
                   pattern: {
                     value: /^[a-zA-Z0-9_-]*$/,
                     message:
@@ -127,11 +133,16 @@ export function CreateProjectModal() {
             </div>
 
             <div>
-              <Label htmlFor="importDirPath">Import Images (optional)</Label>
+              <Label htmlFor="importDirPath">
+                Import Directory of Images{" "}
+                <span className="text-small text-red-500">*</span>
+              </Label>
               <TextInput
                 id="importDirPath"
                 placeholder="C:\Documents\My Images"
-                {...register("importDirPath")}
+                {...register("importDirPath", {
+                  required: "A directory path is required",
+                })}
               />
               {errors.importDirPath && (
                 <p className="form-error">{errors.importDirPath.message}</p>
@@ -149,9 +160,40 @@ export function CreateProjectModal() {
               )}
             </div>
 
-            <p className="text-sm text-gray-500 dark:text-gray-200">
-              Always keep a separate backup of images
-            </p>
+            <div>
+              <Label
+                htmlFor="triggerWord"
+                className="flex flex-row items-center gap-2"
+              >
+                Trigger Word
+                <Tooltip
+                  content="For example, a short made-up word with no existing meaning: i.e. 0xf1ow3r"
+                  className="max-w-[300px]"
+                >
+                  <HiInformationCircle className="h-4 w-4" />
+                </Tooltip>
+              </Label>
+              <TextInput
+                id="triggerWord"
+                className="mt-1"
+                placeholder="0xTrigger"
+                {...register("triggerWord", {
+                  required: false,
+                  pattern: {
+                    value: /^[a-zA-Z0-9]*$/,
+                    message: "Only alphanumeric characters allowed",
+                  },
+                })}
+              />
+              {errors.triggerWord && (
+                <p className="form-error">{errors.triggerWord.message}</p>
+              )}
+            </div>
+
+            <div className="flex flex-row items-center rounded-md bg-yellow-50 p-2 text-sm text-gray-500 dark:bg-slate-800 dark:text-gray-200">
+              <GoAlertFill className="mr-2 inline h-5 w-5 text-yellow-300" />
+              Always keep a separate backup of your images!
+            </div>
 
             <div className="flex flex-row justify-end gap-2 pt-4">
               <Button color="gray" onClick={() => setIsOpen(false)}>

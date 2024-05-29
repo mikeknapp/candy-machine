@@ -3,6 +3,7 @@ import { CategoryData } from "../components/tagger/TagCategory";
 
 export interface NewProject {
   name: string;
+  triggerWord: string;
   importDirPath: string;
   removeDuplicates: boolean;
 }
@@ -15,12 +16,29 @@ export interface AutoTag {
 
 export interface Project {
   name: string;
+  triggerWord: string; // Editable.
   isSelected: boolean;
   images: string[];
-  selectedImage: string;
+  selectedImage: string; // Editable.
   autoTags: AutoTag[];
-  tagLayout: CategoryData[];
+  tagLayout: CategoryData[]; // Editable.
   requiresSetup: boolean;
+  [key: string]: any; // Add index signature
+}
+
+export function shouldSave(oldProject: Project, newProject: Project): boolean {
+  const changedFields: string[] = [];
+  for (const key of Object.keys(newProject)) {
+    if (oldProject[key] !== newProject[key]) {
+      changedFields.push(key);
+    }
+  }
+  return changedFields.some(
+    (field) =>
+      field === "triggerWord" ||
+      field === "selectedImage" ||
+      field === "tagLayout",
+  );
 }
 
 export async function createProject(
@@ -34,6 +52,7 @@ export async function createProject(
       success: true,
       data: {
         name: data.name,
+        triggerWord: data.triggerWord,
         isSelected: false,
         images: [],
         selectedImage: "",
@@ -58,6 +77,7 @@ export async function listProjects(): Promise<Project[]> {
         }
         return {
           name: name,
+          triggerWord: "",
           isSelected: false,
           images: [],
           selectedImage: "",
