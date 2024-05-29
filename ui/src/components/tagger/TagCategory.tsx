@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { HiPlusCircle } from "react-icons/hi";
 import { Tag } from "./Tag";
 
 export interface ClickableTag {
@@ -68,16 +69,19 @@ export function TagCategory(props: TagCategoryProps) {
   }, [props.category]);
 
   return (
-    <div key={props.category.title} className="mb-4 flex w-full flex-col">
+    <div
+      key={props.category.title}
+      className="mb-4 flex w-full flex-col border-b-[1px] border-b-gray-300 pb-4"
+    >
       <h2
-        className="mb-2 flex flex-row items-center gap-2 border-l-4 pl-2 text-sm font-bold dark:text-white"
+        className="mb-3 flex flex-row items-center gap-2 border-l-4 pl-2 text-xs font-bold dark:text-white"
         style={{
           borderColor: props.category.color,
         }}
       >
         {props.category.title.toUpperCase()}
       </h2>
-      <div className="flex w-[90%] flex-row flex-wrap gap-2">
+      <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
         {tags.map((tag, i) => (
           <Tag
             text={tag.text}
@@ -86,6 +90,8 @@ export function TagCategory(props: TagCategoryProps) {
             isSelected={tag.className === selectedClass}
           />
         ))}
+
+        <HiPlusCircle className="cursor-pointer text-xl text-gray-500 hover:text-green-500" />
         {/* <ReactTags
           tags={tags}
           separators={[SEPARATORS.ENTER, SEPARATORS.COMMA]}
