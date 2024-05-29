@@ -86,10 +86,10 @@ export function CreateProjectModal() {
 
   const getImportStatus = (percent: number, totalImages: number) => {
     if (percent === -1) {
-      return "Preparing to import images...";
+      return "Analyzing images....";
     }
 
-    if (percent < 33 || totalImages === 0) {
+    if (percent < 33 && totalImages === 0) {
       return "Checking images for duplicates...";
     }
 
