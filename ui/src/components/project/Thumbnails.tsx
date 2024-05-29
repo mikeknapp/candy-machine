@@ -84,7 +84,7 @@ export function Thumbnails() {
             // Add a delay before loading the image
             setTimeout(() => {
               // Check if the image is still in the viewport
-              if (entry.isIntersecting) {
+              if (entry.isIntersecting && img.dataset.src) {
                 img.src = img.dataset.src;
                 img.removeAttribute("data-src");
               }

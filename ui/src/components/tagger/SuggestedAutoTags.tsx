@@ -21,7 +21,7 @@ export function SuggestedAutoTags() {
           className="flex flex-row justify-between p-10"
         >
           <div className="flex flex-row items-center gap-3">
-            <Tag tag={tag.tag} />
+            <Tag text={tag.tag} />
 
             {tag.examples.length > 0 && (
               <Tooltip

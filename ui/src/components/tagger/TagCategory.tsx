@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
+import { Tag } from "./Tag";
 
-export interface Tag {
+export interface ClickableTag {
   id: string;
   className: string;
   [key: string]: string;
@@ -20,22 +21,22 @@ export type TagCategoryProps = {
 export function TagCategory(props: TagCategoryProps) {
   const selectedClass = `img-tag-selected-${props.i}`;
 
-  const [tags, setTags] = React.useState<Array<Tag>>([]);
+  const [tags, setTags] = React.useState<Array<ClickableTag>>([]);
 
-  const onTagUpdate = (index: number, newTag: Tag) => {
+  const onTagUpdate = (index: number, newTag: ClickableTag) => {
     console.log("onTagUpdate");
     const updatedTags = [...tags];
     updatedTags.splice(index, 1, newTag);
     setTags(updatedTags);
   };
 
-  const handleAddition = (tag: Tag) => {
+  const handleAddition = (tag: ClickableTag) => {
     setTags((prevTags) => {
       return [...prevTags, tag];
     });
   };
 
-  const handleDrag = (tag: Tag, currPos: number, newPos: number) => {
+  const handleDrag = (tag: ClickableTag, currPos: number, newPos: number) => {
     console.log("handleDrag");
     const newTags = tags.slice();
 
@@ -67,12 +68,24 @@ export function TagCategory(props: TagCategoryProps) {
   }, [props.category]);
 
   return (
-    <div key={props.category.title} className="mb-10 flex w-full flex-col">
-      <h2 className="mb-2 text-base font-bold dark:text-white">
+    <div key={props.category.title} className="mb-4 flex w-full flex-col">
+      <h2
+        className="mb-2 flex flex-row items-center gap-2 border-l-4 pl-2 text-sm font-bold dark:text-white"
+        style={{
+          borderColor: props.category.color,
+        }}
+      >
         {props.category.title.toUpperCase()}
       </h2>
-      <div className="flex w-[90%] flex-row flex-wrap">
-        {tags.map((tag) => tag.text).join(", ")}
+      <div className="flex w-[90%] flex-row flex-wrap gap-2">
+        {tags.map((tag, i) => (
+          <Tag
+            text={tag.text}
+            onClick={() => handleTagClick(i)}
+            color={props.category.color}
+            isSelected={tag.className === selectedClass}
+          />
+        ))}
         {/* <ReactTags
           tags={tags}
           separators={[SEPARATORS.ENTER, SEPARATORS.COMMA]}
