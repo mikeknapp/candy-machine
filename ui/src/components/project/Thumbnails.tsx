@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { imgAspectRatio } from "../../models/image";
 import { navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
   disableKeyboardShortcutsSelector,
+  selectedImageSelector,
 } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
@@ -14,6 +15,7 @@ const CONTAINER_WIDTH = 300;
 const THUMBNAIL_WIDTH = CONTAINER_WIDTH - BORDER_WIDTH * 2;
 
 export const scrollToThumbnail = (img: string) => {
+  if (img === "") return;
   const EXTRA_PADDING = 100;
   const imgElement = document.getElementById(`thumb-img-${img}`);
   const parentNode = imgElement?.parentNode as HTMLElement;
@@ -30,13 +32,14 @@ export function Thumbnails() {
   const observer = useRef<IntersectionObserver | null>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  const [project, setCurrentProject] = useRecoilState(currentProjectSelector);
+  const project = useRecoilValue(currentProjectSelector);
+  const setSelectedImage = useSetRecoilState(selectedImageSelector);
   const disableKeyboardShortcuts = useRecoilValue(
     disableKeyboardShortcutsSelector,
   );
 
-  const selectNewImage = (img: string) => {
-    setCurrentProject({ ...project, selectedImage: img });
+  const saveSelectedImage = (img: string) => {
+    setSelectedImage(img);
     scrollToThumbnail(img);
   };
 
@@ -56,7 +59,7 @@ export function Thumbnails() {
           imgToSelect = navigateImages(project, "prev");
       }
       if (imgToSelect) {
-        selectNewImage(imgToSelect);
+        saveSelectedImage(imgToSelect);
       }
     };
 
@@ -136,7 +139,7 @@ export function Thumbnails() {
               data-src={`${API_BASE_URL}/project/${project.name}/imgs/${img}?thumbnail=true`}
               src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
               alt={img}
-              onClick={() => selectNewImage(img)}
+              onClick={() => saveSelectedImage(img)}
             />
           ))}
           <div className="absolute bottom-3 left-3">

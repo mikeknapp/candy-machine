@@ -22,6 +22,7 @@
   {
     "title": "Perspective",
     "tags": [
+      "selfie",
       "from above",
       "from below",
       "from front",
@@ -133,7 +134,10 @@
       "watch",
       "jewelry",
       "ring",
-      "loafers"
+      "loafers",
+      "denim",
+      "jeans",
+      "t-shirt"
     ],
     "color": "#9c27b0"
   },
@@ -153,7 +157,10 @@
       "water",
       "shore",
       "grass",
-      "stairs"
+      "stairs",
+      "backpack",
+      "cup",
+      "bag"
     ],
     "color": "#ee34d2"
   },

@@ -1,11 +1,6 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { CategoryData } from "../components/tagger/TagCategory";
-import {
-  Project,
-  listProjects,
-  saveProject,
-  shouldSave,
-} from "../models/project";
+import { Project, listProjects, saveProject } from "../models/project";
 
 export const showNewProjectModalAtom = atom({
   key: "showNewProjectModal",
@@ -22,7 +17,8 @@ export const disableKeyboardShortcutsSelector = selector<boolean>({
   get: ({ get }) => {
     const modal1 = get(showNewProjectModalAtom);
     const modal2 = get(showCropImageModalAtom);
-    return modal1 || modal2;
+    const modal3 = get(projectRequiresSetupSelector);
+    return modal1 || modal2 || modal3;
   },
 });
 
@@ -39,14 +35,12 @@ export const currentProjectSelector = selector<Project | null>({
     return selectedProject || null;
   },
   set: ({ set, get }, newValue) => {
-    if (!(!newValue || newValue instanceof DefaultValue)) {
+    if (!(newValue === null || newValue instanceof DefaultValue)) {
       const projectList = get(projectsAtom);
       let foundProject = false;
-      let sendSaveRequest = false;
       const updatedProjectList = projectList.map((project) => {
         if (project.name === newValue?.name) {
           foundProject = true;
-          sendSaveRequest = shouldSave(project, newValue);
           return { ...project, ...newValue, isSelected: true };
         } else {
           return { ...project, isSelected: false };
@@ -58,12 +52,31 @@ export const currentProjectSelector = selector<Project | null>({
           ...newValue,
           isSelected: true,
         });
-        sendSaveRequest = true;
       }
       set(projectsAtom, updatedProjectList);
-      if (sendSaveRequest) {
-        saveProject(newValue);
-      }
+    }
+  },
+});
+
+export const selectedImageSelector = selector<string>({
+  key: "selectedImage",
+  get: ({ get }) => {
+    const currentProject = get(currentProjectSelector);
+    return currentProject
+      ? currentProject.selectedImage
+      : currentProject?.images[0] || "";
+  },
+  set: ({ get, set }, newValue) => {
+    if (newValue === null || newValue instanceof DefaultValue) return;
+
+    const currentProject = get(currentProjectSelector);
+    if (currentProject) {
+      const newProject = {
+        ...currentProject,
+        selectedImage: newValue,
+      };
+      set(currentProjectSelector, newProject);
+      saveProject(newProject);
     }
   },
 });
@@ -75,6 +88,8 @@ export const projectRequiresSetupSelector = selector<boolean>({
     return currentProject ? currentProject.requiresSetup : false;
   },
   set: ({ get, set }, newValue) => {
+    if (newValue === null || newValue instanceof DefaultValue) return;
+
     const currentProject = get(currentProjectSelector);
     if (currentProject) {
       set(currentProjectSelector, {
@@ -161,12 +176,13 @@ export const tagLayoutSelector = selector<CategoryData[]>({
     return currentProject ? currentProject.tagLayout : [];
   },
   set: ({ get, set }, newValue) => {
+    if (!newValue || newValue instanceof DefaultValue) return;
+
     const currentProject = get(currentProjectSelector);
     if (currentProject) {
-      set(currentProjectSelector, {
-        ...currentProject,
-        tagLayout: newValue,
-      });
+      const newProject = { ...currentProject, tagLayout: newValue };
+      set(currentProjectSelector, newProject);
+      saveProject(newProject);
     }
   },
 });

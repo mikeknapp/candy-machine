@@ -51,3 +51,8 @@ def interrogate_directory(img_dir, output_dir):
         tags_str = ", ".join(tags.keys())
         with open(caption_path, "w") as fp:
             fp.write(tags_str)
+            yield {
+                "image_path": str(image_path),
+                "tags": tags_str,
+                "caption_path": caption_path,
+            }

@@ -48,7 +48,7 @@ def create_project():
         }, 400
 
     Project.create_new_project(name, trigger_word)
-    return {"name": name, "triggerWord": trigger_word}, 200
+    return jsonify({"name": name, "triggerWord": trigger_word})
 
 
 @app.route("/project/<string:project_name>/import", methods=["GET"])
@@ -68,7 +68,7 @@ def import_to_project(project_name):
 
 @app.route("/projects/list", methods=["GET", "POST"])
 def list_projects():
-    return Project.list_all_projects()
+    return jsonify(Project.list_all_projects())
 
 
 @app.route("/project/<string:project_name>/get", methods=["GET", "POST"])
@@ -82,7 +82,7 @@ def save_project(project_name):
     project = Project(project_name)
     data = request.json if request.json else {}
     project.save(data)
-    return "OK"
+    return jsonify({"result": "OK"})
 
 
 @app.route("/project/<string:project_name>/imgs/<string:fname>", methods=["GET"])
@@ -126,7 +126,7 @@ def delete_image(project_name):
     filename = str(data.get("filename", "")).strip()
     project = Project(project_name)
     project.delete_image(filename)
-    return {"result": "OK"}, 200
+    return jsonify({"result": "OK"})
 
 
 @app.route("/project/<string:project_name>/img/edit", methods=["POST"])
@@ -147,7 +147,7 @@ def edit_image(project_name):
     new_filename = project.edit_image(filename, left_rotate, flip, crop)
     if not new_filename:
         return {"errors": {"edit": "Error editing image"}}, 404
-    return {"newFilename": new_filename}, 200
+    return jsonify({"newFilename": new_filename})
 
 
 @app.route("/", defaults={"path": ""})

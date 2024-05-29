@@ -49,6 +49,7 @@ export const eventRequest = async (
       }
       console.error("EventSource failed:", event);
       eventSource.close();
+      resolve(false);
     };
   });
 };

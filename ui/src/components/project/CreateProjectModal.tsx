@@ -15,7 +15,12 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { NewProject, createProject, importImages } from "../../models/project";
+import {
+  NewProject,
+  createProject,
+  importImages,
+  loadProject,
+} from "../../models/project";
 import {
   currentProjectSelector,
   showNewProjectModalAtom,
@@ -37,18 +42,7 @@ export function CreateProjectModal() {
   const importDirPath = watch("importDirPath", "");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importPercent, setImportPercent] = useState<number>(-1);
-  const [totalFiles, setTotalFiles] = useState<number>(0);
   const [totalImages, setTotalImages] = useState<number>(0);
-
-  const addProjectImage = (name: string, imgUrl: string) => {
-    setCurrentProject((prev) => {
-      if (prev.name === name) {
-        const images = [...prev.images, imgUrl];
-        return { ...prev, images: images };
-      }
-      return prev;
-    });
-  };
 
   const onSubmit: SubmitHandler<NewProject> = async (data) => {
     setIsProcessing(true);
@@ -66,7 +60,6 @@ export function CreateProjectModal() {
     }
 
     const newProject = resp.data;
-    setCurrentProject(newProject);
     setIsOpen(false);
 
     // Import the images if a directory path was provided and show a progress bar.
@@ -77,19 +70,34 @@ export function CreateProjectModal() {
         data.removeDuplicates,
         async (jsonStr: string) => {
           const data = JSON.parse(jsonStr);
-          setTotalFiles(data.totalFiles ?? 0);
           setTotalImages(data.totalImages ?? 0);
-          const lastImg = data["lastImg"] ?? null;
-          if (lastImg) {
-            addProjectImage(newProject.name, lastImg);
-          }
           const pc = Math.max(1, data.percentComplete);
-          setImportPercent(pc < 100 ? pc : -1);
+          setImportPercent(Math.min(99, pc));
         },
       );
     }
 
+    // Load the project from the server to get a fresh copy.
+    const loadedProject = await loadProject(newProject.name);
+    setCurrentProject(loadedProject);
+    setImportPercent(-1);
     setIsProcessing(false);
+  };
+
+  const getImportStatus = (percent: number, totalImages: number) => {
+    if (percent === -1) {
+      return "Preparing to import images...";
+    }
+
+    if (percent < 33 || totalImages === 0) {
+      return "Checking images for duplicates...";
+    }
+
+    if (percent >= 33 && totalImages > 0 && percent < 66) {
+      return `Converting ${totalImages} images to .png...`;
+    }
+
+    return "Analyzing images...";
   };
 
   useEffect(() => {
@@ -103,12 +111,7 @@ export function CreateProjectModal() {
 
   return (
     <>
-      <Modal
-        show={isOpen}
-        dismissible={true}
-        onClose={() => setIsOpen(false)}
-        size="lg"
-      >
+      <Modal show={isOpen} onClose={() => setIsOpen(false)} size="lg">
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader>Create New Project</ModalHeader>
           <ModalBody className="flex flex-col gap-5">
@@ -219,10 +222,7 @@ export function CreateProjectModal() {
       <Modal dismissible={false} show={importPercent > -1}>
         <ModalBody>
           <p className="mb-4 text-center text-2xl font-bold dark:text-white">
-            {totalImages <= 0 && (
-              <>Checking {totalFiles} images for duplicates...</>
-            )}
-            {totalImages > 0 && <>Converting {totalImages} images to .png...</>}
+            {getImportStatus(importPercent, totalImages)}
           </p>
           <Progress size="xl" color="green" progress={importPercent} />
         </ModalBody>

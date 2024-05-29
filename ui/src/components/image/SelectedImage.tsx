@@ -21,7 +21,7 @@ export function SelectedImage() {
           <div className="flex flex-row items-center justify-center gap-3 rounded-md bg-green-50 px-1 text-center font-mono text-sm dark:bg-slate-900 dark:text-blue-500 md:px-4 md:py-2 md:text-base">
             <span className="text-sm font-bold">{project.selectedImage}:</span>{" "}
             {size.width} x {size.height}
-            {size.width > 1024 || size.height > 1024 ? (
+            {size.width >= 1024 || size.height >= 1024 ? (
               <Tooltip content="Image is larger than 1024x1024">
                 <FaCheck className="pointer text-xl text-green-500" />
               </Tooltip>

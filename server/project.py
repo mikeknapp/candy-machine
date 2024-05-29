@@ -16,6 +16,7 @@ from consts import (
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
 from tags import common_suffixes
+from thirdparty.tagger.run import interrogate_directory
 
 
 class TagInfo:
@@ -62,7 +63,7 @@ class Project:
         # The auto tags subdirectory.
         self._auto_tags_dir = os.path.join(self._base_dir, AUTO_TAGS)
 
-        self.load()
+        self._load()
 
     @staticmethod
     def create_new_project(
@@ -92,7 +93,7 @@ class Project:
     def img_path(self, fname: str) -> str:
         return os.path.join(self._img_dir, fname)
 
-    def load(self):
+    def _load(self):
         self.project_layout = self._project_tag_categories()
         self.imgs = self._list_all_imgs()
         self.trigger_word = ""
@@ -253,7 +254,7 @@ class Project:
                     "new_filename_prefix": f"{hash}_{img.width}x{img.height}",
                 }
             yield {
-                "percentComplete": round((i + 1) / len(files) * 50),
+                "percentComplete": round((i + 1) / len(files) * 33),
                 "totalFiles": len(files),
             }
 
@@ -280,11 +281,24 @@ class Project:
                 img.save(os.path.join(self._img_dir, new_filename))
             num_saved += 1
             yield {
-                "percentComplete": 50 + round(num_saved / num_candidates * 50),
+                "percentComplete": 33 + round(num_saved / num_candidates * 33),
                 "totalFiles": len(files),
                 "totalImages": num_candidates,
                 "lastImg": new_filename,
             }
+
+        # 3. Analyze the images and build the auto tags.
+        for i, _ in enumerate(
+            interrogate_directory(self._img_dir, self._auto_tags_dir)
+        ):
+            yield {
+                "percentComplete": 66 + round(i / num_candidates * 33),
+                "totalFiles": len(files),
+                "totalImages": num_candidates,
+            }
+        yield {"percentComplete": 100}
+
+        self._load()
 
     def _list_all_imgs(self) -> list[str]:
         if not os.path.exists(self._img_dir):

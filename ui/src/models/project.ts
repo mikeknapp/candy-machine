@@ -16,35 +16,20 @@ export interface AutoTag {
 
 export interface Project {
   name: string;
-  triggerWord: string; // Editable.
+  triggerWord: string;
   isSelected: boolean;
   images: string[];
-  selectedImage: string; // Editable.
+  selectedImage: string;
   autoTags: AutoTag[];
-  tagLayout: CategoryData[]; // Editable.
+  tagLayout: CategoryData[];
   requiresSetup: boolean;
   [key: string]: any; // Add index signature
-}
-
-export function shouldSave(oldProject: Project, newProject: Project): boolean {
-  const changedFields: string[] = [];
-  for (const key of Object.keys(newProject)) {
-    if (oldProject[key] !== newProject[key]) {
-      changedFields.push(key);
-    }
-  }
-  return changedFields.some(
-    (field) =>
-      field === "triggerWord" ||
-      field === "selectedImage" ||
-      field === "tagLayout",
-  );
 }
 
 export async function createProject(
   data: NewProject,
 ): Promise<ApiResponse<Project>> {
-  const response = await apiRequest<string>("/project/create", {
+  const response = await apiRequest<{}>("/project/create", {
     body: JSON.stringify(data),
   });
   if (response.success && response.data) {
@@ -101,11 +86,14 @@ export async function loadProject(name: string): Promise<Project> {
 }
 
 export async function saveProject(project: Project): Promise<boolean> {
-  const response = await apiRequest<string>(`/project/${project.name}/save`, {
-    body: JSON.stringify(project),
-  });
+  const response = await apiRequest<{ result: string }>(
+    `/project/${project.name}/save`,
+    {
+      body: JSON.stringify(project),
+    },
+  );
   if (response.success && response.data) {
-    return response.data === "OK";
+    return response.data.result === "OK";
   }
 }
 
