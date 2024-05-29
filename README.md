@@ -36,7 +36,7 @@ chmod +x dev.sh
 
 ## Feature List (Target Initial Release):
 
-- Import directory: convert files to .png and copy files to working directory, rename to 0001.jpg etc.
+- Import directory: convert files to .png and copy files to projects directory, rename to 0001.jpg etc.
 - Global: Pre-built categories but you can modify them youself, including re-arranging the order, etc.
 - Project: Select which categories to include, and which tags to add by default (i.e. photography).
 - Project: Set min and max tags per category.

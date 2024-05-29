@@ -25,7 +25,8 @@ class TestInterrogateDirectory(unittest.TestCase):
                 os.remove(os.path.join(self.img_path, f))
 
     def test_interrogate_directory(self):
-        interrogate_directory(self.img_path, self.img_path)
+        for _ in interrogate_directory(self.img_path, self.img_path):
+            pass
 
         # Check if the correct .txt files were created.
         for f, tags in EXPECTED_TAGS.items():

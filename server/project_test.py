@@ -10,14 +10,14 @@ from project import Project
 
 class TestProject(unittest.TestCase):
     def setUp(self):
-        # Temp working directory.
+        # Temp projects directory.
         self.temp_project_dir = tempfile.TemporaryDirectory()
         self.temp_project_dir_path = self.temp_project_dir.name
 
         self.project_name = "test_project"
         p, _ = Project.create_new_project(
             self.project_name,
-            working_dir=self.temp_project_dir_path,
+            projects_dir=self.temp_project_dir_path,
         )
         assert p is not None
         self.project: Project = p
@@ -71,7 +71,7 @@ class TestImportImages(unittest.TestCase):
     def test_import_images(self):
         project, _ = Project.create_new_project(
             "import_test",
-            working_dir=self.temp_project_dir_path,
+            projects_dir=self.temp_project_dir_path,
         )
         assert project != None
 
@@ -83,19 +83,32 @@ class TestImportImages(unittest.TestCase):
         self.assertEqual(
             import_status,
             [
-                {"percentComplete": 25, "totalFiles": 2},
-                {"percentComplete": 50, "totalFiles": 2},
+                {"percentComplete": 16, "totalFiles": 2},
+                {"percentComplete": 33, "totalFiles": 2},
                 {
-                    "percentComplete": 75,
+                    "percentComplete": 49,
                     "totalFiles": 2,
                     "totalImages": 2,
                     "lastImg": "0000000000000000_60x30_0.png",
                 },
                 {
-                    "percentComplete": 100,
+                    "percentComplete": 66,
                     "totalFiles": 2,
                     "totalImages": 2,
                     "lastImg": "0000000000000000_60x30_1.png",
+                },
+                {
+                    "percentComplete": 66,
+                    "totalFiles": 2,
+                    "totalImages": 2,
+                },
+                {
+                    "percentComplete": 82,
+                    "totalFiles": 2,
+                    "totalImages": 2,
+                },
+                {
+                    "percentComplete": 100,
                 },
             ],
         )
@@ -108,13 +121,26 @@ class TestImportImages(unittest.TestCase):
         self.assertEqual(
             import_status,
             [
-                {"percentComplete": 25, "totalFiles": 2},
-                {"percentComplete": 50, "totalFiles": 2},
+                {"percentComplete": 16, "totalFiles": 2},
+                {"percentComplete": 33, "totalFiles": 2},
                 {
-                    "percentComplete": 100,
+                    "percentComplete": 66,
                     "totalFiles": 2,
                     "totalImages": 1,
                     "lastImg": "0000000000000000_60x30_0.png",
+                },
+                {
+                    "percentComplete": 66,
+                    "totalFiles": 2,
+                    "totalImages": 1,
+                },
+                {
+                    "percentComplete": 99,
+                    "totalFiles": 2,
+                    "totalImages": 1,
+                },
+                {
+                    "percentComplete": 100,
                 },
             ],
         )
@@ -122,14 +148,14 @@ class TestImportImages(unittest.TestCase):
 
 class TestEditImage(unittest.TestCase):
     def setUp(self):
-        # Temp working directory.
+        # Temp projects directory.
         self.temp_project_dir = tempfile.TemporaryDirectory()
         self.temp_project_dir_path = self.temp_project_dir.name
 
         self.project_name = "edit_image"
         p, _ = Project.create_new_project(
             self.project_name,
-            working_dir=self.temp_project_dir_path,
+            projects_dir=self.temp_project_dir_path,
         )
         assert p is not None
         self.project: Project = p

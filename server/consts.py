@@ -1,6 +1,6 @@
 import os
 
-WORKING_DIR = os.path.join(os.path.dirname(__file__), "..", "working")
+PROJECTS_DIR = os.path.join(os.path.dirname(__file__), "..", "projects")
 IMGS_DIR = "imgs"
 IMG_EXT = "png"
 AUTO_TAGS = "auto_tags"

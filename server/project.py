@@ -11,7 +11,7 @@ from consts import (
     IMGS_DIR,
     PROJECT_CATEGORY_FILE,
     PROJECT_CONFIG_FILE,
-    WORKING_DIR,
+    PROJECTS_DIR,
 )
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
@@ -48,14 +48,14 @@ class TagCategory:
 
 
 class Project:
-    def __init__(self, name: str, working_dir: str | None = None):
+    def __init__(self, name: str, projects_dir: str | None = None):
         self.name = name
 
         # Allow overrides for testing.
-        working_dir = working_dir if working_dir else WORKING_DIR
+        projects_dir = projects_dir if projects_dir else PROJECTS_DIR
 
         # Our base project directory.
-        self._base_dir = os.path.join(working_dir, name)
+        self._base_dir = os.path.join(projects_dir, name)
 
         # The images subdirectory.
         self._img_dir = os.path.join(self._base_dir, IMGS_DIR)
@@ -67,9 +67,9 @@ class Project:
 
     @staticmethod
     def create_new_project(
-        name: str, trigger_word: str, working_dir: str | None = None
+        name: str, trigger_word: str = "", projects_dir: str | None = None
     ) -> Tuple["Project | None", str]:
-        project = Project(name, working_dir)
+        project = Project(name, projects_dir)
         is_valid, msg = Project.is_valid_name(name)
         if not is_valid:
             return None, msg
@@ -391,21 +391,21 @@ class Project:
                 False,
                 "Only alphanumeric characters, underscores, and hyphens allowed",
             )
-        if os.path.exists(os.path.join(WORKING_DIR, name)):
+        if os.path.exists(os.path.join(PROJECTS_DIR, name)):
             return False, "A project with this name already exists"
         return True, ""
 
     @staticmethod
-    def list_all_projects(working_dir_override: str | None = None) -> list[str]:
-        working_dir = working_dir_override if working_dir_override else WORKING_DIR
-        if not os.path.exists(working_dir):
+    def list_all_projects(projects_dir_override: str | None = None) -> list[str]:
+        projects_dir = projects_dir_override if projects_dir_override else PROJECTS_DIR
+        if not os.path.exists(projects_dir):
             return []
         # Order by most recently modified config.json file.
         return sorted(
-            os.listdir(working_dir),
+            os.listdir(projects_dir),
             key=lambda x: (
-                os.path.getmtime(os.path.join(working_dir, x, PROJECT_CONFIG_FILE))
-                if os.path.exists(os.path.join(working_dir, x, PROJECT_CONFIG_FILE))
+                os.path.getmtime(os.path.join(projects_dir, x, PROJECT_CONFIG_FILE))
+                if os.path.exists(os.path.join(projects_dir, x, PROJECT_CONFIG_FILE))
                 else 0
             ),
             reverse=True,

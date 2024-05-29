@@ -4,7 +4,7 @@ import threading
 import webbrowser
 from urllib.parse import unquote
 
-from consts import LOWERCASE_IS_TRUE, WORKING_DIR
+from consts import LOWERCASE_IS_TRUE, PROJECTS_DIR
 from flask import (
     Flask,
     json,
@@ -167,8 +167,8 @@ def open_browser():
 
 
 if __name__ == "__main__":
-    if not os.path.exists(WORKING_DIR):
-        os.makedirs(WORKING_DIR, exist_ok=True)
+    if not os.path.exists(PROJECTS_DIR):
+        os.makedirs(PROJECTS_DIR, exist_ok=True)
 
     threading.Timer(1.25, open_browser).start()
 

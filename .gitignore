@@ -1,5 +1,5 @@
 venv
-working
+projects
 *.pyc
 tags.csv
 suggestions.ts
