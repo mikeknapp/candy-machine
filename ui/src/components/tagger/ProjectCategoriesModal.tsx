@@ -41,9 +41,9 @@ export function ProjectCategoriesModal() {
       <Modal.Body>
         <p className="p-1 dark:text-white">
           Here are {project.autoTags.length} tags that might come in handy.
-          Generally you won't want to tag things already implicit in your
+          Generally you don't want to tag things <i>already</i> implicit in your
           trigger word. For example, when training a face, if you tag someone's
-          distinctive mole or freckles, the model may not learn them to be part
+          distinctive mole or freckles, the model may not learn those to be part
           of your trigger word.
         </p>
         <SuggestedAutoTags />

@@ -1,6 +1,13 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { Project, listProjects, saveProject } from "../models/project";
+import { SelectedImageTags } from "../models/image";
+import {
+  Project,
+  listProjects,
+  loadTags,
+  saveProject,
+  saveTags,
+} from "../models/project";
 
 export const showNewProjectModalAtom = atom({
   key: "showNewProjectModal",
@@ -25,6 +32,11 @@ export const disableKeyboardShortcutsSelector = selector<boolean>({
 export const projectsAtom = atom<Project[]>({
   key: "projects",
   default: listProjects(),
+});
+
+export const selectedImageTagsAtom = atom<SelectedImageTags | null>({
+  key: "selectedImageTags",
+  default: null,
 });
 
 export const currentProjectSelector = selector<Project | null>({
@@ -79,6 +91,40 @@ export const selectedImageSelector = selector<string>({
       saveProject(newProject);
     }
   },
+});
+
+export type SelectedImageTagsProps = {
+  projectName: string;
+  image: string;
+};
+
+export const selectedTagsSelector = selectorFamily({
+  key: "selectedTags",
+  get:
+    (params: SelectedImageTagsProps) =>
+    async ({ get }) => {
+      const tags = get(selectedImageTagsAtom);
+      if (
+        tags &&
+        tags.projectName == params.projectName &&
+        tags.image === params.image
+      ) {
+        return tags.tags;
+      }
+      const asyncTags = await loadTags(params.projectName, params.image);
+      return asyncTags;
+    },
+  set:
+    (params: SelectedImageTagsProps) =>
+    ({ set }, newValue) => {
+      if (newValue === null || newValue instanceof DefaultValue) return;
+      set(selectedImageTagsAtom, {
+        projectName: params.projectName,
+        image: params.image,
+        tags: newValue,
+      });
+      saveTags(params.projectName, params.image, newValue);
+    },
 });
 
 export const projectRequiresSetupSelector = selector<boolean>({

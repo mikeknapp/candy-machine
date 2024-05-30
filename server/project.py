@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from pathlib import Path
 from typing import Tuple
 
 import imagehash
@@ -93,6 +94,17 @@ class Project:
     def img_path(self, fname: str) -> str:
         return os.path.join(self._img_dir, fname)
 
+    def selected_image_path(self) -> Path:
+        return Path(self.img_path(self.selected_image))
+
+    def selected_image_txt_path(self) -> Path:
+        return self.selected_image_path().with_suffix(".txt")
+
+    def set_selected_image(self, image_name: str):
+        if image_name.strip() not in self.imgs:
+            raise ValueError("Invalid image name")
+        self.selected_image = image_name
+
     def _load(self):
         self.project_layout = self._project_tag_categories()
         self.imgs = self._list_all_imgs()
@@ -141,10 +153,18 @@ class Project:
                 fp,
             )
 
+    def save_selected_image_tags(self, tags):
+        with open(self.selected_image_txt_path(), "w") as fp:
+            fp.write(",".join(tags))
+
+    def get_selected_image_tags(self):
+        return self._selected_image_selected_tags()
+
     def delete(self):
         shutil.rmtree(self._base_dir)
 
     def to_dict(self):
+        self.selected_image = self.selected_image or self.imgs[0] if self.imgs else ""
         return {
             "name": self.name,
             "triggerWord": self.trigger_word,
@@ -152,7 +172,7 @@ class Project:
             "autoTags": self.auto_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],
             "requiresSetup": self.requires_setup,
-            "selectedImage": self.selected_image or self.imgs[0] if self.imgs else "",
+            "selectedImage": self.selected_image,
         }
 
     def _read_tag_category_file(self, file_path: str) -> list[TagCategory]:
@@ -304,6 +324,14 @@ class Project:
         if not os.path.exists(self._img_dir):
             return []
         return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
+
+    def _selected_image_selected_tags(self) -> list[str]:
+        txt_file = self.selected_image_txt_path()
+        selected_tags = []
+        if os.path.exists(txt_file):
+            with open(txt_file, "r") as fp:
+                selected_tags = [tag.strip() for tag in fp.read().split(",")]
+        return selected_tags
 
     def _get_filtered_auto_tags(self, project_layout) -> list[TagInfo]:
         results = []

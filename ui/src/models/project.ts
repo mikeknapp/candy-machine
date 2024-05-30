@@ -20,9 +20,9 @@ export interface Project {
   isSelected: boolean;
   images: string[];
   selectedImage: string;
-  autoTags: AutoTag[];
-  tagLayout: CategoryData[];
-  requiresSetup: boolean;
+  autoTags: AutoTag[]; // From our auto-tag analysis.
+  tagLayout: CategoryData[]; // The layout of the tags categories.
+  requiresSetup: boolean; // We have auto-tag suggestions for the user.
   [key: string]: any; // Add index signature
 }
 
@@ -97,6 +97,34 @@ export async function saveProject(project: Project): Promise<boolean> {
   }
 }
 
+export async function saveTags(
+  projectName: string,
+  image: string,
+  tags: string[],
+): Promise<boolean> {
+  const response = await apiRequest<{ result: string }>(
+    `/project/${projectName}/tags/save`,
+    {
+      body: JSON.stringify({ image, tags }),
+    },
+  );
+  if (response.success && response.data) {
+    return response.data.result === "OK";
+  }
+}
+
+export async function loadTags(
+  projectName: string,
+  image: string,
+): Promise<string[]> {
+  const response = await apiRequest<string[]>(
+    `/project/${projectName}/tags/load?image=${image}`,
+  );
+  if (response.success && response.data) {
+    return response.data;
+  }
+}
+
 export async function importImages(
   project: Project,
   importPath: string,
@@ -132,4 +160,23 @@ export function navigateImages(
       }
       break;
   }
+}
+
+export function previewTagTextFile(
+  project: Project,
+  selectedTags: string[],
+): string {
+  const tags = [];
+  if (project.triggerWord) {
+    tags.push(project.triggerWord);
+  }
+  project.tagLayout.map((category) => {
+    const selectedFromCat = selectedTags.filter((tag) =>
+      category.tags.includes(tag),
+    );
+    selectedFromCat.forEach((tag) => {
+      tags.push(tag);
+    });
+  });
+  return tags.join(", ");
 }

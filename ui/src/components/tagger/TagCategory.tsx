@@ -1,12 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { HiPlusCircle } from "react-icons/hi";
+import { useRecoilStateLoadable, useRecoilValue } from "recoil";
+import {
+  currentProjectSelector,
+  selectedTagsSelector,
+} from "../../state/atoms";
 import { Tag } from "./Tag";
-
-export interface ClickableTag {
-  id: string;
-  className: string;
-  [key: string]: string;
-}
 
 export type CategoryData = {
   title: string;
@@ -14,96 +13,54 @@ export type CategoryData = {
   color: string;
 };
 
-export type TagCategoryProps = {
-  category: CategoryData;
-  i: number;
-};
+export function TagCategory({ category }: { category: CategoryData }) {
+  const project = useRecoilValue(currentProjectSelector);
+  const [selectedTagsLoadable, setSelectedTags] = useRecoilStateLoadable(
+    selectedTagsSelector({
+      projectName: project.name,
+      image: project.selectedImage,
+    }),
+  );
 
-export function TagCategory(props: TagCategoryProps) {
-  const selectedClass = `img-tag-selected-${props.i}`;
-
-  const [tags, setTags] = React.useState<Array<ClickableTag>>([]);
-
-  const onTagUpdate = (index: number, newTag: ClickableTag) => {
-    console.log("onTagUpdate");
-    const updatedTags = [...tags];
-    updatedTags.splice(index, 1, newTag);
-    setTags(updatedTags);
-  };
-
-  const handleAddition = (tag: ClickableTag) => {
-    setTags((prevTags) => {
-      return [...prevTags, tag];
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) => {
+      if (prev.includes(tag)) {
+        return selectedTags.filter((t) => t !== tag);
+      } else {
+        return [...selectedTags, tag];
+      }
     });
   };
 
-  const handleDrag = (tag: ClickableTag, currPos: number, newPos: number) => {
-    console.log("handleDrag");
-    const newTags = tags.slice();
-
-    newTags.splice(currPos, 1);
-    newTags.splice(newPos, 0, tag);
-
-    // re-render
-    setTags(newTags);
-  };
-
-  const handleTagClick = (index: number) => {
-    // Toggle the "image-tag" className.
-    setTags((prevTags) => {
-      const newTags = [...prevTags];
-      newTags[index] = {
-        ...newTags[index],
-        className: newTags[index].className === "" ? selectedClass : "",
-      };
-      return newTags;
-    });
-  };
-
-  useEffect(() => {
-    setTags(
-      props.category.tags.map((tag) => {
-        return { id: tag, text: tag, className: "" };
-      }),
-    );
-  }, [props.category]);
+  let selectedTags: string[] = [];
+  if (selectedTagsLoadable.state === "hasValue") {
+    selectedTags = selectedTagsLoadable.contents as string[];
+  }
 
   return (
     <div
-      key={props.category.title}
+      key={category.title}
       className="mb-4 flex w-full flex-col border-b-[1px] border-b-gray-300 pb-4"
     >
       <h2
         className="mb-3 flex flex-row items-center gap-2 border-l-4 pl-2 text-xs font-bold dark:text-white"
         style={{
-          borderColor: props.category.color,
+          borderColor: category.color,
         }}
       >
-        {props.category.title.toUpperCase()}
+        {category.title.toUpperCase()}
+        <HiPlusCircle className="cursor-pointer text-lg text-gray-500 hover:text-green-500" />
       </h2>
       <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
-        {tags.map((tag, i) => (
+        {category.tags.map((tag, i) => (
           <Tag
-            key={`${tag.text}-${i}`}
-            text={tag.text}
-            onClick={() => handleTagClick(i)}
-            color={props.category.color}
-            isSelected={tag.className === selectedClass}
+            key={`${tag}-${i}`}
+            text={tag}
+            onClick={() => toggleTag(tag)}
+            color={category.color}
+            isSelected={selectedTags.includes(tag)}
           />
         ))}
-
-        <HiPlusCircle className="cursor-pointer text-xl text-gray-500 hover:text-green-500" />
-        {/* <ReactTags
-          tags={tags}
-          separators={[SEPARATORS.ENTER, SEPARATORS.COMMA]}
-          handleAddition={handleAddition}
-          onTagUpdate={onTagUpdate}
-          suggestions={SUGGESTIONS}
-          handleTagClick={handleTagClick}
-          allowUnique={true}
-          allowDragDrop={false}
-          placeholder={`${props.category.title} tags`}
-        /> */}
       </div>
     </div>
   );

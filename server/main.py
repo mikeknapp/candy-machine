@@ -85,6 +85,23 @@ def save_project(project_name):
     return jsonify({"result": "OK"})
 
 
+@app.route("/project/<string:project_name>/tags/save", methods=["POST"])
+def save_image_tags(project_name):
+    project = Project(project_name)
+    data = request.json if request.json else {}
+    project.set_selected_image(data.get("image", ""))
+    project.save_selected_image_tags(data.get("tags", []))
+    return jsonify({"result": "OK"})
+
+
+@app.route("/project/<string:project_name>/tags/load", methods=["GET", "POST"])
+def load_image_tags(project_name):
+    project = Project(project_name)
+    filename = request.args.get("image", "")
+    project.set_selected_image(filename)
+    return jsonify(project.get_selected_image_tags())
+
+
 @app.route("/project/<string:project_name>/imgs/<string:fname>", methods=["GET"])
 def serve_image(project_name, fname):
     project = Project(project_name)
