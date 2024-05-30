@@ -1,5 +1,5 @@
 import { useThemeMode } from "flowbite-react";
-import React from "react";
+import React, { useMemo } from "react";
 import tinycolor from "tinycolor2";
 
 export interface TagProps {
@@ -16,6 +16,35 @@ export const Tag: React.FC<TagProps> = ({
   isSelected = false,
 }) => {
   const { computedMode } = useThemeMode();
+  const isDarkMode = computedMode === "dark";
+
+  // Find the most readable version of this color for black text.
+  const bgColor = useMemo(() => {
+    if (!isSelected || !color) {
+      return undefined;
+    }
+
+    let newColor = tinycolor(color);
+    newColor = isDarkMode ? newColor : newColor.setAlpha(0.25);
+    let i = 0;
+    while (
+      i < 20 &&
+      tinycolor
+        .mostReadable(newColor, ["#000", "#fff"])
+        .toHexString()
+        .startsWith("#fff")
+    ) {
+      newColor = newColor.lighten(10);
+      i++;
+    }
+    return newColor.toRgbString();
+  }, [color, isDarkMode, isSelected]);
+
+  // In case something goes wrong with background color, ensure the text can be read.
+  const textColor = bgColor
+    ? tinycolor.mostReadable(bgColor, ["#000", "#fff"])
+    : undefined;
+
   let inner: React.JSX.Element = <>{text}</>;
 
   // If the tag has a fill in suffix, like {type}, color that part blue.
@@ -30,17 +59,6 @@ export const Tag: React.FC<TagProps> = ({
       </>
     );
   }
-
-  const bgColor =
-    isSelected && color
-      ? computedMode === "dark"
-        ? color
-        : tinycolor(color).setAlpha(0.3).toRgbString()
-      : undefined;
-
-  const textColor = bgColor
-    ? tinycolor.mostReadable(bgColor, ["#000", "#fff"])
-    : undefined;
 
   return React.createElement(onClick ? "button" : "div", {
     className: `whitespace-nowrap text-sm rounded-md border-[1px] border-slate-500 dark:border-slate-700 px-[10px] pb-[8px] pt-[5px] drop-shadow-md dark:text-white ${isSelected ? "" : "bg-slate-200 dark:bg-slate-800"}`,
