@@ -155,7 +155,7 @@ class Project:
 
     def save_selected_image_tags(self, tags):
         with open(self.selected_image_txt_path(), "w") as fp:
-            fp.write(",".join(tags))
+            fp.write(", ".join(tags))
 
     def get_selected_image_tags(self):
         return self._selected_image_selected_tags()
