@@ -84,6 +84,7 @@ export function TagCategory(props: TagCategoryProps) {
       <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
         {tags.map((tag, i) => (
           <Tag
+            key={`${tag.text}-${i}`}
             text={tag.text}
             onClick={() => handleTagClick(i)}
             color={props.category.color}

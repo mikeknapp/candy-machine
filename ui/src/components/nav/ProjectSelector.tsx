@@ -1,7 +1,7 @@
 import { Dropdown, Spinner } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiFolderOpen } from "react-icons/hi2";
-import { useRecoilState, useRecoilValueLoadable } from "recoil";
+import { useRecoilStateLoadable, useRecoilValueLoadable } from "recoil";
 import { Project, loadProject } from "../../models/project";
 import { currentProjectSelector, projectsAtom } from "../../state/atoms";
 
@@ -9,23 +9,30 @@ export function ProjectSelector() {
   const [isLoadingProject, setIsLoadingProject] = useState(false);
 
   const projectsLoading = useRecoilValueLoadable(projectsAtom);
-  const [currentProject, setCurrentProject] = useRecoilState(
+  const [currentProjectLoading, setCurrentProject] = useRecoilStateLoadable(
     currentProjectSelector,
   );
 
-  if (projectsLoading.state === "loading") {
-    return null;
-  }
+  let projects: Project[] = [];
+  let currentProject: Project = null;
 
   useEffect(() => {
-    let title = "Candy Machine";
     if (currentProject) {
-      title += ` (${currentProject.images.length})`;
+      document.title = `Candy Machine (${currentProject.images.length})`;
+    } else {
+      document.title = "Candy Machine";
     }
-    document.title = title;
   }, [currentProject]);
 
-  const projects = projectsLoading.contents as Project[];
+  if (
+    projectsLoading.state === "loading" ||
+    currentProjectLoading.state === "loading"
+  ) {
+    return null;
+  } else {
+    projects = projectsLoading.contents as Project[];
+    currentProject = currentProjectLoading.contents as Project;
+  }
 
   return (
     <Dropdown
