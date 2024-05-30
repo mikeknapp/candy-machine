@@ -1,4 +1,4 @@
-import { Button, ButtonGroup } from "flowbite-react";
+import { Button } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
 import { MdCropRotate } from "react-icons/md";
@@ -54,13 +54,14 @@ export function QuickActions({ project }: { project: Project }) {
 
   return (
     <div className="flex flex-row justify-center">
-      <ButtonGroup>
+      <div className="flex flex-row rounded-lg">
         <Button
           size="xl"
           disabled={!navigateImages(project, "prev")}
           color="light"
           title="Prev Image [⬆️⬅️]"
           onClick={() => navigate("prev")}
+          className="rounded-r-none border-r-0"
         >
           <HiArrowLeft />
         </Button>
@@ -69,6 +70,7 @@ export function QuickActions({ project }: { project: Project }) {
           color="light"
           title="Crop / Rotate Image [c]"
           onClick={() => setShowEditImageModal(true)}
+          className="rounded-none border-r-0"
         >
           <MdCropRotate />
         </Button>
@@ -77,6 +79,7 @@ export function QuickActions({ project }: { project: Project }) {
           color="light"
           title="Delete Image [x]"
           onClick={() => setShowDeleteImageModal(true)}
+          className="rounded-none border-r-0"
         >
           <HiMiniTrash />
         </Button>
@@ -86,10 +89,11 @@ export function QuickActions({ project }: { project: Project }) {
           color="light"
           title="Next Image [⬇️➡️]"
           onClick={() => navigate("next")}
+          className="rounded-l-none"
         >
           <HiArrowRight />
         </Button>
-      </ButtonGroup>
+      </div>
 
       <CropImageModal />
 
