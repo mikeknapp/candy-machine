@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
 import { useRecoilStateLoadable, useRecoilValue } from "recoil";
 import {
@@ -14,6 +14,7 @@ export type CategoryData = {
 };
 
 export function TagCategory({ category }: { category: CategoryData }) {
+  const [sortedTags, setSortedTags] = useState(category.tags);
   const project = useRecoilValue(currentProjectSelector);
   const [selectedTagsLoadable, setSelectedTags] = useRecoilStateLoadable(
     selectedTagsSelector({
@@ -37,6 +38,23 @@ export function TagCategory({ category }: { category: CategoryData }) {
     selectedTags = selectedTagsLoadable.contents as string[];
   }
 
+  useEffect(() => {
+    setSortedTags(category.tags);
+  }, [category]);
+
+  useEffect(() => {
+    // Move selected tags to the front of the list.
+    if (selectedTagsLoadable.state === "hasValue") {
+      const selectedTags = selectedTagsLoadable.contents as string[];
+      setSortedTags((prev) => {
+        const selected = prev.filter((tag) => selectedTags.includes(tag)) || [];
+        const unselected =
+          prev.filter((tag) => !selectedTags.includes(tag)) || [];
+        return [...selected, ...unselected];
+      });
+    }
+  }, [selectedTagsLoadable]);
+
   return (
     <div
       key={category.title}
@@ -52,7 +70,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
         <HiPlusCircle className="cursor-pointer text-lg text-gray-500 hover:text-green-500" />
       </h2>
       <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
-        {category.tags.map((tag, i) => (
+        {sortedTags.map((tag, i) => (
           <Tag
             key={`${tag}-${i}`}
             text={tag}
