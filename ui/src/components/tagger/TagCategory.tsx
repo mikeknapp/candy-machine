@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
-import { useRecoilStateLoadable, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilStateLoadable, useRecoilValue } from "recoil";
 import { SelectedImageTags } from "../../models/project";
 import {
   currentProjectSelector,
   selectedImgTagsSelector,
+  tagSearchTerm,
 } from "../../state/atoms";
 import { Tag } from "./Tag";
 
@@ -16,7 +17,9 @@ export type CategoryData = {
 
 export function TagCategory({ category }: { category: CategoryData }) {
   const [sortedTags, setSortedTags] = useState(category.tags);
+
   const project = useRecoilValue(currentProjectSelector);
+  const [tagSearch, setTagSearch] = useRecoilState(tagSearchTerm);
   const [selectedImgTagsLoadable, setSelectedImgTagsTags] =
     useRecoilStateLoadable(
       selectedImgTagsSelector({
@@ -33,6 +36,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
         return { ...prev, selected: [...prev.selected, tag] };
       }
     });
+    setTagSearch(null);
   };
 
   let selectedTags: string[] = [];
@@ -45,7 +49,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
 
   useEffect(() => {
     setSortedTags(category.tags);
-  }, [category]);
+  }, [category, tagSearch]);
 
   useEffect(() => {
     if (selectedTags.length == 0) {
@@ -59,9 +63,19 @@ export function TagCategory({ category }: { category: CategoryData }) {
       const selected = prev.filter((tag) => selectedTags.includes(tag)) || [];
       const unselected =
         prev.filter((tag) => !selectedTags.includes(tag)) || [];
-      return [...selected, ...unselected];
+      const orderedTags = [...selected, ...unselected];
+      if (tagSearch) {
+        return orderedTags.filter((tag) =>
+          tag.toLowerCase().includes(tagSearch.toLowerCase()),
+        );
+      }
+      return orderedTags;
     });
-  }, [selectedImgTagsLoadable]);
+  }, [selectedImgTagsLoadable, tagSearch]);
+
+  if (sortedTags.length === 0) {
+    return null;
+  }
 
   return (
     <div

@@ -9,6 +9,7 @@ import {
   selectedImgTagsSelector,
 } from "../../state/atoms";
 import { ClearTagsModal } from "./ClearTagsModal";
+import { TagSearch } from "./TagSearch";
 
 export function TagMenu({ project }: { project: Project }) {
   const [showClearTagsModal, setShowClearTagsModal] = useState(false);
@@ -67,40 +68,44 @@ export function TagMenu({ project }: { project: Project }) {
 
   return (
     <>
-      <div className="mb-5 flex w-full flex-row items-center justify-end pr-10">
-        {isLoadingTags && <Spinner className="mr-2" />}
-        <Tooltip content="Attempt to fill in tags [a]">
-          <Button
-            size="xl"
-            color="light"
-            className="border-r-none rounded-r-none"
-            disabled={isLoadingTags || selectedTags.autoTags.length === 0}
-            onClick={() => addAutoTags()}
-          >
-            <FaWandMagicSparkles />
-          </Button>
-        </Tooltip>
-        <Tooltip content="Clear selected tags from this image [x]">
-          <Button
-            size="xl"
-            color="light"
-            className="border-r-none rounded-none"
-            disabled={isLoadingTags || !selectedTags?.selected.length}
-            onClick={() => setShowClearTagsModal(true)}
-          >
-            <FaTimes />
-          </Button>
-        </Tooltip>
-        <Tooltip content="Edit this project's tag layout [l]">
-          <Button
-            size="xl"
-            color="light"
-            className="rounded-l-none"
-            disabled={isLoadingTags}
-          >
-            <FaPencil />
-          </Button>
-        </Tooltip>
+      <div className="mb-5 flex w-full flex-row items-center justify-between pr-10">
+        <TagSearch />
+
+        <div className="flex flex-row items-center">
+          {isLoadingTags && <Spinner className="mr-2" />}
+          <Tooltip content="Attempt to fill in tags [a]">
+            <Button
+              size="xl"
+              color="light"
+              className="border-r-none rounded-r-none"
+              disabled={isLoadingTags || selectedTags.autoTags.length === 0}
+              onClick={() => addAutoTags()}
+            >
+              <FaWandMagicSparkles />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Clear selected tags from this image [x]">
+            <Button
+              size="xl"
+              color="light"
+              className="border-r-none rounded-none"
+              disabled={isLoadingTags || !selectedTags?.selected.length}
+              onClick={() => setShowClearTagsModal(true)}
+            >
+              <FaTimes />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Edit this project's tag layout [l]">
+            <Button
+              size="xl"
+              color="light"
+              className="rounded-l-none"
+              disabled={isLoadingTags}
+            >
+              <FaPencil />
+            </Button>
+          </Tooltip>
+        </div>
       </div>
 
       <ClearTagsModal

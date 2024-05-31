@@ -25,7 +25,8 @@ export const disableKeyboardShortcutsSelector = selector<boolean>({
     const modal1 = get(showNewProjectModalAtom);
     const modal2 = get(showCropImageModalAtom);
     const modal3 = get(projectRequiresSetupSelector);
-    return modal1 || modal2 || modal3;
+    const search = get(tagSearchTerm);
+    return modal1 || modal2 || modal3 || search !== null;
   },
 });
 
@@ -36,6 +37,11 @@ export const projectsAtom = atom<Project[]>({
 
 export const selectedImageTagsAtom = atom<SelectedImageTags | null>({
   key: "selectedImageTags",
+  default: null,
+});
+
+export const tagSearchTerm = atom<string | null>({
+  key: "tagSearchTerm",
   default: null,
 });
 

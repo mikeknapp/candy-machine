@@ -13,3 +13,8 @@ body {
 .center-full {
   @apply flex h-full w-full flex-col items-center justify-center;
 }
+
+/* To allow the right icon to be clickable on the tag filter. */
+[data-testid="right-icon"] {
+  pointer-events: unset;
+}
