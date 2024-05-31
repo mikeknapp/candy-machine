@@ -172,13 +172,12 @@ export function navigateImages(
 export function previewTagTextFile(
   project: Project,
   selectedTags: string[],
-  showTrigger = true,
 ): string {
   if (!selectedTags) {
     selectedTags = [];
   }
   const tags = [];
-  if (showTrigger && project.triggerWord) {
+  if (project.triggerWord) {
     tags.push(project.triggerWord);
   }
   project.tagLayout.map((category) => {

@@ -10,6 +10,7 @@ import {
   currentProjectSelector,
   selectedImgTagsSelector,
 } from "../../state/atoms";
+import { AutoTagComparison } from "./AutoTagComparison";
 import { QuickActions } from "./QuickActions";
 
 export function SelectedImage() {
@@ -23,12 +24,11 @@ export function SelectedImage() {
     }),
   );
 
+  let selectedTags = null;
   let tagsTextFile = previewTagTextFile(project, []);
-  let autoTags = null;
   if (selectedImgTagsLoading.state === "hasValue") {
-    let selectedTags = selectedImgTagsLoading.contents as SelectedImageTags;
+    selectedTags = selectedImgTagsLoading.contents as SelectedImageTags;
     tagsTextFile = previewTagTextFile(project, selectedTags.selected);
-    autoTags = previewTagTextFile(project, selectedTags.autoTags, false);
   }
   const size = imgSize(project.selectedImage);
 
@@ -78,20 +78,20 @@ export function SelectedImage() {
               <h2 className="text-sm font-bold  text-gray-700 md:mt-2">
                 Your Image Tags
               </h2>
-              <div className="rounded-md bg-gray-100 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
+              <div className="rounded-md bg-gray-100 p-1 font-mono text-sm font-bold text-blue-500 dark:bg-slate-900 md:p-6 md:text-base">
                 {tagsTextFile}
               </div>
             </>
           )}
 
           {/* Auto tags */}
-          {autoTags && (
+          {selectedTags?.autoTags?.length > 0 && (
             <>
               <h2 className="text-sm font-bold text-gray-700 md:mt-2">
                 Auto Tags (Not Applied, FYI Only)
               </h2>
               <div className="rounded-md bg-gray-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
-                {autoTags}
+                <AutoTagComparison imgTags={selectedTags} />
               </div>
             </>
           )}
