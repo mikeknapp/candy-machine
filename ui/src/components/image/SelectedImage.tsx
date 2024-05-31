@@ -1,35 +1,48 @@
 import { Tooltip } from "flowbite-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { FaCheck } from "react-icons/fa";
 import { TbAlertTriangleFilled } from "react-icons/tb";
 import { useRecoilValue, useRecoilValueLoadable } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { imgSize } from "../../models/image";
-import { previewTagTextFile } from "../../models/project";
+import { SelectedImageTags, previewTagTextFile } from "../../models/project";
 import {
   currentProjectSelector,
-  selectedTagsSelector,
+  selectedImgTagsSelector,
 } from "../../state/atoms";
 import { QuickActions } from "./QuickActions";
 
 export function SelectedImage() {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
   const project = useRecoilValue(currentProjectSelector);
-  const selectedTagsLoadable = useRecoilValueLoadable(
-    selectedTagsSelector({
+  const selectedImgTagsLoading = useRecoilValueLoadable(
+    selectedImgTagsSelector({
       projectName: project.name,
       image: project.selectedImage,
     }),
   );
 
-  let tagsTextFile = null;
-  if (selectedTagsLoadable.state === "hasValue") {
-    let selectedTags = selectedTagsLoadable.contents as string[];
-    tagsTextFile = previewTagTextFile(project, selectedTags);
+  let tagsTextFile = previewTagTextFile(project, []);
+  let autoTags = null;
+  if (selectedImgTagsLoading.state === "hasValue") {
+    let selectedTags = selectedImgTagsLoading.contents as SelectedImageTags;
+    tagsTextFile = previewTagTextFile(project, selectedTags.selected);
+    autoTags = previewTagTextFile(project, selectedTags.autoTags, false);
   }
   const size = imgSize(project.selectedImage);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [project.selectedImage]);
+
   return (
-    <div className="flex w-1/4 min-w-[700px] flex-col justify-start gap-5 p-5">
+    <div
+      ref={scrollRef}
+      className="flex w-1/4 min-w-[700px] flex-col justify-start gap-5 overflow-y-auto p-5"
+    >
       {project.selectedImage && (
         <>
           {/* Quick actions menu (next image, crop, delete etc) */}
@@ -39,7 +52,7 @@ export function SelectedImage() {
           <div className="flex flex-row justify-center">
             <img
               src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage}`}
-              className="aspect-auto max-h-[700px] w-auto rounded-md shadow-md"
+              className="aspect-auto max-h-[550px] w-auto max-w-[550px] rounded-md shadow-md"
               alt="Preview"
             />
           </div>
@@ -61,9 +74,26 @@ export function SelectedImage() {
 
           {/* Tags .txt file preview */}
           {tagsTextFile && (
-            <div className="rounded-md bg-yellow-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
-              {tagsTextFile}
-            </div>
+            <>
+              <h2 className="text-sm font-bold  text-gray-700 md:mt-2">
+                Your Image Tags
+              </h2>
+              <div className="rounded-md bg-gray-100 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
+                {tagsTextFile}
+              </div>
+            </>
+          )}
+
+          {/* Auto tags */}
+          {autoTags && (
+            <>
+              <h2 className="text-sm font-bold text-gray-700 md:mt-2">
+                Auto Tags (Not Applied, FYI Only)
+              </h2>
+              <div className="rounded-md bg-gray-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
+                {autoTags}
+              </div>
+            </>
           )}
         </>
       )}

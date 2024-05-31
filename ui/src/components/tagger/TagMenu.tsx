@@ -2,11 +2,11 @@ import { Button, Spinner, Tooltip } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaPencil, FaWandMagicSparkles } from "react-icons/fa6";
-import { useRecoilValue, useRecoilValueLoadable } from "recoil";
-import { Project } from "../../models/project";
+import { useRecoilStateLoadable, useRecoilValue } from "recoil";
+import { Project, SelectedImageTags } from "../../models/project";
 import {
   disableKeyboardShortcutsSelector,
-  selectedTagsSelector,
+  selectedImgTagsSelector,
 } from "../../state/atoms";
 import { ClearTagsModal } from "./ClearTagsModal";
 
@@ -14,8 +14,8 @@ export function TagMenu({ project }: { project: Project }) {
   const [showClearTagsModal, setShowClearTagsModal] = useState(false);
 
   const disableShortcuts = useRecoilValue(disableKeyboardShortcutsSelector);
-  const selectedTagsLoading = useRecoilValueLoadable(
-    selectedTagsSelector({
+  const [selectedTagsLoading, setSelectedTags] = useRecoilStateLoadable(
+    selectedImgTagsSelector({
       projectName: project.name,
       image: project.selectedImage,
     }),
@@ -23,17 +23,33 @@ export function TagMenu({ project }: { project: Project }) {
   const isLoadingTags = selectedTagsLoading.state === "loading";
   let selectedTags = null;
   if (selectedTagsLoading.state === "hasValue") {
-    selectedTags = selectedTagsLoading.contents as string[];
+    selectedTags = selectedTagsLoading.contents as SelectedImageTags;
   }
+
+  // Add any tags we found in automatic analysis that aren't already in the list and are in the tag layout.
+  // TODO: apply fill-ins!
+  const addAutoTags = () => {
+    setSelectedTags((prev) => {
+      let tags = new Set(prev.selected);
+      project.tagLayout.forEach((category) => {
+        category.tags.forEach((tag) => {
+          if (selectedTags.autoTags.includes(tag)) {
+            tags.add(tag);
+          }
+        });
+      });
+      return { ...prev, selected: Array.from(tags) };
+    });
+  };
 
   // Shortcut listener.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (disableShortcuts) return;
+      if (disableShortcuts || showClearTagsModal || isLoadingTags) return;
 
       switch (event.key) {
         case "a":
-          // TODO: Implement tag autofill.
+          addAutoTags();
           break;
         case "x":
           setShowClearTagsModal(true);
@@ -47,7 +63,7 @@ export function TagMenu({ project }: { project: Project }) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [disableShortcuts]);
+  }, [disableShortcuts, showClearTagsModal, isLoadingTags]);
 
   return (
     <>
@@ -59,6 +75,7 @@ export function TagMenu({ project }: { project: Project }) {
             color="light"
             className="border-r-none rounded-r-none"
             disabled={isLoadingTags}
+            onClick={() => addAutoTags()}
           >
             <FaWandMagicSparkles />
           </Button>
@@ -68,7 +85,7 @@ export function TagMenu({ project }: { project: Project }) {
             size="xl"
             color="light"
             className="border-r-none rounded-none"
-            disabled={isLoadingTags || !selectedTags?.length}
+            disabled={isLoadingTags || !selectedTags?.selected.length}
             onClick={() => setShowClearTagsModal(true)}
           >
             <FaTimes />

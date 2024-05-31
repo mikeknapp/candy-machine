@@ -14,6 +14,13 @@ export interface AutoTag {
   examples: string[];
 }
 
+export interface SelectedImageTags {
+  projectName: string;
+  image: string;
+  selected: string[];
+  autoTags: string[];
+}
+
 export interface Project {
   name: string;
   triggerWord: string;
@@ -116,8 +123,8 @@ export async function saveTags(
 export async function loadTags(
   projectName: string,
   image: string,
-): Promise<string[]> {
-  const response = await apiRequest<string[]>(
+): Promise<SelectedImageTags> {
+  const response = await apiRequest<SelectedImageTags>(
     `/project/${projectName}/tags/load?image=${image}`,
   );
   if (response.success && response.data) {
@@ -165,9 +172,13 @@ export function navigateImages(
 export function previewTagTextFile(
   project: Project,
   selectedTags: string[],
+  showTrigger = true,
 ): string {
+  if (!selectedTags) {
+    selectedTags = [];
+  }
   const tags = [];
-  if (project.triggerWord) {
+  if (showTrigger && project.triggerWord) {
     tags.push(project.triggerWord);
   }
   project.tagLayout.map((category) => {

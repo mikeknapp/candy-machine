@@ -1,8 +1,8 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { SelectedImageTags } from "../models/image";
 import {
   Project,
+  SelectedImageTags,
   listProjects,
   loadTags,
   saveProject,
@@ -98,32 +98,27 @@ export type SelectedImageTagsProps = {
   image: string;
 };
 
-export const selectedTagsSelector = selectorFamily({
+export const selectedImgTagsSelector = selectorFamily({
   key: "selectedTags",
   get:
     (params: SelectedImageTagsProps) =>
     async ({ get }) => {
-      const tags = get(selectedImageTagsAtom);
+      const imgTags = get(selectedImageTagsAtom);
       if (
-        tags &&
-        tags.projectName == params.projectName &&
-        tags.image === params.image
+        imgTags &&
+        imgTags.projectName == params.projectName &&
+        imgTags.image === params.image
       ) {
-        return tags.tags;
+        return imgTags;
       }
-      const asyncTags = await loadTags(params.projectName, params.image);
-      return asyncTags;
+      return await loadTags(params.projectName, params.image);
     },
   set:
     (params: SelectedImageTagsProps) =>
     ({ set }, newValue) => {
       if (newValue === null || newValue instanceof DefaultValue) return;
-      set(selectedImageTagsAtom, {
-        projectName: params.projectName,
-        image: params.image,
-        tags: newValue,
-      });
-      saveTags(params.projectName, params.image, newValue);
+      set(selectedImageTagsAtom, newValue);
+      saveTags(params.projectName, params.image, newValue.selected);
     },
 });
 

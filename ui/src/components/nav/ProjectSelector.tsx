@@ -22,7 +22,7 @@ export function ProjectSelector() {
     } else {
       document.title = "Candy Machine";
     }
-  }, [currentProject]);
+  }, [currentProjectLoading]);
 
   if (
     projectsLoading.state === "loading" ||

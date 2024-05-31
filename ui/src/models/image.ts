@@ -2,12 +2,6 @@ import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
 import { Project } from "./project";
 
-export interface SelectedImageTags {
-  projectName: string;
-  image: string;
-  tags: string[];
-}
-
 export const imgSize = (
   filename: string,
 ): { width: number; height: number } => {

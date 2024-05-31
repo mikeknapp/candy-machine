@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
 import { useSetRecoilState } from "recoil";
 import { Project } from "../../models/project";
-import { selectedTagsSelector } from "../../state/atoms";
+import { selectedImgTagsSelector } from "../../state/atoms";
 
 type ClearTagsModalProps = {
   project: Project;
@@ -16,7 +16,7 @@ export function ClearTagsModal(props: ClearTagsModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const setSelectedTags = useSetRecoilState(
-    selectedTagsSelector({
+    selectedImgTagsSelector({
       projectName: props.project.name,
       image: props.selectedImg,
     }),
@@ -44,7 +44,10 @@ export function ClearTagsModal(props: ClearTagsModalProps) {
               isProcessing={isProcessing}
               onClick={async () => {
                 setIsProcessing(true);
-                setSelectedTags([]);
+                setSelectedTags((prev) => ({
+                  ...prev,
+                  selected: [],
+                }));
                 props.onClose();
                 setIsProcessing(false);
               }}

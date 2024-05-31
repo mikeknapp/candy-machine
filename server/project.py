@@ -91,6 +91,9 @@ class Project:
     def img_dir(self) -> str:
         return self._img_dir
 
+    def auto_tags_dir(self) -> str:
+        return self._auto_tags_dir
+
     def img_path(self, fname: str) -> str:
         return os.path.join(self._img_dir, fname)
 
@@ -99,6 +102,11 @@ class Project:
 
     def selected_image_txt_path(self) -> Path:
         return self.selected_image_path().with_suffix(".txt")
+
+    def selected_image_auto_txt_path(self) -> Path:
+        return Path(self.auto_tags_dir()).joinpath(
+            Path(self.selected_image).stem + ".txt"
+        )
 
     def set_selected_image(self, image_name: str):
         if image_name.strip() not in self.imgs:
@@ -158,7 +166,10 @@ class Project:
             fp.write(", ".join(tags))
 
     def get_selected_image_tags(self):
-        return self._selected_image_selected_tags()
+        return self._load_tags_from_file(self.selected_image_txt_path())
+
+    def get_selected_auto_image_tags(self):
+        return self._load_tags_from_file(self.selected_image_auto_txt_path())
 
     def delete(self):
         shutil.rmtree(self._base_dir)
@@ -325,16 +336,15 @@ class Project:
             return []
         return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
 
-    def _selected_image_selected_tags(self) -> list[str]:
-        txt_file = self.selected_image_txt_path()
-        selected_tags = []
-        if os.path.exists(txt_file):
-            with open(txt_file, "r") as fp:
+    def _load_tags_from_file(self, path: Path) -> list[str]:
+        tags = []
+        if os.path.exists(path):
+            with open(path, "r") as fp:
                 file_contents = fp.read()
                 if not file_contents.strip():
                     return []
-                selected_tags = [tag.strip() for tag in file_contents.split(",")]
-        return selected_tags
+                tags = [tag.strip() for tag in file_contents.split(",")]
+        return tags
 
     def _get_filtered_auto_tags(self, project_layout) -> list[TagInfo]:
         results = []

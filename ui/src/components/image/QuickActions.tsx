@@ -60,7 +60,7 @@ export function QuickActions({ project }: { project: Project }) {
   return (
     <div className="flex flex-row justify-center">
       <div className="flex flex-row">
-        <Tooltip content="Prev Image [⬆️⬅️]">
+        <Tooltip content="Prev Image [⬆️,⬅️,j]">
           <Button
             size="xl"
             disabled={!navigateImages(project, "prev")}
@@ -91,7 +91,7 @@ export function QuickActions({ project }: { project: Project }) {
             <FaRegTrashCan />
           </Button>
         </Tooltip>
-        <Tooltip content="Next Image [⬇️➡️]">
+        <Tooltip content="Next Image [⬇️,➡️,k]">
           <Button
             size="xl"
             disabled={!navigateImages(project, "next")}

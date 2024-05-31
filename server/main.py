@@ -99,7 +99,14 @@ def load_image_tags(project_name):
     project = Project(project_name)
     filename = request.args.get("image", "")
     project.set_selected_image(filename)
-    return jsonify(project.get_selected_image_tags())
+    return jsonify(
+        {
+            "projectName": project_name,
+            "image": filename,
+            "selected": project.get_selected_image_tags(),
+            "autoTags": project.get_selected_auto_image_tags(),
+        }
+    )
 
 
 @app.route("/project/<string:project_name>/imgs/<string:fname>", methods=["GET"])

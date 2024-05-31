@@ -50,10 +50,12 @@ export function Thumbnails() {
 
       let imgToSelect;
       switch (event.key) {
+        case "j":
         case "ArrowDown":
         case "ArrowRight":
           imgToSelect = navigateImages(project, "next");
           break;
+        case "k":
         case "ArrowUp":
         case "ArrowLeft":
           imgToSelect = navigateImages(project, "prev");
