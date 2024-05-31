@@ -36,7 +36,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
         return { ...prev, selected: [...prev.selected, tag] };
       }
     });
-    setTagSearch(null);
+    setTimeout(() => setTagSearch(null), 500);
   };
 
   let selectedTags: string[] = [];
