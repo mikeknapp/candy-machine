@@ -330,7 +330,10 @@ class Project:
         selected_tags = []
         if os.path.exists(txt_file):
             with open(txt_file, "r") as fp:
-                selected_tags = [tag.strip() for tag in fp.read().split(",")]
+                file_contents = fp.read()
+                if not file_contents.strip():
+                    return []
+                selected_tags = [tag.strip() for tag in file_contents.split(",")]
         return selected_tags
 
     def _get_filtered_auto_tags(self, project_layout) -> list[TagInfo]:

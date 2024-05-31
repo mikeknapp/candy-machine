@@ -1,7 +1,11 @@
-import { Button } from "flowbite-react";
+import { Button, Tooltip } from "flowbite-react";
 import React, { useEffect, useState } from "react";
-import { HiArrowLeft, HiArrowRight, HiMiniTrash } from "react-icons/hi2";
-import { MdCropRotate } from "react-icons/md";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaCropSimple,
+  FaRegTrashCan,
+} from "react-icons/fa6";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { Project, navigateImages } from "../../models/project";
 import {
@@ -32,16 +36,17 @@ export function QuickActions({ project }: { project: Project }) {
     }
   };
 
+  // Shortcut listener.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (disableKeyboardShortcuts || showDeleteImageModal) return;
 
       switch (event.key) {
-        case "c":
+        case "e":
           setShowEditImageModal(true);
           break;
         case "Delete":
-        case "x":
+        case "d":
           setShowDeleteImageModal(true);
           break;
       }
@@ -54,45 +59,49 @@ export function QuickActions({ project }: { project: Project }) {
 
   return (
     <div className="flex flex-row justify-center">
-      <div className="flex flex-row rounded-lg">
-        <Button
-          size="xl"
-          disabled={!navigateImages(project, "prev")}
-          color="light"
-          title="Prev Image [⬆️⬅️]"
-          onClick={() => navigate("prev")}
-          className="rounded-r-none border-r-0"
-        >
-          <HiArrowLeft />
-        </Button>
-        <Button
-          size="xl"
-          color="light"
-          title="Crop / Rotate Image [c]"
-          onClick={() => setShowEditImageModal(true)}
-          className="rounded-none border-r-0"
-        >
-          <MdCropRotate />
-        </Button>
-        <Button
-          size="xl"
-          color="light"
-          title="Delete Image [x]"
-          onClick={() => setShowDeleteImageModal(true)}
-          className="rounded-none border-r-0"
-        >
-          <HiMiniTrash />
-        </Button>
-        <Button
-          size="xl"
-          disabled={!navigateImages(project, "next")}
-          color="light"
-          title="Next Image [⬇️➡️]"
-          onClick={() => navigate("next")}
-          className="rounded-l-none"
-        >
-          <HiArrowRight />
-        </Button>
+      <div className="flex flex-row">
+        <Tooltip content="Prev Image [⬆️⬅️]">
+          <Button
+            size="xl"
+            disabled={!navigateImages(project, "prev")}
+            color="light"
+            onClick={() => navigate("prev")}
+            className="rounded-r-none border-r-0"
+          >
+            <FaArrowLeft />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Edit Image (Crop / Rotate) [e]">
+          <Button
+            size="xl"
+            color="light"
+            onClick={() => setShowEditImageModal(true)}
+            className="rounded-none border-r-0"
+          >
+            <FaCropSimple />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Delete Image [d]">
+          <Button
+            size="xl"
+            color="light"
+            onClick={() => setShowDeleteImageModal(true)}
+            className="rounded-none border-r-0"
+          >
+            <FaRegTrashCan />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Next Image [⬇️➡️]">
+          <Button
+            size="xl"
+            disabled={!navigateImages(project, "next")}
+            color="light"
+            onClick={() => navigate("next")}
+            className="rounded-l-none"
+          >
+            <FaArrowRight />
+          </Button>
+        </Tooltip>
       </div>
 
       <CropImageModal />
