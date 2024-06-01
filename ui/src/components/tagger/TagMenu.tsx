@@ -78,7 +78,7 @@ export function TagMenu({ project }: { project: Project }) {
               size="xl"
               color="light"
               className="border-r-none rounded-r-none"
-              disabled={isLoadingTags || selectedTags.autoTags.length === 0}
+              disabled={isLoadingTags || selectedTags?.autoTags.length === 0}
               onClick={() => addAutoTags()}
             >
               <FaWandMagicSparkles />
