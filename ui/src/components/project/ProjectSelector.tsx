@@ -7,7 +7,7 @@ import { State } from "../../models/base";
 
 export function ProjectSelector() {
   const allProjects = useAllProjectsValue();
-  const [project, projectContext] = useProject();
+  const [project, projectContext] = useProject(true);
 
   const isLoadingAllProjects = [State.Loading, State.Init].includes(
     allProjects?.state,

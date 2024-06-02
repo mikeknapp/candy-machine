@@ -4,6 +4,7 @@ import { State, Subscribable } from "./base";
 export interface AllProjectData {
   state: State;
   projects: string[];
+  isLoading: boolean;
 }
 
 export class AllProjects extends Subscribable<AllProjectData> {
@@ -21,6 +22,7 @@ export class AllProjects extends Subscribable<AllProjectData> {
     return {
       state: this.state,
       projects: this._projects,
+      isLoading: [State.Init, State.Loading].includes(this.state),
     };
   }
 

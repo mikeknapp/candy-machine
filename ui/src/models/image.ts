@@ -1,5 +1,6 @@
 import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
+import { State } from "./base";
 import { Project, Project_old } from "./project";
 
 export interface SelectedImageTags {
@@ -9,49 +10,54 @@ export interface SelectedImageTags {
   autoTags: string[];
 }
 
+export interface SelectedImage {
+  projectName: string;
+  filename: string;
+  tags: string[];
+  autoTags: string[];
+  isLoaded: boolean;
+}
+
 export class Image {
+  public state: State;
+  public projectName: string;
   public filename: string;
   public tags: string[] = [];
+  public autoTags: string[] = [];
 
-  constructor(filename: string, tags: string[] = []) {
+  constructor(
+    projectName: string,
+    filename: string,
+    tags: string[],
+    autoTags: string[],
+    state = State.Loaded,
+  ) {
+    this.projectName = projectName;
     this.filename = filename;
     this.tags = tags;
+    this.autoTags = autoTags;
+    this.state = state;
   }
 
-  static async load(projectName: string, filename: string): Promise<Image> {
-    const response = await apiRequest<{
-      autoTags: string[];
-      image: string;
-      projectName: string;
-      selected: string[];
-    }>(`/project/${projectName}/tags/load?image=${filename}`, {
-      method: "GET",
-    });
-    if (response.success && response.data) {
-      return new Image(filename, response.data.selected);
-    }
-    throw new Error(`Failed to load image: ${response.errors}`);
+  public get readOnly(): SelectedImage {
+    return {
+      projectName: this.projectName,
+      filename: this.filename,
+      tags: this.tags,
+      autoTags: this.autoTags,
+      isLoaded: this.state === State.Loaded,
+    };
   }
 
-  public async saveTags(project: Project_old): Promise<boolean> {
+  public async saveTags(): Promise<boolean> {
     const response = await apiRequest<{ result: string }>(
-      `/project/${project.name}/tags/save`,
+      `/project/${this.projectName}/tags/save`,
       {
         body: JSON.stringify({ image: this.filename, tags: this.tags }),
       },
     );
     if (response.success && response.data) {
       return response.data.result === "OK";
-    }
-  }
-
-  public async loadTags(project: Project_old): Promise<string[]> {
-    const response = await apiRequest<string[]>(
-      `/project/${project.name}/tags/load?image=${this.filename}`,
-    );
-    if (response.success && response.data) {
-      this.tags = response.data;
-      return response.data;
     }
   }
 
@@ -72,10 +78,41 @@ export class Image {
   }
 }
 
+export class LoadableImage extends Image {
+  constructor(projectName: string, filename: string, onLoad: () => void) {
+    super(projectName, filename, [], [], State.Loading);
+    // Load the image asynchonously so that the UI isn't blocked by the constructor.
+    (() => {
+      this.load(onLoad);
+    })();
+  }
+
+  private async load(callback: () => void): Promise<void> {
+    const response = await apiRequest<{
+      autoTags: string[];
+      image: string;
+      projectName: string;
+      selected: string[];
+    }>(`/project/${this.projectName}/tags/load?image=${this.filename}`, {
+      method: "GET",
+    });
+    if (response.success && response.data) {
+      this.state = State.Loaded;
+      this.tags = response.data.selected;
+      this.autoTags = response.data.autoTags;
+      callback();
+    }
+    console.log("Failed to load image:", response.errors);
+  }
+}
+
 export const imgSize = (
   filename: string,
 ): { width: number; height: number } => {
   // Extract the height and width from the image ID i.e. f4227273f1f071f_589x753_0.png
+  if (!filename) {
+    return { width: 0, height: 0 };
+  }
   const matches = filename.match(/_(\d+)x(\d+)_/);
   if (!matches) {
     return { width: 0, height: 0 };

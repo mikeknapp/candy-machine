@@ -41,6 +41,8 @@ export function Thumbnails() {
 
   // Keyboard navigation.
   useEffect(() => {
+    if (!project) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (disableKeyboardShortcuts) return;
 
@@ -70,6 +72,8 @@ export function Thumbnails() {
 
   // Lazy load the thumbnails.
   useEffect(() => {
+    if (!project) return;
+
     if (observer.current) {
       observer.current.disconnect();
     }
@@ -102,13 +106,15 @@ export function Thumbnails() {
   }, [project]);
 
   useEffect(() => {
+    if (!project) return;
+
     // Steal focus away from the project selector so keyboard shortcuts will work immediately.
     // This is hacky, but I couldn't work out how to do this otherwise.
     const focusStealer = document.getElementById("focus-stealer");
     focusStealer?.focus();
     setTimeout(() => {
       focusStealer?.blur();
-      scrollToThumbnail(project?.selectedImage);
+      scrollToThumbnail(project?.selectedImage?.filename);
     }, 100);
   }, [project]);
 
@@ -133,7 +139,7 @@ export function Thumbnails() {
                 aspectRatio: imgAspectRatio(img),
                 borderWidth: `${BORDER_WIDTH}px`,
               }}
-              className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${project.selectedImage != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
+              className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${project.selectedImage?.filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
               data-src={`${API_BASE_URL}/project/${project.name}/imgs/${img}?thumbnail=true`}
               src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
               alt={img}

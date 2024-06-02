@@ -2,14 +2,20 @@ import { PixelCrop } from "react-image-crop";
 import { ApiResponse, apiRequest, eventRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
 import { State, Subscribable } from "./base";
-import { Image, SelectedImageTags } from "./image";
+import {
+  Image,
+  LoadableImage,
+  SelectedImage,
+  SelectedImageTags,
+} from "./image";
 
 export interface ProjectData {
   state: State;
+  isLoading: boolean;
   name: string;
   triggerWord: string;
   images: string[];
-  selectedImage: string;
+  selectedImage: SelectedImage;
   autoTags: AutoTag[];
   tagLayout: CategoryData[];
   requiresSetup: boolean;
@@ -28,13 +34,12 @@ export interface AutoTag {
   examples: string[];
 }
 
-export class Project extends Subscribable<ProjectData> implements ProjectData {
+export class Project extends Subscribable<ProjectData> {
   public state = State.Init;
   public name: string = "";
   public triggerWord: string = "";
   public images: string[] = [];
-  public selectedImage: string = "";
-  public _selectedImage: Image = null;
+  public selectedImage: Image = null;
   public autoTags: AutoTag[] = [];
   public tagLayout: CategoryData[] = [];
   public requiresSetup: boolean = false;
@@ -53,8 +58,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
     this.name = newName;
     this.triggerWord = "";
     this.images = [];
-    this.selectedImage = "";
-    this._selectedImage = null;
+    this.selectedImage = null;
     this.autoTags = [];
     this.tagLayout = [];
     this.requiresSetup = false;
@@ -64,28 +68,27 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
   public get readOnly(): ProjectData {
     return {
       state: this.state,
+      isLoading: [State.Loading, State.Init].includes(this.state),
       name: this.name,
       triggerWord: this.triggerWord,
       images: this.images,
-      selectedImage: this.selectedImage,
+      selectedImage: this.selectedImage?.readOnly ?? null,
       autoTags: this.autoTags,
       tagLayout: this.tagLayout,
       requiresSetup: this.requiresSetup,
     };
   }
 
-  public async setSelectedImage(filename: string, save = true): Promise<void> {
-    if (filename === "") {
+  public async setSelectedImage(filename: string): Promise<void> {
+    if (!filename || this.selectedImage?.filename === filename) {
       return;
     }
-    this.selectedImage = filename;
-    this.notifyListeners();
-    setTimeout(async () => {
-      // Do the rest of work in the next event loop.
-      if (save) this.save();
-      this._selectedImage = await Image.load(this.name, filename);
+    console.log("loading ", filename);
+    this.selectedImage = new LoadableImage(this.name, filename, () => {
       this.notifyListeners();
-    }, 0);
+    });
+    this.notifyListeners();
+    this.save();
   }
 
   public async createNew(data: NewProjectRequest): Promise<boolean> {
@@ -96,8 +99,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
     if (response.success && response.data) {
       return this.loadProject(data.name);
     }
-    this.state = State.Error;
-    this.notifyListeners();
+    this.setStateAndNotify(State.Error);
     console.log(`Failed to create project: ${response.errors}`);
   }
 
@@ -116,21 +118,27 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
   public async loadProject(projectName: string): Promise<boolean> {
     this.reset(projectName);
     this.state = State.Loading;
-    const response = await apiRequest<Project>(`/project/${this.name}/get`);
+    const response = await apiRequest<ProjectData>(`/project/${this.name}/get`);
     if (response.success && response.data) {
       this.triggerWord = response.data.triggerWord;
       this.images = response.data.images;
       this.autoTags = response.data.autoTags;
       this.tagLayout = response.data.tagLayout;
       this.requiresSetup = response.data.requiresSetup;
-      // TODO: Maybe we should have a setState method on the base class that notifies listeners?
-      this.state = State.Loaded;
-      this.notifyListeners();
-      this.setSelectedImage(response.data.selectedImage, false);
+      if (response.data.selectedImage) {
+        this.selectedImage = new Image(
+          this.name,
+          response.data.selectedImage.filename,
+          response.data.selectedImage.tags,
+          response.data.selectedImage.autoTags,
+        );
+      } else {
+        this.selectedImage = null;
+      }
+      this.setStateAndNotify(State.Loaded);
       return true;
     }
-    this.state = State.Error;
-    this.notifyListeners();
+    this.setStateAndNotify(State.Error);
     console.log(`Failed to load project '${this.name}': ${response.errors}`);
   }
 
@@ -147,7 +155,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
 
   public navigateImages(direction: "next" | "prev"): string {
     // Returns the name of the next or previous image in the list.
-    const currentIndex = this.images.indexOf(this._selectedImage.filename);
+    const currentIndex = this.images.indexOf(this.selectedImage.filename);
     if (currentIndex === -1) {
       return;
     }
@@ -213,7 +221,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
     }
 
     // If this image was selected, update the selected image.
-    if (this._selectedImage && this._selectedImage.filename === oldFilename) {
+    if (this.selectedImage && this.selectedImage.filename === oldFilename) {
       this.setSelectedImage(newFilename);
     }
 

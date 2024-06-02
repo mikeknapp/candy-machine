@@ -6,10 +6,9 @@ import {
   FaCropSimple,
   FaRegTrashCan,
 } from "react-icons/fa6";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { Project_old, navigateImages } from "../../models/project";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useProject } from "../../hooks/useProject";
 import {
-  currentProjectSelector,
   disableKeyboardShortcutsSelector,
   showCropImageModalAtom,
 } from "../../state/atoms";
@@ -17,10 +16,9 @@ import { scrollToThumbnail } from "../project/Thumbnails";
 import { CropImageModal } from "./CropImageModal";
 import { DeleteImageModal } from "./DeleteImageModal";
 
-export function QuickActions({ project }: { project: Project_old }) {
-  const [currentProject, setCurrentProject] = useRecoilState(
-    currentProjectSelector,
-  );
+export function QuickActions() {
+  const [project, projectContext] = useProject();
+
   const setShowEditImageModal = useSetRecoilState(showCropImageModalAtom);
   const disableKeyboardShortcuts = useRecoilValue(
     disableKeyboardShortcutsSelector,
@@ -29,9 +27,9 @@ export function QuickActions({ project }: { project: Project_old }) {
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
   const navigate = (direction: "next" | "prev") => {
-    let img = navigateImages(project, direction);
+    let img = projectContext.navigateImages(direction);
     if (img) {
-      setCurrentProject({ ...currentProject, selectedImage: img });
+      projectContext.setSelectedImage(img);
       scrollToThumbnail(img);
     }
   };
@@ -63,7 +61,7 @@ export function QuickActions({ project }: { project: Project_old }) {
         <Tooltip content="Prev Image [⬆️,⬅️,j]">
           <Button
             size="xl"
-            disabled={!navigateImages(project, "prev")}
+            disabled={!projectContext.navigateImages("prev")}
             color="light"
             onClick={() => navigate("prev")}
             className="rounded-r-none border-r-0"
@@ -94,7 +92,7 @@ export function QuickActions({ project }: { project: Project_old }) {
         <Tooltip content="Next Image [⬇️,➡️,k]">
           <Button
             size="xl"
-            disabled={!navigateImages(project, "next")}
+            disabled={!projectContext.navigateImages("next")}
             color="light"
             onClick={() => navigate("next")}
             className="rounded-l-none"
@@ -107,8 +105,7 @@ export function QuickActions({ project }: { project: Project_old }) {
       <CropImageModal />
 
       <DeleteImageModal
-        project={project}
-        selectedImg={project.selectedImage}
+        selectedImg={project.selectedImage?.filename}
         show={showDeleteImageModal}
         onClose={() => setShowDeleteImageModal(false)}
       />

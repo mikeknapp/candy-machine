@@ -1,16 +1,17 @@
 import { Spinner } from "flowbite-react";
 import React from "react";
-import { useRecoilValueLoadable } from "recoil";
-import { currentProjectSelector } from "../../state/atoms";
+import { useAllProjectsValue } from "../../hooks/useAllProjects";
+import { useProjectValue } from "../../hooks/useProject";
 import { SelectedImage } from "../image/SelectedImage";
 import { Thumbnails } from "../project/Thumbnails";
 import { Tagger } from "../tagger/Tagger";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
-  const projectLoading = useRecoilValueLoadable(currentProjectSelector);
+  const allProjects = useAllProjectsValue();
+  const project = useProjectValue();
 
-  if (projectLoading.state === "loading") {
+  if (allProjects.isLoading || project.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" />
@@ -18,7 +19,7 @@ export function Editor() {
     );
   }
 
-  if (!projectLoading.contents) {
+  if (!project) {
     return <NoSelectedProject />;
   }
 

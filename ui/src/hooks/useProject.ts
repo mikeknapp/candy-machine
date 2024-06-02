@@ -1,9 +1,10 @@
 import { useContext, useState } from "react";
 import { AllProjectsContext, ProjectContext } from "../app";
+import { AllProjectData } from "../models/all_projects";
 import { Project, ProjectData } from "../models/project";
 import { useSubscribe } from "./useSubscribe";
 
-export function useProject(): [ProjectData, Project] {
+export function useProject(loadDefaultProject = false): [ProjectData, Project] {
   let projectContext = useContext(ProjectContext);
   let allProjectsContext = useContext(AllProjectsContext);
 
@@ -12,16 +13,22 @@ export function useProject(): [ProjectData, Project] {
   // Listen to updates from the selected project.
   useSubscribe(
     ProjectContext,
-    (newValue: ProjectData) => setProjectData(newValue),
+    (newValue: ProjectData) => {
+      setProjectData(newValue);
+    },
     [projectData],
   );
 
   // Choose an initial project once the project list has loaded.
   useSubscribe(
     AllProjectsContext,
-    async () => {
-      if (projectData === null && allProjectsContext.hasProjects) {
-        const firstProject = allProjectsContext.projects[0];
+    async (newValue: AllProjectData) => {
+      if (
+        loadDefaultProject &&
+        projectData === null &&
+        newValue.projects.length > 0
+      ) {
+        const firstProject = newValue.projects[0];
         await projectContext.loadProject(firstProject);
       }
     },
@@ -31,7 +38,7 @@ export function useProject(): [ProjectData, Project] {
   return [projectData, projectContext];
 }
 
-export function useProjectValue(): ProjectData {
-  const project = useProject();
+export function useProjectValue(loadDefaultProject = false): ProjectData {
+  const project = useProject(loadDefaultProject);
   return project[0];
 }
