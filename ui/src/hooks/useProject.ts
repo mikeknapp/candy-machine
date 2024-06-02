@@ -1,32 +1,32 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AllProjectsContext, ProjectContext } from "../app";
 import { Project, ProjectData } from "../models/project";
+import { useSubscribe } from "./useSubscribe";
 
 export function useProject(): [ProjectData, Project] {
-  let projectContext = useContext(ProjectContext);
-  let allProjectsContext = useContext(AllProjectsContext);
-  const [project, setProject] = useState<ProjectData>(null);
+  let project = useContext(ProjectContext);
+  let allProjects = useContext(AllProjectsContext);
 
-  useEffect(() => {
-    if (!projectContext) return;
-    // Update the project state when notifySubscribers is called.
-    const listener = () => setProject(projectContext.readOnly);
-    projectContext.subscribe(listener);
-    return () => projectContext.unsubscribe(listener);
-  }, []);
+  const [projectData, setProjectData] = useState<ProjectData>(null);
 
-  useEffect(() => {
-    if (!allProjectsContext) return;
-    const listener = async () => {
-      // Load the first project in the list.
-      if (project !== null && allProjectsContext.hasValues) {
-        const firstProject = allProjectsContext.allProjects[0];
-        await projectContext.loadProject(firstProject);
+  // Listen to updates from the selected project.
+  useSubscribe(
+    ProjectContext,
+    (newValue: ProjectData) => setProjectData(newValue),
+    [projectData],
+  );
+
+  // Choose an initial project once the project list has loaded.
+  useSubscribe(
+    AllProjectsContext,
+    async () => {
+      if (projectData === null && allProjects.hasValues) {
+        const firstProject = allProjects.allProjects[0];
+        await project.loadProject(firstProject);
       }
-    };
-    allProjectsContext.subscribe(listener);
-    return () => allProjectsContext.unsubscribe(listener);
-  }, []);
+    },
+    [projectData, allProjects],
+  );
 
-  return [project, projectContext];
+  return [projectData, project];
 }

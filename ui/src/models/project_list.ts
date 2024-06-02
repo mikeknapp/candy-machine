@@ -1,7 +1,12 @@
 import { apiRequest } from "../api";
 import { State, Subscribable } from "./base";
 
-export class ProjectList extends Subscribable {
+export interface ProjectListData {
+  state: State;
+  projects: string[];
+}
+
+export class ProjectList extends Subscribable<ProjectListData> {
   private state = State.Init;
   private projects: string[] = [];
   private static instance: ProjectList;
@@ -12,6 +17,13 @@ export class ProjectList extends Subscribable {
       ProjectList.instance.load();
     }
     return ProjectList.instance;
+  }
+
+  public get readOnly(): ProjectListData {
+    return {
+      state: this.state,
+      projects: this.projects,
+    };
   }
 
   public get hasValues() {

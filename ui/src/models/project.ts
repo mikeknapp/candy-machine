@@ -28,7 +28,7 @@ export interface AutoTag {
   examples: string[];
 }
 
-export class Project extends Subscribable implements ProjectData {
+export class Project extends Subscribable<ProjectData> implements ProjectData {
   public state = State.Init;
   public name: string = "";
   public triggerWord: string = "";

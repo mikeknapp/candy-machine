@@ -5,20 +5,22 @@ export enum State {
   Error = "error",
 }
 
-export class Subscribable {
-  private listeners: (() => void)[] = [];
+export abstract class Subscribable<DataType> {
+  private listeners: ((newValue: DataType) => void)[] = [];
 
-  public subscribe(listener: () => void) {
+  public abstract get readOnly(): DataType;
+
+  public subscribe(listener: (newValue: DataType) => void) {
     this.listeners.push(listener);
   }
 
-  public unsubscribe(listener: () => void) {
+  public unsubscribe(listener: (newValue: DataType) => void) {
     this.listeners = this.listeners.filter((l) => l !== listener);
   }
 
   public notifyListeners() {
     for (const listener of this.listeners) {
-      listener();
+      listener(this.readOnly);
     }
   }
 }
