@@ -1,6 +1,69 @@
 import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
-import { Project } from "./project";
+import { Project, Project_old } from "./project";
+
+export interface SelectedImageTags {
+  projectName: string;
+  image: string;
+  selected: string[];
+  autoTags: string[];
+}
+
+export class Image {
+  public filename: string;
+  public tags: string[] = [];
+
+  constructor(filename: string, tags: string[] = []) {
+    this.filename = filename;
+    this.tags = tags;
+  }
+
+  static async load(filename: string): Promise<Image> {
+    const response = await apiRequest<Image>(`/image/${filename}/tags/load`);
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(`Failed to load image: ${response.errors}`);
+  }
+
+  public async saveTags(project: Project_old): Promise<boolean> {
+    const response = await apiRequest<{ result: string }>(
+      `/project/${project.name}/tags/save`,
+      {
+        body: JSON.stringify({ image: this.filename, tags: this.tags }),
+      },
+    );
+    if (response.success && response.data) {
+      return response.data.result === "OK";
+    }
+  }
+
+  public async loadTags(project: Project_old): Promise<string[]> {
+    const response = await apiRequest<string[]>(
+      `/project/${project.name}/tags/load?image=${this.filename}`,
+    );
+    if (response.success && response.data) {
+      this.tags = response.data;
+      return response.data;
+    }
+  }
+
+  public previewTagTextFile(project: Project): string {
+    const tags = [];
+    if (project.triggerWord) {
+      tags.push(project.triggerWord);
+    }
+    project.tagLayout.map((category) => {
+      const selectedFromCat = this.tags.filter((tag) =>
+        category.tags.includes(tag),
+      );
+      selectedFromCat.forEach((tag) => {
+        tags.push(tag);
+      });
+    });
+    return tags.join(", ");
+  }
+}
 
 export const imgSize = (
   filename: string,
@@ -24,7 +87,7 @@ export const imgAspectRatio = (filename: string) => {
 };
 
 export const deleteImage = async (
-  project: Project,
+  project: Project_old,
   filename: string,
 ): Promise<boolean> => {
   const response = await apiRequest(`/project/${project.name}/img/delete`, {
@@ -40,7 +103,7 @@ export const deleteImage = async (
 };
 
 export const editImage = async (
-  project: Project,
+  project: Project_old,
   filename: string,
   rotate: number,
   flip: boolean,

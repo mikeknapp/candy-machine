@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
 import { useSetRecoilState } from "recoil";
 import { deleteImage } from "../../models/image";
-import { Project } from "../../models/project";
+import { Project_old } from "../../models/project";
 import { deleteImageSelectorFamily } from "../../state/atoms";
 
 type DeleteImageModalProps = {
-  project: Project;
+  project: Project_old;
   selectedImg: string;
   show: boolean;
   onClose: () => void;

@@ -1,8 +1,8 @@
 import { DefaultValue, atom, selector, selectorFamily } from "recoil";
 import { CategoryData } from "../components/tagger/TagCategory";
+import { SelectedImageTags } from "../models/image";
 import {
-  Project,
-  SelectedImageTags,
+  Project_old,
   listProjects,
   loadTags,
   saveProject,
@@ -30,7 +30,7 @@ export const disableKeyboardShortcutsSelector = selector<boolean>({
   },
 });
 
-export const projectsAtom = atom<Project[]>({
+export const projectsAtom = atom<Project_old[]>({
   key: "projects",
   default: listProjects(),
 });
@@ -45,7 +45,7 @@ export const tagSearchTerm = atom<string | null>({
   default: null,
 });
 
-export const currentProjectSelector = selector<Project | null>({
+export const currentProjectSelector = selector<Project_old | null>({
   key: "currentProjectSelector",
   get: ({ get }) => {
     const projectList = get(projectsAtom);

@@ -7,7 +7,7 @@ import {
   FaRegTrashCan,
 } from "react-icons/fa6";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { Project, navigateImages } from "../../models/project";
+import { Project_old, navigateImages } from "../../models/project";
 import {
   currentProjectSelector,
   disableKeyboardShortcutsSelector,
@@ -17,7 +17,7 @@ import { scrollToThumbnail } from "../project/Thumbnails";
 import { CropImageModal } from "./CropImageModal";
 import { DeleteImageModal } from "./DeleteImageModal";
 
-export function QuickActions({ project }: { project: Project }) {
+export function QuickActions({ project }: { project: Project_old }) {
   const [currentProject, setCurrentProject] = useRecoilState(
     currentProjectSelector,
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import { SelectedImageTags } from "../../models/project";
+import { SelectedImageTags } from "../../models/image";
 
 export function AutoTagComparison({ imgTags }: { imgTags: SelectedImageTags }) {
   return (

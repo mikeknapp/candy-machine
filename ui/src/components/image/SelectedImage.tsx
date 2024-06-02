@@ -4,8 +4,8 @@ import { FaCheck } from "react-icons/fa";
 import { TbAlertTriangleFilled } from "react-icons/tb";
 import { useRecoilValue, useRecoilValueLoadable } from "recoil";
 import { API_BASE_URL } from "../../api";
-import { imgSize } from "../../models/image";
-import { SelectedImageTags, previewTagTextFile } from "../../models/project";
+import { SelectedImageTags, imgSize } from "../../models/image";
+import { previewTagTextFile } from "../../models/project";
 import {
   currentProjectSelector,
   selectedImgTagsSelector,

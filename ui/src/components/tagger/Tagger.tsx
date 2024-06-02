@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { TagCategory } from "./TagCategory";
 
 import { useRecoilValue, useRecoilValueLoadable } from "recoil";
-import { Project } from "../../models/project";
+import { Project_old } from "../../models/project";
 import { currentProjectSelector, tagLayoutSelector } from "../../state/atoms";
 import { ProjectCategoriesModal } from "./ProjectCategoriesModal";
 import { TagMenu } from "./TagMenu";
@@ -17,7 +17,7 @@ export function Tagger() {
     return null;
   }
 
-  const project = projectLoading.contents as Project;
+  const project = projectLoading.contents as Project_old;
 
   useEffect(() => {
     if (scrollRef.current) {

@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaPencil, FaWandMagicSparkles } from "react-icons/fa6";
 import { useRecoilStateLoadable, useRecoilValue } from "recoil";
-import { Project, SelectedImageTags } from "../../models/project";
+import { SelectedImageTags } from "../../models/image";
+import { Project_old } from "../../models/project";
 import {
   disableKeyboardShortcutsSelector,
   selectedImgTagsSelector,
@@ -11,7 +12,7 @@ import {
 import { ClearTagsModal } from "./ClearTagsModal";
 import { TagSearch } from "./TagSearch";
 
-export function TagMenu({ project }: { project: Project }) {
+export function TagMenu({ project }: { project: Project_old }) {
   const [showClearTagsModal, setShowClearTagsModal] = useState(false);
 
   const disableShortcuts = useRecoilValue(disableKeyboardShortcutsSelector);

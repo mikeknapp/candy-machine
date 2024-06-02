@@ -3,7 +3,7 @@ import React from "react";
 import { HiFolderPlus } from "react-icons/hi2";
 import { useSetRecoilState } from "recoil";
 import { showNewProjectModalAtom } from "../../state/atoms";
-import { ProjectSelector } from "./ProjectSelector";
+import { ProjectSelector } from "../project/ProjectSelector";
 
 export function Header() {
   const openNewProjectDialog = useSetRecoilState(showNewProjectModalAtom);

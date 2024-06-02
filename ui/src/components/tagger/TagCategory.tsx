@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
 import { useRecoilState, useRecoilStateLoadable, useRecoilValue } from "recoil";
-import { SelectedImageTags } from "../../models/project";
+import { SelectedImageTags } from "../../models/image";
 import {
   currentProjectSelector,
   selectedImgTagsSelector,

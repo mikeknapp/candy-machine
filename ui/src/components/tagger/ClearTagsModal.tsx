@@ -2,11 +2,11 @@ import { Button, Modal } from "flowbite-react";
 import React, { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
 import { useSetRecoilState } from "recoil";
-import { Project } from "../../models/project";
+import { Project_old } from "../../models/project";
 import { selectedImgTagsSelector } from "../../state/atoms";
 
 type ClearTagsModalProps = {
-  project: Project;
+  project: Project_old;
   selectedImg: string;
   show: boolean;
   onClose: () => void;
