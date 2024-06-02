@@ -1,16 +1,23 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AllProjectsContext } from "../app";
+import { AllProjectData, AllProjects } from "../models/all_projects";
+import { useSubscribe } from "./useSubscribe";
 
-export function useAllProjects() {
-  const projectsList = useContext(AllProjectsContext);
-  const [projects, setProjects] = useState<string[]>([]);
+export function useAllProjects(): [AllProjectData, AllProjects] {
+  const allProjectsContext = useContext(AllProjectsContext);
 
-  useEffect(() => {
-    const listener = () => setProjects([...projectsList.allProjects]);
-    projectsList.subscribe(listener);
-    return () => projectsList.unsubscribe(listener);
-  }, [projectsList]);
+  const [allProjectsData, setAllProjects] = useState<AllProjectData>();
 
-  // TODO: return data + context
-  return projects;
+  useSubscribe(
+    AllProjectsContext,
+    (newValue: AllProjectData) => setAllProjects(newValue),
+    [null, allProjectsData],
+  );
+
+  return [allProjectsData, allProjectsContext];
+}
+
+export function useAllProjectsValue() {
+  const [allProjectsData, _] = useAllProjects();
+  return allProjectsData;
 }

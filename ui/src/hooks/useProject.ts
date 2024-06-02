@@ -4,8 +4,8 @@ import { Project, ProjectData } from "../models/project";
 import { useSubscribe } from "./useSubscribe";
 
 export function useProject(): [ProjectData, Project] {
-  let project = useContext(ProjectContext);
-  let allProjects = useContext(AllProjectsContext);
+  let projectContext = useContext(ProjectContext);
+  let allProjectsContext = useContext(AllProjectsContext);
 
   const [projectData, setProjectData] = useState<ProjectData>(null);
 
@@ -20,13 +20,18 @@ export function useProject(): [ProjectData, Project] {
   useSubscribe(
     AllProjectsContext,
     async () => {
-      if (projectData === null && allProjects.hasValues) {
-        const firstProject = allProjects.allProjects[0];
-        await project.loadProject(firstProject);
+      if (projectData === null && allProjectsContext.hasProjects) {
+        const firstProject = allProjectsContext.projects[0];
+        await projectContext.loadProject(firstProject);
       }
     },
-    [projectData, allProjects],
+    [projectData, allProjectsContext],
   );
 
-  return [projectData, project];
+  return [projectData, projectContext];
+}
+
+export function useProjectValue(): ProjectData {
+  const project = useProject();
+  return project[0];
 }
