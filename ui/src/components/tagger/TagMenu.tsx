@@ -1,4 +1,4 @@
-import { Button, Spinner, Tooltip } from "flowbite-react";
+import { Button, Tooltip } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaPencil, FaWandMagicSparkles } from "react-icons/fa6";
@@ -73,7 +73,6 @@ export function TagMenu({ project }: { project: Project_old }) {
         <TagSearch />
 
         <div className="flex flex-row items-center">
-          {isLoadingTags && <Spinner className="mr-2" />}
           <Tooltip content="Attempt to fill in tags [a]">
             <Button
               size="xl"

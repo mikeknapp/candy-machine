@@ -13,7 +13,6 @@ export class AllProjects extends Subscribable<AllProjectData> {
   public static getInstance(): AllProjects {
     if (!AllProjects.instance) {
       AllProjects.instance = new AllProjects();
-      AllProjects.instance.load();
     }
     return AllProjects.instance;
   }

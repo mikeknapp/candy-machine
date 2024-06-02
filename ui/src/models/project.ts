@@ -5,7 +5,7 @@ import { State, Subscribable } from "./base";
 import { Image, SelectedImageTags } from "./image";
 
 export interface ProjectData {
-  state: string;
+  state: State;
   name: string;
   triggerWord: string;
   images: string[];

@@ -9,6 +9,12 @@ export function ProjectSelector() {
   const allProjects = useAllProjectsValue();
   const [project, projectContext] = useProject();
 
+  const isLoadingAllProjects = [State.Loading, State.Init].includes(
+    allProjects?.state,
+  );
+
+  const isLoadingProject = [State.Loading, State.Init].includes(project?.state);
+
   useEffect(() => {
     if (project !== null) {
       document.title = `Candy Machine (${project?.images.length})`;
@@ -19,43 +25,44 @@ export function ProjectSelector() {
 
   return (
     <>
-      <Dropdown
-        size="lg"
-        className="min-w-[200px]"
-        label={
-          <div className="flex flex-row items-center gap-2">
-            {project?.state === State.Loading ||
-            allProjects?.state === State.Loading ? (
-              <>
-                <Spinner size="sm" color="success" />
-                <span className="text-sm text-gray-700 dark:text-gray-400">
-                  Loading...
-                </span>
-              </>
-            ) : (
-              <>
-                <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
-                {project ? project.name : "No Projects"}
-              </>
-            )}
-          </div>
-        }
-        color="gray"
-        dismissOnClick
-      >
-        {allProjects?.projects.map((projectName) => (
-          <Dropdown.Item
-            key={`project-${projectName}`}
-            value={projectName}
-            className="p-3"
-            onClick={async () => {
-              await projectContext.loadProject(projectName);
-            }}
-          >
-            {projectName}
-          </Dropdown.Item>
-        ))}
-      </Dropdown>
+      {!isLoadingAllProjects && (
+        <Dropdown
+          size="lg"
+          className="min-w-[200px]"
+          label={
+            <div className="flex flex-row items-center gap-2">
+              {isLoadingProject ? (
+                <>
+                  <Spinner size="sm" color="success" />
+                  <span className="text-sm text-gray-700 dark:text-gray-400">
+                    Loading...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
+                  {project ? project.name : "No Projects"}
+                </>
+              )}
+            </div>
+          }
+          color="gray"
+          dismissOnClick
+        >
+          {allProjects?.projects.map((projectName) => (
+            <Dropdown.Item
+              key={`project-${projectName}`}
+              value={projectName}
+              className="p-3"
+              onClick={async () => {
+                await projectContext.loadProject(projectName);
+              }}
+            >
+              {projectName}
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
+      )}
     </>
   );
 }
