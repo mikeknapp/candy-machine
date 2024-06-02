@@ -18,10 +18,17 @@ export class Image {
     this.tags = tags;
   }
 
-  static async load(filename: string): Promise<Image> {
-    const response = await apiRequest<Image>(`/image/${filename}/tags/load`);
+  static async load(projectName: string, filename: string): Promise<Image> {
+    const response = await apiRequest<{
+      autoTags: string[];
+      image: string;
+      projectName: string;
+      selected: string[];
+    }>(`/project/${projectName}/tags/load?image=${filename}`, {
+      method: "GET",
+    });
     if (response.success && response.data) {
-      return response.data;
+      return new Image(filename, response.data.selected);
     }
     throw new Error(`Failed to load image: ${response.errors}`);
   }

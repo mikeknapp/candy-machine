@@ -1,13 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
+import { useProject } from "../../hooks/useProject";
 import { imgAspectRatio } from "../../models/image";
-import { navigateImages } from "../../models/project";
-import {
-  currentProjectSelector,
-  disableKeyboardShortcutsSelector,
-  selectedImageSelector,
-} from "../../state/atoms";
+import { disableKeyboardShortcutsSelector } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
 
 const BORDER_WIDTH = 4;
@@ -32,14 +28,14 @@ export function Thumbnails() {
   const observer = useRef<IntersectionObserver | null>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  const project = useRecoilValue(currentProjectSelector);
-  const setSelectedImage = useSetRecoilState(selectedImageSelector);
+  const [project, projectContext] = useProject();
+
   const disableKeyboardShortcuts = useRecoilValue(
     disableKeyboardShortcutsSelector,
   );
 
   const saveSelectedImage = (img: string) => {
-    setSelectedImage(img);
+    projectContext?.setSelectedImage(img);
     scrollToThumbnail(img);
   };
 
@@ -53,12 +49,12 @@ export function Thumbnails() {
         case "j":
         case "ArrowDown":
         case "ArrowRight":
-          imgToSelect = navigateImages(project, "next");
+          imgToSelect = projectContext.navigateImages("next");
           break;
         case "k":
         case "ArrowUp":
         case "ArrowLeft":
-          imgToSelect = navigateImages(project, "prev");
+          imgToSelect = projectContext.navigateImages("prev");
       }
       if (imgToSelect) {
         saveSelectedImage(imgToSelect);
@@ -112,7 +108,7 @@ export function Thumbnails() {
     focusStealer?.focus();
     setTimeout(() => {
       focusStealer?.blur();
-      scrollToThumbnail(project.selectedImage);
+      scrollToThumbnail(project?.selectedImage);
     }, 100);
   }, [project]);
 
@@ -122,7 +118,7 @@ export function Thumbnails() {
         id="focus-stealer"
         className="fixed left-0 top-0 h-[1px] w-[1px] bg-transparent focus:outline-none"
       />
-      {project.images.length > 0 && (
+      {project?.images && (
         <div
           className={`flex h-full w-[${CONTAINER_WIDTH}] min-w-[125px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
         >

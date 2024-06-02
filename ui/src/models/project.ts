@@ -33,6 +33,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
   public name: string = "";
   public triggerWord: string = "";
   public images: string[] = [];
+  public selectedImage: string = "";
   public _selectedImage: Image = null;
   public autoTags: AutoTag[] = [];
   public tagLayout: CategoryData[] = [];
@@ -52,6 +53,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
     this.name = newName;
     this.triggerWord = "";
     this.images = [];
+    this.selectedImage = "";
     this._selectedImage = null;
     this.autoTags = [];
     this.tagLayout = [];
@@ -72,9 +74,18 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
     };
   }
 
-  // TODO: Return a readOnly version of ImageData instead.
-  public get selectedImage(): string {
-    return this._selectedImage ? this._selectedImage.filename : "";
+  public async setSelectedImage(filename: string, save = true): Promise<void> {
+    if (filename === "") {
+      return;
+    }
+    this.selectedImage = filename;
+    this.notifyListeners();
+    setTimeout(async () => {
+      // Do the rest of work in the next event loop.
+      if (save) this.save();
+      this._selectedImage = await Image.load(this.name, filename);
+      this.notifyListeners();
+    }, 0);
   }
 
   public async createNew(data: NewProjectRequest): Promise<boolean> {
@@ -112,8 +123,10 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
       this.autoTags = response.data.autoTags;
       this.tagLayout = response.data.tagLayout;
       this.requiresSetup = response.data.requiresSetup;
+      // TODO: Maybe we should have a setState method on the base class that notifies listeners?
       this.state = State.Loaded;
       this.notifyListeners();
+      this.setSelectedImage(response.data.selectedImage, false);
       return true;
     }
     this.state = State.Error;
@@ -201,7 +214,7 @@ export class Project extends Subscribable<ProjectData> implements ProjectData {
 
     // If this image was selected, update the selected image.
     if (this._selectedImage && this._selectedImage.filename === oldFilename) {
-      this._selectedImage = await Image.load(newFilename);
+      this.setSelectedImage(newFilename);
     }
 
     this.notifyListeners();
