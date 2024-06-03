@@ -175,19 +175,40 @@ export class Project extends Subscribable<ProjectData> {
   }
 
   public async deleteImage(filename: string): Promise<boolean> {
+    // Find the next image to select after we delete.
+    const nextImage = this.navigateImages("next");
+    const prevImage = this.navigateImages("prev");
+    const bestImage = nextImage || prevImage;
+
+    // Remove the image from the list.
+    const index = this.images.indexOf(filename);
+    if (index !== -1) {
+      this.images.splice(index, 1);
+    }
+
+    // Select the best image.
+    if (bestImage) {
+      this.setSelectedImage(bestImage);
+    } else {
+      this.selectedImage = null;
+      this.notifyListeners();
+    }
+
+    // Perform the delete on the server.
     const response = await apiRequest(`/project/${this.name}/img/delete`, {
       body: JSON.stringify({
         filename: filename,
       }),
     });
     if (!response.success) {
-      throw new Error(`Failed to delete image: ${response.errors}`);
-    }
-    // Remove the image from the list.
-    const index = this.images.indexOf(filename);
-    if (index !== -1) {
-      this.images.splice(index, 1);
-      this.notifyListeners();
+      this.images.splice(index, 0, filename);
+      this.selectedImage = new LoadableImage(this.name, filename, () => {
+        this.notifyListeners();
+        setTimeout(() => {
+          alert(`Failed to delete image; check server logs`);
+        }, 500);
+      });
+      return false;
     }
     return true;
   }
