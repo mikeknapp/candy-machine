@@ -11,7 +11,7 @@ export function Editor() {
   const allProjects = useAllProjectsValue();
   const project = useProjectValue();
 
-  if (allProjects.isLoading || project.isLoading) {
+  if (allProjects?.isLoading || project?.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" />

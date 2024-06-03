@@ -27,6 +27,8 @@ export abstract class Subscribable<DataType> {
 
   public subscribe(listener: (newValue: DataType) => void) {
     this.listeners.push(listener);
+    // Echo the latest copy of the data back immediately.
+    listener(this.readOnly);
   }
 
   public unsubscribe(listener: (newValue: DataType) => void) {

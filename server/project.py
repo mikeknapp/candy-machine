@@ -1,19 +1,13 @@
 import json
 import os
 import shutil
+import time
 from pathlib import Path
 from typing import Tuple
 
 import imagehash
-from consts import (
-    AUTO_TAGS,
-    DEFAULT_CATEGORY_FILE,
-    IMG_EXT,
-    IMGS_DIR,
-    PROJECT_CATEGORY_FILE,
-    PROJECT_CONFIG_FILE,
-    PROJECTS_DIR,
-)
+from consts import (AUTO_TAGS, DEFAULT_CATEGORY_FILE, IMG_EXT, IMGS_DIR,
+                    PROJECT_CATEGORY_FILE, PROJECT_CONFIG_FILE, PROJECTS_DIR)
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
 from tags import common_suffixes
@@ -110,7 +104,7 @@ class Project:
 
     def set_selected_image(self, image_name: str):
         if image_name.strip() not in self.imgs:
-            raise ValueError("Invalid image name")
+            raise ValueError(f"Invalid image name: {image_name}")
         self.selected_image = image_name
 
     def _load(self):
@@ -122,20 +116,35 @@ class Project:
         self.requires_setup = False
 
         # Load config file.
-        file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
-        if os.path.exists(file_path):
-            with open(file_path, "r") as fp:
-                data = json.load(fp)
-                if "selectedImage" in data:
-                    self.selected_image = data["selectedImage"]
-                if "triggerWord" in data:
-                    self.trigger_word = data["triggerWord"]
+        self._load_config()
 
         # Load the auto tags.
         if len(self.project_layout) == 0:
             self.project_layout = self._default_tag_categories()
             self.auto_tags = self._get_filtered_auto_tags(self.project_layout)
             self.requires_setup = len(self.auto_tags) > 0
+
+    def _load_config(self):
+        file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
+        if not os.path.exists(file_path):
+            return
+        # TODO: If this continues to prove an issue, cache the project config instead of reading it off disk.
+        retries = 3
+        delay = 1
+        for i in range(retries):
+            try:
+                with open(file_path, "r") as fp:
+                    data = json.load(fp)
+                    if "selectedImage" in data:
+                        self.selected_image = data["selectedImage"]
+                    if "triggerWord" in data:
+                        self.trigger_word = data["triggerWord"]
+                break
+            except IOError:
+                if i < retries - 1:
+                    time.sleep(delay)
+                else:
+                    raise IOError(f"Failed to read {file_path}, too much contention")
 
     def save(self, data: dict = {}):
         # Save the tag layout.
@@ -146,7 +155,7 @@ class Project:
 
         # Save the config file.
         if "selectedImage" in data:
-            self.selected_image = data["selectedImage"]
+            self.selected_image = data["selectedImage"].get("filename", "")
 
         if "triggerWord" in data:
             self.trigger_word = data["triggerWord"]
@@ -183,7 +192,17 @@ class Project:
             "autoTags": self.auto_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],
             "requiresSetup": self.requires_setup,
-            "selectedImage": self.selected_image,
+            "selectedImage": self.selected_image_to_dict(),
+        }
+
+    def selected_image_to_dict(self):
+        if not self.selected_image:
+            return {}
+        return {
+            "projectName": self.name,
+            "filename": self.selected_image,
+            "tags": self.get_selected_image_tags(),
+            "autoTags": self.get_selected_auto_image_tags(),
         }
 
     def _read_tag_category_file(self, file_path: str) -> list[TagCategory]:

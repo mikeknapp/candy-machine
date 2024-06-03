@@ -1,7 +1,7 @@
 import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
 import { State } from "./base";
-import { Project, Project_old } from "./project";
+import { ProjectData, Project_old } from "./project";
 
 export interface SelectedImageTags {
   projectName: string;
@@ -60,22 +60,6 @@ export class Image {
       return response.data.result === "OK";
     }
   }
-
-  public previewTagTextFile(project: Project): string {
-    const tags = [];
-    if (project.triggerWord) {
-      tags.push(project.triggerWord);
-    }
-    project.tagLayout.map((category) => {
-      const selectedFromCat = this.tags.filter((tag) =>
-        category.tags.includes(tag),
-      );
-      selectedFromCat.forEach((tag) => {
-        tags.push(tag);
-      });
-    });
-    return tags.join(", ");
-  }
 }
 
 export class LoadableImage extends Image {
@@ -90,19 +74,19 @@ export class LoadableImage extends Image {
   private async load(callback: () => void): Promise<void> {
     const response = await apiRequest<{
       autoTags: string[];
-      image: string;
-      projectName: string;
-      selected: string[];
+      tags: string[];
     }>(`/project/${this.projectName}/tags/load?image=${this.filename}`, {
       method: "GET",
     });
-    if (response.success && response.data) {
+    if (!response.success) {
+      this.state = State.Error;
+      console.error("Failed to load image:", response.errors);
+    } else {
       this.state = State.Loaded;
-      this.tags = response.data.selected;
+      this.tags = response.data.tags;
       this.autoTags = response.data.autoTags;
-      callback();
     }
-    console.log("Failed to load image:", response.errors);
+    callback();
   }
 }
 
@@ -128,6 +112,31 @@ export const imgAspectRatio = (filename: string) => {
     return undefined;
   }
   return width / height;
+};
+
+export const previewTextFile = (project: ProjectData): string => {
+  if (
+    !project ||
+    !project.selectedImage ||
+    project.selectedImage.tags.length === 0
+  ) {
+    return null;
+  }
+  const tags = [];
+  if (project.triggerWord) {
+    tags.push(project.triggerWord);
+  }
+  if (project.selectedImage.tags?.length > 0) {
+    project.tagLayout.map((category) => {
+      const selectedFromCat = project.selectedImage.tags.filter((tag) =>
+        category.tags.includes(tag),
+      );
+      selectedFromCat.forEach((tag) => {
+        tags.push(tag);
+      });
+    });
+  }
+  return tags.join(", ");
 };
 
 export const deleteImage = async (

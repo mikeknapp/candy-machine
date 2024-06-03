@@ -104,11 +104,13 @@ export function QuickActions() {
 
       <CropImageModal />
 
-      <DeleteImageModal
-        selectedImg={project.selectedImage?.filename}
-        show={showDeleteImageModal}
-        onClose={() => setShowDeleteImageModal(false)}
-      />
+      {project && (
+        <DeleteImageModal
+          selectedImg={project.selectedImage?.filename}
+          show={showDeleteImageModal}
+          onClose={() => setShowDeleteImageModal(false)}
+        />
+      )}
     </div>
   );
 }

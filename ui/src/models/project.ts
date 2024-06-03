@@ -83,10 +83,9 @@ export class Project extends Subscribable<ProjectData> {
     if (!filename || this.selectedImage?.filename === filename) {
       return;
     }
-    console.log("loading ", filename);
-    this.selectedImage = new LoadableImage(this.name, filename, () => {
-      this.notifyListeners();
-    });
+    this.selectedImage = new LoadableImage(this.name, filename, () =>
+      this.notifyListeners(),
+    );
     this.notifyListeners();
     this.save();
   }

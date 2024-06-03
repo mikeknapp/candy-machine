@@ -4,19 +4,15 @@ import { FaCheck } from "react-icons/fa";
 import { TbAlertTriangleFilled } from "react-icons/tb";
 import { API_BASE_URL } from "../../api";
 import { useProjectValue } from "../../hooks/useProject";
-import { imgSize } from "../../models/image";
+import { imgSize, previewTextFile } from "../../models/image";
 import { AutoTagComparison } from "./AutoTagComparison";
 import { QuickActions } from "./QuickActions";
 
 export function SelectedImage() {
   const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  const project = useProjectValue();
-
-  let selectedTags = null;
-  let tagsTextFile = "";
-
+  const project = useProjectValue(false);
   const size = imgSize(project?.selectedImage?.filename);
+  const txtFile = previewTextFile(project);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -37,7 +33,7 @@ export function SelectedImage() {
           {/* Image preview */}
           <div className="flex flex-row justify-center">
             <img
-              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage}`}
+              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage.filename}`}
               className="aspect-auto max-h-[550px] w-auto max-w-[550px] rounded-md shadow-md"
               alt="Preview"
             />
@@ -61,25 +57,25 @@ export function SelectedImage() {
           </div>
 
           {/* Tags .txt file preview */}
-          {tagsTextFile && (
+          {txtFile && (
             <>
               <h2 className="text-sm font-bold  text-gray-700 md:mt-2">
                 Your Image Tags
               </h2>
               <div className="rounded-md bg-gray-100 p-1 font-mono text-sm font-bold text-blue-500 dark:bg-slate-900 md:p-6 md:text-base">
-                {tagsTextFile}
+                {txtFile}
               </div>
             </>
           )}
 
           {/* Auto tags */}
-          {project.selectedImage?.autoTags && (
+          {project.selectedImage?.autoTags.length > 0 && (
             <>
               <h2 className="text-sm font-bold text-gray-700 md:mt-2">
                 Auto Tags (Not Applied, FYI Only)
               </h2>
               <div className="rounded-md bg-gray-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
-                <AutoTagComparison imgTags={selectedTags} />
+                <AutoTagComparison selectedImage={project.selectedImage} />
               </div>
             </>
           )}
