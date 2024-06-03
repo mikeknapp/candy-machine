@@ -19,7 +19,7 @@ export function Tagger() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [projectValue.selectedImage]);
+  }, [projectValue.selectedImage?.filename]);
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-slate-50 py-5 pl-10 dark:bg-slate-900">

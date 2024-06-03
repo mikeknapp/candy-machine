@@ -59,6 +59,16 @@ export class Image {
     await this.saveTags();
   }
 
+  public async toggleTag(tag: string) {
+    if (this.tags.includes(tag)) {
+      this.tags = this.tags.filter((value) => value !== tag);
+    } else {
+      this.tags.push(tag);
+    }
+    this.onChange();
+    await this.saveTags();
+  }
+
   public async applyAutoTags(tagLayout: CategoryData[]) {
     // Loop through our pre-defined tag categories, and find matches with any auto tags.
     let newTags = new Set<string>();
@@ -154,7 +164,7 @@ export const findMatchingTags = (tagTemplate: string, candidates: string[]) => {
   let results: string[] = [];
   const broadMatch = tagTemplate.match(/^({[^}]+})([^{]+)$/);
   if (broadMatch) {
-    const suffix = broadMatch[2].trim();
+    const suffix = broadMatch[2];
     candidates.forEach((tag) => {
       if (tag.endsWith(suffix)) {
         results.push(tag);

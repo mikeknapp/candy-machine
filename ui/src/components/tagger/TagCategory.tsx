@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
-import { useRecoilState, useRecoilStateLoadable, useRecoilValue } from "recoil";
-import { SelectedImageTags } from "../../models/image";
-import {
-  currentProjectSelector,
-  selectedImgTagsSelector,
-  tagSearchTerm,
-} from "../../state/atoms";
+import { useRecoilState } from "recoil";
+import { useProjectState } from "../../hooks/useProject";
+import { findMatchingTags } from "../../models/image";
+import { tagSearchTerm } from "../../state/atoms";
 import { Tag } from "./Tag";
 
 export type CategoryData = {
@@ -16,54 +13,38 @@ export type CategoryData = {
 };
 
 export function TagCategory({ category }: { category: CategoryData }) {
-  const [sortedTags, setSortedTags] = useState(category.tags);
-
-  const project = useRecoilValue(currentProjectSelector);
+  const [projectValue, project] = useProjectState();
   const [tagSearch, setTagSearch] = useRecoilState(tagSearchTerm);
-  const [selectedImgTagsLoadable, setSelectedImgTagsTags] =
-    useRecoilStateLoadable(
-      selectedImgTagsSelector({
-        projectName: project.name,
-        image: project.selectedImage,
-      }),
-    );
+  const [categoryTags, setCategoryTags] = useState(category.tags);
 
-  const toggleTag = (tag: string) => {
-    setSelectedImgTagsTags((prev) => {
-      if (prev.selected.includes(tag)) {
-        return { ...prev, selected: prev.selected.filter((t) => t !== tag) };
-      } else {
-        return { ...prev, selected: [...prev.selected, tag] };
-      }
+  let selectedTags = projectValue.selectedImage?.tags || [];
+
+  useEffect(() => {
+    // Ensure we have all of the relevant tags for this category, starting with the default layout.
+    let relevantTags = new Set<string>(category.tags);
+
+    // Create a new tage for any selected tags that match a broad match tag.
+    category.tags.forEach((tagTemplate) => {
+      findMatchingTags(tagTemplate, selectedTags).forEach((tag) => {
+        relevantTags.add(tag);
+      });
     });
-    setTimeout(() => setTagSearch(null), 500);
-  };
 
-  let selectedTags: string[] = [];
-  if (selectedImgTagsLoadable.state === "hasValue") {
-    let data = selectedImgTagsLoadable.contents as SelectedImageTags;
-    if (data?.selected?.length > 0) {
-      selectedTags = data.selected;
-    }
-  }
+    setCategoryTags(Array.from(relevantTags));
+  }, [category, selectedTags]);
 
   useEffect(() => {
-    setSortedTags(category.tags);
-  }, [category, tagSearch]);
+    // Sort + apply any active search filter.
+    setCategoryTags((prev) => {
+      if (!prev) return []; // Wait for tags to load.
 
-  useEffect(() => {
-    if (selectedTags.length == 0) {
-      return;
-    }
-    // Move selected tags to the front of the list.
-    setSortedTags((prev) => {
-      if (!prev) {
-        return prev;
-      }
+      // Move selected tags to the front of the list.
       const selected = prev.filter((tag) => selectedTags.includes(tag)) || [];
       const unselected =
         prev.filter((tag) => !selectedTags.includes(tag)) || [];
       const orderedTags = [...selected, ...unselected];
+
+      // Apply any active search filter.
       if (tagSearch) {
         return orderedTags.filter((tag) =>
           tag.toLowerCase().includes(tagSearch.toLowerCase()),
@@ -71,9 +52,9 @@ export function TagCategory({ category }: { category: CategoryData }) {
       }
       return orderedTags;
     });
-  }, [selectedImgTagsLoadable, tagSearch]);
+  }, [categoryTags, category, selectedTags, tagSearch]);
 
-  if (sortedTags.length === 0) {
+  if (categoryTags.length === 0) {
     return null;
   }
 
@@ -92,11 +73,14 @@ export function TagCategory({ category }: { category: CategoryData }) {
         <HiPlusCircle className="cursor-pointer text-lg text-gray-500 hover:text-green-500" />
       </h2>
       <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
-        {sortedTags.map((tag, i) => (
+        {categoryTags.map((tag, i) => (
           <Tag
             key={`${tag}-${i}`}
             text={tag}
-            onClick={() => toggleTag(tag)}
+            onClick={() => {
+              project.selectedImage?.toggleTag(tag);
+              setTimeout(() => setTagSearch(null), 500);
+            }}
             color={category.color}
             isSelected={selectedTags.includes(tag)}
           />
