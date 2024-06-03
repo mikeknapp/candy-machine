@@ -1,9 +1,8 @@
 import { Button, Modal } from "flowbite-react";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
-import { useSetRecoilState } from "recoil";
+import { ProjectContext } from "../../app";
 import { Project_old } from "../../models/project";
-import { selectedImgTagsSelector } from "../../state/atoms";
 
 type ClearTagsModalProps = {
   project: Project_old;
@@ -13,14 +12,9 @@ type ClearTagsModalProps = {
 };
 
 export function ClearTagsModal(props: ClearTagsModalProps) {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const projectContext = useContext(ProjectContext);
 
-  const setSelectedTags = useSetRecoilState(
-    selectedImgTagsSelector({
-      projectName: props.project.name,
-      image: props.selectedImg,
-    }),
-  );
+  const [isProcessing, setIsProcessing] = useState(false);
 
   return (
     <Modal
@@ -44,10 +38,7 @@ export function ClearTagsModal(props: ClearTagsModalProps) {
               isProcessing={isProcessing}
               onClick={async () => {
                 setIsProcessing(true);
-                setSelectedTags((prev) => ({
-                  ...prev,
-                  selected: [],
-                }));
+                projectContext.selectedImage?.clearTags();
                 props.onClose();
                 setIsProcessing(false);
               }}

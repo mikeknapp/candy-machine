@@ -83,8 +83,10 @@ export class Project extends Subscribable<ProjectData> {
     if (!filename || this.selectedImage?.filename === filename) {
       return;
     }
-    this.selectedImage = new LoadableImage(this.name, filename, () =>
-      this.notifyListeners(),
+    this.selectedImage = new LoadableImage(
+      () => this.notifyListeners(),
+      this.name,
+      filename,
     );
     this.notifyListeners();
     this.save();
@@ -126,6 +128,7 @@ export class Project extends Subscribable<ProjectData> {
       this.requiresSetup = response.data.requiresSetup;
       if (response.data.selectedImage) {
         this.selectedImage = new Image(
+          () => this.notifyListeners(),
           this.name,
           response.data.selectedImage.filename,
           response.data.selectedImage.tags,
@@ -202,12 +205,14 @@ export class Project extends Subscribable<ProjectData> {
     });
     if (!response.success) {
       this.images.splice(index, 0, filename);
-      this.selectedImage = new LoadableImage(this.name, filename, () => {
-        this.notifyListeners();
-        setTimeout(() => {
-          alert(`Failed to delete image; check server logs`);
-        }, 500);
-      });
+      this.selectedImage = new LoadableImage(
+        () => this.notifyListeners(),
+        this.name,
+        filename,
+      );
+      setTimeout(() => {
+        alert(`Failed to delete image; check server logs`);
+      }, 500);
       return false;
     }
     return true;

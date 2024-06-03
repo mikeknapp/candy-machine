@@ -19,19 +19,22 @@ export interface SelectedImage {
 }
 
 export class Image {
-  public state: State;
+  protected onChange: () => void;
+  protected state: State;
   public projectName: string;
   public filename: string;
   public tags: string[] = [];
   public autoTags: string[] = [];
 
   constructor(
+    onChange: () => void,
     projectName: string,
     filename: string,
     tags: string[],
     autoTags: string[],
     state = State.Loaded,
   ) {
+    this.onChange = onChange;
     this.projectName = projectName;
     this.filename = filename;
     this.tags = tags;
@@ -49,6 +52,12 @@ export class Image {
     };
   }
 
+  public async clearTags(): Promise<boolean> {
+    this.tags = [];
+    this.onChange();
+    return await this.saveTags();
+  }
+
   public async saveTags(): Promise<boolean> {
     const response = await apiRequest<{ result: string }>(
       `/project/${this.projectName}/tags/save`,
@@ -63,15 +72,15 @@ export class Image {
 }
 
 export class LoadableImage extends Image {
-  constructor(projectName: string, filename: string, onLoad: () => void) {
-    super(projectName, filename, [], [], State.Loading);
+  constructor(onChange: () => void, projectName: string, filename: string) {
+    super(onChange, projectName, filename, [], [], State.Loading);
     // Load the image asynchonously so that the UI isn't blocked by the constructor.
-    (() => {
-      this.load(onLoad);
-    })();
+    new Promise(() => {
+      setTimeout(() => this.load(), 0);
+    });
   }
 
-  private async load(callback: () => void): Promise<void> {
+  private async load(): Promise<void> {
     const response = await apiRequest<{
       autoTags: string[];
       tags: string[];
@@ -86,7 +95,7 @@ export class LoadableImage extends Image {
       this.tags = response.data.tags;
       this.autoTags = response.data.autoTags;
     }
-    callback();
+    this.onChange();
   }
 }
 
