@@ -231,7 +231,8 @@ export class Project extends Subscribable<ProjectData> {
       },
     );
     if (!response.success) {
-      throw new Error(`Failed to edit image: ${response.errors}`);
+      alert(`Failed to edit image; check server logs`);
+      return false;
     }
     const newFilename = response.data.newFilename;
     // Update the image in the list.

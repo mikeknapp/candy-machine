@@ -20,14 +20,10 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
-import { editImage } from "../../models/image";
-import {
-  currentProjectSelector,
-  replaceImageSelectorFamily,
-  showCropImageModalAtom,
-} from "../../state/atoms";
+import { useProject } from "../../hooks/useProject";
+import { showCropImageModalAtom } from "../../state/atoms";
 
 const INITIAL_CROP: PercentCrop = {
   unit: "%",
@@ -75,14 +71,9 @@ enum Rotation {
 }
 
 export function CropImageModal() {
-  const project = useRecoilValue(currentProjectSelector);
+  const [project, projectContext] = useProject();
+
   const [showModal, setShowModal] = useRecoilState(showCropImageModalAtom);
-  const replaceImageSF = useSetRecoilState(
-    replaceImageSelectorFamily({
-      projectName: project.name,
-      oldFile: project.selectedImage,
-    }),
-  );
 
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<PercentCrop>(INITIAL_CROP);
@@ -165,14 +156,12 @@ export function CropImageModal() {
   const saveImage = async () => {
     setIsSaving(true);
     const finalCrop = convertToPixelCrop(crop, imgSize.w, imgSize.h);
-    const resp = await editImage(
-      project,
-      project.selectedImage,
+    await projectContext.editImage(
+      project.selectedImage.filename,
       rotate,
       flipHorizontal,
       finalCrop,
     );
-    replaceImageSF((old) => resp || old);
     setIsSaving(false);
     setShowModal(false);
   };
@@ -192,117 +181,121 @@ export function CropImageModal() {
   }, [imgSize, aspect]);
 
   useEffect(() => {
-    if (showModal && project.selectedImage) {
+    if (showModal && project?.selectedImage) {
       setCrop(INITIAL_CROP);
       setAspect(AspectRatio.CUSTOM);
       setRotate(Rotation.ZERO);
       setFlipHorizontal(false);
       setImgSize(INITIAL_SIZE);
     }
-  }, [project.selectedImage]);
+  }, [showModal, project?.selectedImage]);
 
   const pixelCrop = convertToPixelCrop(crop, imgSize.w, imgSize.h);
 
   return (
-    <Modal
-      show={showModal}
-      dismissible={true}
-      onClose={() => setShowModal(false)}
-      size="4xl"
-    >
-      <Modal.Body>
-        <div className="flex flex-row justify-center gap-3 py-3">
-          <Button
-            disabled={isRotating}
-            color="light"
-            size="lg"
-            onClick={() => {
-              setIsRotating(true);
-              setAspect(AspectRatio.CUSTOM);
-              setRotate((rotate + 90) % 360);
-            }}
-          >
-            <MdRotate90DegreesCw className="mr-2 h-6 w-6" /> Rotate Left
-          </Button>
+    <>
+      {project?.selectedImage && (
+        <Modal
+          show={showModal}
+          dismissible={true}
+          onClose={() => setShowModal(false)}
+          size="4xl"
+        >
+          <Modal.Body>
+            <div className="flex flex-row justify-center gap-3 py-3">
+              <Button
+                disabled={isRotating}
+                color="light"
+                size="lg"
+                onClick={() => {
+                  setIsRotating(true);
+                  setAspect(AspectRatio.CUSTOM);
+                  setRotate((rotate + 90) % 360);
+                }}
+              >
+                <MdRotate90DegreesCw className="mr-2 h-6 w-6" /> Rotate Left
+              </Button>
 
-          <Button
-            disabled={isRotating}
-            color="light"
-            size="lg"
-            onClick={() => setFlipHorizontal(!flipHorizontal)}
-          >
-            <MdFlip className="mr-2 h-6 w-6" /> Flip Horizontal
-          </Button>
+              <Button
+                disabled={isRotating}
+                color="light"
+                size="lg"
+                onClick={() => setFlipHorizontal(!flipHorizontal)}
+              >
+                <MdFlip className="mr-2 h-6 w-6" /> Flip Horizontal
+              </Button>
 
-          <Dropdown
-            disabled={isRotating}
-            color="light"
-            label={<>{getAspectRatioIcon(aspect, true)} Crop Shape</>}
-            size="lg"
-          >
-            {Object.values(AspectRatio).map((a) => (
-              <Dropdown.Item key={a} onClick={() => setAspect(a)}>
-                {getAspectRatioIcon(a)}
-                {a} {aspect === a && <FcCheckmark className="ml-2" />}
-              </Dropdown.Item>
-            ))}
-          </Dropdown>
-        </div>
-
-        <div className="relative flex h-[500px] flex-row items-center justify-center bg-black">
-          {isRotating && <Spinner size="lg" />}
-          <ReactCrop
-            crop={crop}
-            key={`edit-image-${project.name}-${project.selectedImage}-${imgSize.w}x${imgSize.h}`}
-            onChange={(c) => {
-              // Prevent crop from going out of bounds. (There seems to be bug with click and drag.)
-              c.x = Math.max(0, c.x);
-              c.y = Math.max(0, c.y);
-              c.width = Math.min(imgSize.imgTagW, c.width);
-              c.height = Math.min(imgSize.imgTagH, c.height);
-              setCrop(
-                convertToPercentCrop(c, imgSize.imgTagW, imgSize.imgTagH),
-              );
-            }}
-            ruleOfThirds
-            minHeight={100}
-            minWidth={100}
-            keepSelection
-            aspect={getAspectRatioValue(aspect)}
-            className={`flex ${isRotating ? "hidden" : ""}`}
-          >
-            <img
-              ref={imgRef}
-              key={`edit-image-${project.selectedImage}-${rotate}`}
-              style={{
-                transform: `scaleX(${flipHorizontal ? -1 : 1})`,
-              }}
-              className="h-[500px]"
-              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage}${rotate > 0 ? `?rotate=${rotate}` : ""}`}
-              onLoad={onImageLoad}
-            />
-          </ReactCrop>
-          {pixelCrop && (
-            <div className="absolute bottom-2 left-2 rounded-md bg-yellow-100 p-1 font-mono text-xs">
-              {Math.round(pixelCrop.width)} x {Math.round(pixelCrop.height)}
+              <Dropdown
+                disabled={isRotating}
+                color="light"
+                label={<>{getAspectRatioIcon(aspect, true)} Crop Shape</>}
+                size="lg"
+              >
+                {Object.values(AspectRatio).map((a) => (
+                  <Dropdown.Item key={a} onClick={() => setAspect(a)}>
+                    {getAspectRatioIcon(a)}
+                    {a} {aspect === a && <FcCheckmark className="ml-2" />}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
             </div>
-          )}
-        </div>
 
-        <div className="flex flex-row justify-end gap-2 pt-4">
-          <Button color="gray" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            gradientDuoTone="greenToBlue"
-            onClick={saveImage}
-            disabled={isRotating || isSaving}
-            isProcessing={isRotating || isSaving}
-          >
-            Save Modified Image
-          </Button>
-        </div>
-      </Modal.Body>
-    </Modal>
+            <div className="relative flex h-[500px] flex-row items-center justify-center bg-black">
+              {isRotating && <Spinner size="lg" />}
+              <ReactCrop
+                crop={crop}
+                key={`edit-image-${project.name}-${project.selectedImage.filename}-${imgSize.w}x${imgSize.h}`}
+                onChange={(c) => {
+                  // Prevent crop from going out of bounds. (There seems to be bug with click and drag.)
+                  c.x = Math.max(0, c.x);
+                  c.y = Math.max(0, c.y);
+                  c.width = Math.min(imgSize.imgTagW, c.width);
+                  c.height = Math.min(imgSize.imgTagH, c.height);
+                  setCrop(
+                    convertToPercentCrop(c, imgSize.imgTagW, imgSize.imgTagH),
+                  );
+                }}
+                ruleOfThirds
+                minHeight={100}
+                minWidth={100}
+                keepSelection
+                aspect={getAspectRatioValue(aspect)}
+                className={`flex ${isRotating ? "hidden" : ""}`}
+              >
+                <img
+                  ref={imgRef}
+                  key={`edit-image-${project.selectedImage}-${rotate}`}
+                  style={{
+                    transform: `scaleX(${flipHorizontal ? -1 : 1})`,
+                  }}
+                  className="h-[500px]"
+                  src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage?.filename}${rotate > 0 ? `?rotate=${rotate}` : ""}`}
+                  onLoad={onImageLoad}
+                />
+              </ReactCrop>
+              {pixelCrop && (
+                <div className="absolute bottom-2 left-2 rounded-md bg-yellow-100 p-1 font-mono text-xs">
+                  {Math.round(pixelCrop.width)} x {Math.round(pixelCrop.height)}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-row justify-end gap-2 pt-4">
+              <Button color="gray" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                gradientDuoTone="greenToBlue"
+                onClick={saveImage}
+                disabled={isRotating || isSaving}
+                isProcessing={isRotating || isSaving}
+              >
+                Save Modified Image
+              </Button>
+            </div>
+          </Modal.Body>
+        </Modal>
+      )}
+    </>
   );
 }
