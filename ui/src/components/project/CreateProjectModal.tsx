@@ -14,17 +14,11 @@ import { isWindows } from "react-device-detect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
-import { useRecoilState, useSetRecoilState } from "recoil";
-import {
-  NewProject,
-  createProject,
-  importImages,
-  loadProject,
-} from "../../models/project";
-import {
-  currentProjectSelector,
-  showNewProjectModalAtom,
-} from "../../state/atoms";
+import { useRecoilState } from "recoil";
+import { useApp } from "../../hooks/useApp";
+import { useProject } from "../../hooks/useProject";
+import { NewProject, NewProjectRequest } from "../../models/project";
+import { showNewProjectModalAtom } from "../../state/atoms";
 
 export function CreateProjectModal() {
   const {
@@ -36,18 +30,20 @@ export function CreateProjectModal() {
     watch,
     formState: { errors },
   } = useForm<NewProject>();
+  const app = useApp();
+  const project = useProject();
+
   const [isOpen, setIsOpen] = useRecoilState(showNewProjectModalAtom);
-  const setCurrentProject = useSetRecoilState(currentProjectSelector);
 
   const importDirPath = watch("importDirPath", "");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [importPercent, setImportPercent] = useState<number>(-1);
   const [totalImages, setTotalImages] = useState<number>(0);
 
-  const onSubmit: SubmitHandler<NewProject> = async (data) => {
+  const onSubmit: SubmitHandler<NewProjectRequest> = async (data) => {
     setIsProcessing(true);
 
-    const resp = await createProject(data);
+    const resp = await project.createProject(data);
     if (resp.errors) {
       for (const [field, message] of Object.entries(resp.errors)) {
         setError(field as keyof NewProject, {
@@ -58,28 +54,21 @@ export function CreateProjectModal() {
       setIsProcessing(false);
       return;
     }
-
-    const newProject = resp.data;
     setIsOpen(false);
 
     // Import the images if a directory path was provided and show a progress bar.
     if (data.importDirPath) {
-      await importImages(
-        newProject,
-        data.importDirPath,
-        data.removeDuplicates,
-        async (jsonStr: string) => {
-          const data = JSON.parse(jsonStr);
-          setTotalImages(data.totalImages ?? 0);
-          const pc = Math.max(1, data.percentComplete);
-          setImportPercent(Math.min(99, pc));
-        },
-      );
+      await project.importImages(data, async (jsonStr: string) => {
+        const data = JSON.parse(jsonStr);
+        setTotalImages(data.totalImages ?? 0);
+        const pc = Math.max(1, data.percentComplete);
+        setImportPercent(Math.min(99, pc));
+      });
     }
 
-    // Load the project from the server to get a fresh copy.
-    const loadedProject = await loadProject(newProject.name);
-    setCurrentProject(loadedProject);
+    // Reload the project from the server to get a fresh copy.
+    await app.addProject(data.name);
+    await project.loadProject(data.name);
     setImportPercent(-1);
     setIsProcessing(false);
   };

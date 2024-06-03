@@ -7,7 +7,7 @@ import {
   FaRegTrashCan,
 } from "react-icons/fa6";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { useProject } from "../../hooks/useProject";
+import { useProjectState } from "../../hooks/useProject";
 import {
   disableKeyboardShortcutsSelector,
   showCropImageModalAtom,
@@ -17,7 +17,7 @@ import { CropImageModal } from "./CropImageModal";
 import { DeleteImageModal } from "./DeleteImageModal";
 
 export function QuickActions() {
-  const [project, projectContext] = useProject();
+  const [projectValue, project] = useProjectState();
 
   const setShowEditImageModal = useSetRecoilState(showCropImageModalAtom);
   const disableKeyboardShortcuts = useRecoilValue(
@@ -27,9 +27,9 @@ export function QuickActions() {
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
   const navigate = (direction: "next" | "prev") => {
-    let img = projectContext.navigateImages(direction);
+    let img = project.navigateImages(direction);
     if (img) {
-      projectContext.setSelectedImage(img);
+      project.setSelectedImage(img);
       scrollToThumbnail(img);
     }
   };
@@ -61,7 +61,7 @@ export function QuickActions() {
         <Tooltip content="Prev Image [⬆️,⬅️,j]">
           <Button
             size="xl"
-            disabled={!projectContext.navigateImages("prev")}
+            disabled={!project.navigateImages("prev")}
             color="light"
             onClick={() => navigate("prev")}
             className="rounded-r-none border-r-0"
@@ -92,7 +92,7 @@ export function QuickActions() {
         <Tooltip content="Next Image [⬇️,➡️,k]">
           <Button
             size="xl"
-            disabled={!projectContext.navigateImages("next")}
+            disabled={!project.navigateImages("next")}
             color="light"
             onClick={() => navigate("next")}
             className="rounded-l-none"
@@ -104,9 +104,9 @@ export function QuickActions() {
 
       <CropImageModal />
 
-      {project && (
+      {projectValue && (
         <DeleteImageModal
-          selectedImg={project.selectedImage?.filename}
+          selectedImg={projectValue.selectedImage?.filename}
           show={showDeleteImageModal}
           onClose={() => setShowDeleteImageModal(false)}
         />

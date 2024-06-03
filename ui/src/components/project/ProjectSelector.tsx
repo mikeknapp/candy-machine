@@ -1,37 +1,30 @@
 import { Dropdown, Spinner } from "flowbite-react";
 import React, { useEffect } from "react";
 import { HiFolderOpen } from "react-icons/hi2";
-import { useAllProjectsValue } from "../../hooks/useAllProjects";
-import { useProject } from "../../hooks/useProject";
-import { State } from "../../models/base";
+import { useAppValue } from "../../hooks/useApp";
+import { useProjectState } from "../../hooks/useProject";
 
 export function ProjectSelector() {
-  const allProjects = useAllProjectsValue();
-  const [project, projectContext] = useProject(true);
-
-  const isLoadingAllProjects = [State.Loading, State.Init].includes(
-    allProjects?.state,
-  );
-
-  const isLoadingProject = [State.Loading, State.Init].includes(project?.state);
+  const appValue = useAppValue();
+  const [projectValue, project] = useProjectState();
 
   useEffect(() => {
-    if (project !== null) {
-      document.title = `Candy Machine (${project?.images.length})`;
+    if (projectValue !== null) {
+      document.title = `Candy Machine (${projectValue?.images.length})`;
     } else {
       document.title = "Candy Machine";
     }
-  }, [project]);
+  }, [projectValue]);
 
   return (
     <>
-      {!isLoadingAllProjects && (
+      {!appValue.isLoading && (
         <Dropdown
           size="lg"
           className="min-w-[200px]"
           label={
             <div className="flex flex-row items-center gap-2">
-              {isLoadingProject ? (
+              {projectValue.isLoading ? (
                 <>
                   <Spinner size="sm" color="success" />
                   <span className="text-sm text-gray-700 dark:text-gray-400">
@@ -41,7 +34,7 @@ export function ProjectSelector() {
               ) : (
                 <>
                   <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
-                  {project ? project.name : "No Projects"}
+                  {projectValue.name ? projectValue.name : "No Projects"}
                 </>
               )}
             </div>
@@ -49,13 +42,13 @@ export function ProjectSelector() {
           color="gray"
           dismissOnClick
         >
-          {allProjects?.projects.map((projectName) => (
+          {appValue.projects.map((projectName) => (
             <Dropdown.Item
               key={`project-${projectName}`}
               value={projectName}
               className="p-3"
               onClick={async () => {
-                await projectContext.loadProject(projectName);
+                await project.loadProject(projectName);
               }}
             >
               {projectName}

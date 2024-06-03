@@ -1,18 +1,17 @@
 import { Button, Modal } from "flowbite-react";
 import React from "react";
 import { HiArrowRight } from "react-icons/hi";
-import { useRecoilState, useRecoilValue } from "recoil";
-import {
-  currentProjectSelector,
-  projectRequiresSetupSelector,
-} from "../../state/atoms";
+import { useRecoilState } from "recoil";
+import { useProjectValue } from "../../hooks/useProject";
+import { projectRequiresSetupSelector } from "../../state/atoms";
 import { SuggestedAutoTags } from "./SuggestedAutoTags";
 
 export function ProjectCategoriesModal() {
-  const project = useRecoilValue(currentProjectSelector);
+  const projectValue = useProjectValue();
+
   const [isOpen, setIsOpen] = useRecoilState(projectRequiresSetupSelector);
 
-  if (project.autoTags.length === 0) {
+  if (projectValue.autoTags.length === 0) {
     return null;
   }
 
@@ -40,7 +39,7 @@ export function ProjectCategoriesModal() {
       </Modal.Header>
       <Modal.Body>
         <p className="p-1 dark:text-white">
-          Here are {project.autoTags.length} tags that might come in handy.
+          Here are {projectValue.autoTags.length} tags that might come in handy.
           Generally you don't want to tag things <i>already</i> implicit in your
           trigger word. For example, when training a face, if you tag someone's
           distinctive mole or freckles, the model may not learn those to be part

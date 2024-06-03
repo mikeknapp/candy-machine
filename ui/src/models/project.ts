@@ -21,6 +21,18 @@ export interface ProjectData {
   requiresSetup: boolean;
 }
 
+export const DEFAULT_PROJECT_DATA: ProjectData = {
+  name: "",
+  triggerWord: "",
+  images: [],
+  selectedImage: null,
+  tagLayout: [],
+  autoTags: [],
+  requiresSetup: false,
+  state: State.Init,
+  isLoading: true,
+};
+
 export interface NewProjectRequest {
   name: string;
   triggerWord: string;
@@ -92,16 +104,19 @@ export class Project extends Subscribable<ProjectData> {
     this.save();
   }
 
-  public async createNew(data: NewProjectRequest): Promise<boolean> {
-    this.reset(data.name);
-    const response = await apiRequest<{}>("/project/create", {
+  public async createProject(
+    data: NewProjectRequest,
+  ): Promise<ApiResponse<ProjectData>> {
+    // We don't override the current project in this method. That happens later.
+    const response = await apiRequest<ProjectData>("/project/create", {
       body: JSON.stringify(data),
     });
     if (response.success && response.data) {
-      return this.loadProject(data.name);
+      return { success: true, data: this.readOnly };
+    } else {
+      console.log(`Failed to create project: ${response.errors}`);
+      return { success: false, errors: response.errors };
     }
-    this.setStateAndNotify(State.Error);
-    console.log(`Failed to create project: ${response.errors}`);
   }
 
   public async save(): Promise<boolean> {
@@ -145,19 +160,18 @@ export class Project extends Subscribable<ProjectData> {
   }
 
   public async importImages(
-    importPath: string,
-    removeDuplicates: boolean,
+    data: NewProjectRequest,
     onMessage: (msg: string) => void,
   ): Promise<boolean> {
     return await eventRequest(
-      `/project/${this.name}/import?path=${encodeURIComponent(importPath)}&remove_duplicates=${removeDuplicates}`,
+      `/project/${data.name}/import?path=${encodeURIComponent(data.importDirPath)}&remove_duplicates=${data.removeDuplicates}`,
       onMessage,
     );
   }
 
   public navigateImages(direction: "next" | "prev"): string {
     // Returns the name of the next or previous image in the list.
-    const currentIndex = this.images.indexOf(this.selectedImage.filename);
+    const currentIndex = this.images.indexOf(this.selectedImage?.filename);
     if (currentIndex === -1) {
       return;
     }
@@ -253,6 +267,26 @@ export class Project extends Subscribable<ProjectData> {
 
     this.notifyListeners();
     return true;
+  }
+
+  public async addTagToLayout(category: string, tag: string): Promise<boolean> {
+    this.tagLayout = this.tagLayout.map((cat) => {
+      if (cat.title === category) {
+        cat.tags = [tag, ...cat.tags];
+      }
+      return cat;
+    });
+    this.notifyListeners();
+    return await this.save();
+  }
+
+  public async removeTagFromLayout(tag: string): Promise<boolean> {
+    this.tagLayout = this.tagLayout.map((cat) => {
+      cat.tags = cat.tags.filter((t) => t !== tag);
+      return cat;
+    });
+    this.notifyListeners();
+    return await this.save();
   }
 }
 
@@ -375,7 +409,7 @@ export async function loadTags(
 }
 
 export async function importImages(
-  project: Project_old,
+  project: ProjectData,
   importPath: string,
   removeDuplicates: boolean,
   onMessage: (msg: string) => void,

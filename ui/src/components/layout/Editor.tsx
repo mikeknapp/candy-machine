@@ -1,6 +1,6 @@
 import { Spinner } from "flowbite-react";
 import React from "react";
-import { useAllProjectsValue } from "../../hooks/useAllProjects";
+import { useAppValue } from "../../hooks/useApp";
 import { useProjectValue } from "../../hooks/useProject";
 import { SelectedImage } from "../image/SelectedImage";
 import { Thumbnails } from "../project/Thumbnails";
@@ -8,10 +8,10 @@ import { Tagger } from "../tagger/Tagger";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
-  const allProjects = useAllProjectsValue();
+  const app = useAppValue();
   const project = useProjectValue();
 
-  if (allProjects?.isLoading || project?.isLoading) {
+  if (app.isLoading || project.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" />

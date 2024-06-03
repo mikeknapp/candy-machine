@@ -1,21 +1,16 @@
 import { Dropdown, Tooltip } from "flowbite-react";
 import React, { useMemo } from "react";
 import { HiInformationCircle, HiMiniPlus, HiXCircle } from "react-icons/hi2";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import {
-  addTagToCategorySelector,
-  currentProjectSelector,
-  removeTagFromCategorySelector,
-  tagLayoutSelector,
-} from "../../state/atoms";
+import { useProject, useProjectValue } from "../../hooks/useProject";
 import { Tag } from "./Tag";
+import { CategoryData } from "./TagCategory";
 
 export function SuggestedAutoTags() {
-  const project = useRecoilValue(currentProjectSelector);
+  const projectValue = useProjectValue();
 
   return (
     <>
-      {project.autoTags.map((tag) => (
+      {projectValue.autoTags.map((tag) => (
         <div
           key={`setup-tag-${tag.tag}`}
           className="flex flex-row justify-between p-10"
@@ -33,7 +28,10 @@ export function SuggestedAutoTags() {
             )}
           </div>
 
-          <ChooseCategoryTagDropdown tag={tag.tag} />
+          <ChooseCategoryTagDropdown
+            tagLayout={projectValue.tagLayout}
+            tag={tag.tag}
+          />
         </div>
       ))}
     </>
@@ -51,11 +49,14 @@ function CategoryIcon({ color }: { color: string }) {
   );
 }
 
-function ChooseCategoryTagDropdown({ tag }: { tag: string }) {
-  const tagLayout = useRecoilValue(tagLayoutSelector);
-  const addTag = useSetRecoilState(addTagToCategorySelector);
-  const removeTag = useSetRecoilState(removeTagFromCategorySelector);
-
+function ChooseCategoryTagDropdown({
+  tagLayout,
+  tag,
+}: {
+  tagLayout: CategoryData[];
+  tag: string;
+}) {
+  const project = useProject();
   // The category title, if selected, else "".
   const { title: categoryTitle, color: categoryColor } = useMemo(
     () =>
@@ -84,7 +85,7 @@ function ChooseCategoryTagDropdown({ tag }: { tag: string }) {
                 className="ml-2 h-5 w-5"
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeTag({ categoryTitle, tag });
+                  project.removeTagFromLayout(tag);
                 }}
               />
             </>
@@ -101,9 +102,9 @@ function ChooseCategoryTagDropdown({ tag }: { tag: string }) {
           key={`choose-category-${tag}-${category.title}`}
           onClick={() => {
             if (category.title !== categoryTitle) {
-              removeTag({ categoryTitle, tag });
+              project.removeTagFromLayout(tag);
             }
-            addTag({ categoryTitle: category.title, tag });
+            project.addTagToLayout(category.title, tag);
           }}
           className="flex flex-row gap-2"
         >

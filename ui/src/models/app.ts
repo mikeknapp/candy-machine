@@ -1,41 +1,47 @@
 import { apiRequest } from "../api";
 import { State, Subscribable } from "./base";
 
-export interface AllProjectData {
+export interface AppData {
   state: State;
-  projects: string[];
   isLoading: boolean;
+  projects: string[];
 }
 
-export class AllProjects extends Subscribable<AllProjectData> {
-  private _projects: string[] = [];
-  private static instance: AllProjects;
+export const DEFAULT_APP_DATA: AppData = {
+  projects: [],
+  state: State.Init,
+  isLoading: true,
+};
 
-  public static getInstance(): AllProjects {
-    if (!AllProjects.instance) {
-      AllProjects.instance = new AllProjects();
+export class App extends Subscribable<AppData> {
+  private projectNames: string[] = [];
+  private static instance: App;
+
+  public static getInstance(): App {
+    if (!App.instance) {
+      App.instance = new App();
     }
-    return AllProjects.instance;
+    return App.instance;
   }
 
-  public get readOnly(): AllProjectData {
+  public get readOnly(): AppData {
     return {
       state: this.state,
-      projects: this._projects,
+      projects: this.projectNames,
       isLoading: [State.Init, State.Loading].includes(this.state),
     };
   }
 
   public get projects() {
-    return this._projects;
+    return this.projectNames;
   }
 
   public get hasProjects() {
-    return this._projects.length > 0;
+    return this.projectNames.length > 0;
   }
 
   async addProject(project: string) {
-    this._projects.push(project);
+    this.projectNames = [project, ...this.projectNames];
     this.notifyListeners();
   }
 
@@ -47,10 +53,10 @@ export class AllProjects extends Subscribable<AllProjectData> {
         console.log(`Error fetching projects: ${response.errors}`);
         this.setStateAndNotify(State.Error);
       } else if (response.data) {
-        this._projects = response.data;
+        this.projectNames = response.data;
         this.setStateAndNotify(State.Loaded);
       }
     }
-    return this._projects;
+    return this.projectNames;
   }
 }

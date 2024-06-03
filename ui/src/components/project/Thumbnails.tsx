@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
-import { useProject } from "../../hooks/useProject";
+import { useProjectState } from "../../hooks/useProject";
 import { imgAspectRatio } from "../../models/image";
 import { disableKeyboardShortcutsSelector } from "../../state/atoms";
 import { ProgressPieChart } from "../nav/ProgressPieChart";
@@ -28,21 +28,19 @@ export function Thumbnails() {
   const observer = useRef<IntersectionObserver | null>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  const [project, projectContext] = useProject();
+  const [projectValue, project] = useProjectState();
 
   const disableKeyboardShortcuts = useRecoilValue(
     disableKeyboardShortcutsSelector,
   );
 
   const saveSelectedImage = (img: string) => {
-    projectContext?.setSelectedImage(img);
+    project.setSelectedImage(img);
     scrollToThumbnail(img);
   };
 
   // Keyboard navigation.
   useEffect(() => {
-    if (!project) return;
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (disableKeyboardShortcuts) return;
 
@@ -51,12 +49,12 @@ export function Thumbnails() {
         case "j":
         case "ArrowDown":
         case "ArrowRight":
-          imgToSelect = projectContext.navigateImages("next");
+          imgToSelect = project.navigateImages("next");
           break;
         case "k":
         case "ArrowUp":
         case "ArrowLeft":
-          imgToSelect = projectContext.navigateImages("prev");
+          imgToSelect = project.navigateImages("prev");
       }
       if (imgToSelect) {
         saveSelectedImage(imgToSelect);
@@ -68,12 +66,10 @@ export function Thumbnails() {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [project, disableKeyboardShortcutsSelector]);
+  }, [projectValue, disableKeyboardShortcutsSelector]);
 
   // Lazy load the thumbnails.
   useEffect(() => {
-    if (!project) return;
-
     if (observer.current) {
       observer.current.disconnect();
     }
@@ -103,20 +99,18 @@ export function Thumbnails() {
         observer.current.disconnect();
       }
     };
-  }, [project]);
+  }, [projectValue]);
 
   useEffect(() => {
-    if (!project) return;
-
     // Steal focus away from the project selector so keyboard shortcuts will work immediately.
     // This is hacky, but I couldn't work out how to do this otherwise.
     const focusStealer = document.getElementById("focus-stealer");
     focusStealer?.focus();
     setTimeout(() => {
       focusStealer?.blur();
-      scrollToThumbnail(project?.selectedImage?.filename);
+      scrollToThumbnail(projectValue.selectedImage?.filename);
     }, 100);
-  }, [project]);
+  }, [projectValue]);
 
   return (
     <>
@@ -124,33 +118,32 @@ export function Thumbnails() {
         id="focus-stealer"
         className="fixed left-0 top-0 h-[1px] w-[1px] bg-transparent focus:outline-none"
       />
-      {project?.images && (
-        <div
-          className={`flex h-full w-[${CONTAINER_WIDTH}] min-w-[125px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
-        >
-          {project.images.map((img, index) => (
-            <img
-              ref={(el) => (imgRefs.current[index] = el)}
-              key={img}
-              id={`thumb-img-${img}`}
-              style={{
-                width: `${THUMBNAIL_WIDTH + BORDER_WIDTH}px`,
-                height: "auto",
-                aspectRatio: imgAspectRatio(img),
-                borderWidth: `${BORDER_WIDTH}px`,
-              }}
-              className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${project.selectedImage?.filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
-              data-src={`${API_BASE_URL}/project/${project.name}/imgs/${img}?thumbnail=true`}
-              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-              alt={img}
-              onClick={() => saveSelectedImage(img)}
-            />
-          ))}
-          <div className="absolute bottom-3 left-3">
-            <ProgressPieChart />
-          </div>
+
+      <div
+        className={`flex h-full w-[${CONTAINER_WIDTH}] min-w-[125px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
+      >
+        {projectValue.images.map((img, index) => (
+          <img
+            ref={(el) => (imgRefs.current[index] = el)}
+            key={img}
+            id={`thumb-img-${img}`}
+            style={{
+              width: `${THUMBNAIL_WIDTH + BORDER_WIDTH}px`,
+              height: "auto",
+              aspectRatio: imgAspectRatio(img),
+              borderWidth: `${BORDER_WIDTH}px`,
+            }}
+            className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${projectValue.selectedImage?.filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
+            data-src={`${API_BASE_URL}/project/${projectValue.name}/imgs/${img}?thumbnail=true`}
+            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            alt={img}
+            onClick={() => saveSelectedImage(img)}
+          />
+        ))}
+        <div className="absolute bottom-3 left-3">
+          <ProgressPieChart />
         </div>
-      )}
+      </div>
     </>
   );
 }
