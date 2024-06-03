@@ -61,7 +61,7 @@ export const Tag: React.FC<TagProps> = ({
   }
 
   return React.createElement(onClick ? "button" : "div", {
-    className: `whitespace-nowrap text-sm rounded-md border-[1px] border-slate-500 dark:border-slate-700 px-[10px] pb-[8px] pt-[5px] drop-shadow-md dark:text-white ${isSelected ? "" : "bg-slate-200 dark:bg-slate-800"}`,
+    className: `whitespace-nowrap text-sm rounded-md border-[1px] border-slate-500 dark:border-slate-700 px-[10px] pt-[5px] pb-[6px] drop-shadow-md dark:text-white ${isSelected ? "" : "bg-slate-200 dark:bg-slate-800"}`,
     onClick: onClick,
     style: {
       backgroundColor: bgColor,

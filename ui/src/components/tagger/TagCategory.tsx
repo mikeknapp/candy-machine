@@ -31,7 +31,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
     });
 
     setCategoryTags(Array.from(relevantTags));
-  }, [category, selectedTags]);
+  }, [category, tagSearch, selectedTags]);
 
   useEffect(() => {
     // Sort + apply any active search filter.
@@ -52,7 +52,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
       }
       return orderedTags;
     });
-  }, [categoryTags, category, selectedTags, tagSearch]);
+  }, [categoryTags]);
 
   if (categoryTags.length === 0) {
     return null;
