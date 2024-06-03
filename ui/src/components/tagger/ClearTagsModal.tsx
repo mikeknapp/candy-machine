@@ -2,11 +2,8 @@ import { Button, Modal } from "flowbite-react";
 import React, { useContext, useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
 import { ProjectContext } from "../../app";
-import { Project_old } from "../../models/project";
 
 type ClearTagsModalProps = {
-  project: Project_old;
-  selectedImg: string;
   show: boolean;
   onClose: () => void;
 };

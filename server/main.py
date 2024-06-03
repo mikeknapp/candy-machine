@@ -89,7 +89,7 @@ def save_project(project_name):
 def save_image_tags(project_name):
     project = Project(project_name)
     data = request.json if request.json else {}
-    project.set_selected_image(data.get("image", ""))
+    project.set_selected_image(data.get("filename", ""))
     project.save_selected_image_tags(data.get("tags", []))
     return jsonify({"result": "OK"})
 

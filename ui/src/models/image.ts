@@ -1,7 +1,8 @@
 import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
+import { CategoryData } from "../components/tagger/TagCategory";
 import { State } from "./base";
-import { ProjectData, Project_old } from "./project";
+import { Project_old } from "./project";
 
 export interface SelectedImageTags {
   projectName: string;
@@ -52,17 +53,41 @@ export class Image {
     };
   }
 
-  public async clearTags(): Promise<boolean> {
+  public async addTags(tags: string[]) {
+    this.tags = Array.from(new Set([...this.tags, ...tags]));
+    this.onChange();
+    await this.saveTags();
+  }
+
+  public async applyAutoTags(tagLayout: CategoryData[]) {
+    // Loop through our pre-defined tag categories, and find matches with any auto tags.
+    let newTags = new Set<string>();
+    tagLayout.forEach((category) => {
+      category.tags.forEach((tagTemplate) => {
+        // Look for broad and exact matches.
+        findMatchingTags(tagTemplate, this.autoTags).forEach((tag) => {
+          newTags.add(tag);
+        });
+      });
+    });
+
+    if (newTags.size) {
+      await this.addTags(Array.from(newTags));
+    }
+  }
+
+  public async clearTags() {
     this.tags = [];
     this.onChange();
     return await this.saveTags();
   }
 
-  public async saveTags(): Promise<boolean> {
+  public async saveTags() {
+    // TODO: Reorder tags correctly (or maybe we do that on the server?)
     const response = await apiRequest<{ result: string }>(
       `/project/${this.projectName}/tags/save`,
       {
-        body: JSON.stringify({ image: this.filename, tags: this.tags }),
+        body: JSON.stringify({ filename: this.filename, tags: this.tags }),
       },
     );
     if (response.success && response.data) {
@@ -123,29 +148,26 @@ export const imgAspectRatio = (filename: string) => {
   return width / height;
 };
 
-export const previewTextFile = (project: ProjectData): string => {
-  if (
-    !project ||
-    !project.selectedImage ||
-    project.selectedImage.tags.length === 0
-  ) {
-    return null;
-  }
-  const tags = [];
-  if (project.triggerWord) {
-    tags.push(project.triggerWord);
-  }
-  if (project.selectedImage.tags?.length > 0) {
-    project.tagLayout.map((category) => {
-      const selectedFromCat = project.selectedImage.tags.filter((tag) =>
-        category.tags.includes(tag),
-      );
-      selectedFromCat.forEach((tag) => {
-        tags.push(tag);
-      });
+export const findMatchingTags = (tagTemplate: string, candidates: string[]) => {
+  // Return an candidate tags that match a tag template.
+  // A tag template might look like "flower" (exact match) or "{type} flower" (prefix broad match).
+  let results: string[] = [];
+  const broadMatch = tagTemplate.match(/^({[^}]+})([^{]+)$/);
+  if (broadMatch) {
+    const suffix = broadMatch[2].trim();
+    candidates.forEach((tag) => {
+      if (tag.endsWith(suffix)) {
+        results.push(tag);
+      }
     });
+  } else {
+    // Exact match. There can only be 1 winner.
+    let winner = candidates.find((value) => value === tagTemplate);
+    if (winner) {
+      results.push(winner);
+    }
   }
-  return tags.join(", ");
+  return results;
 };
 
 export const deleteImage = async (

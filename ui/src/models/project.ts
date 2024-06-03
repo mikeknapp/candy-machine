@@ -7,6 +7,7 @@ import {
   LoadableImage,
   SelectedImage,
   SelectedImageTags,
+  findMatchingTags,
 } from "./image";
 
 export interface ProjectData {
@@ -16,6 +17,7 @@ export interface ProjectData {
   triggerWord: string;
   images: string[];
   selectedImage: SelectedImage;
+  selectedImageTxtFile: string;
   autoTags: AutoTag[];
   tagLayout: CategoryData[];
   requiresSetup: boolean;
@@ -26,6 +28,7 @@ export const DEFAULT_PROJECT_DATA: ProjectData = {
   triggerWord: "",
   images: [],
   selectedImage: null,
+  selectedImageTxtFile: "",
   tagLayout: [],
   autoTags: [],
   requiresSetup: false,
@@ -85,13 +88,14 @@ export class Project extends Subscribable<ProjectData> {
       triggerWord: this.triggerWord,
       images: this.images,
       selectedImage: this.selectedImage?.readOnly ?? null,
+      selectedImageTxtFile: this.selectedImageTxtFile(),
       autoTags: this.autoTags,
       tagLayout: this.tagLayout,
       requiresSetup: this.requiresSetup,
     };
   }
 
-  public async setSelectedImage(filename: string): Promise<void> {
+  public async setSelectedImage(filename: string) {
     if (!filename || this.selectedImage?.filename === filename) {
       return;
     }
@@ -119,7 +123,7 @@ export class Project extends Subscribable<ProjectData> {
     }
   }
 
-  public async save(): Promise<boolean> {
+  public async save() {
     const response = await apiRequest<{ result: string }>(
       `/project/${this.name}/save`,
       {
@@ -131,7 +135,7 @@ export class Project extends Subscribable<ProjectData> {
     }
   }
 
-  public async loadProject(projectName: string): Promise<boolean> {
+  public async loadProject(projectName: string) {
     this.reset(projectName);
     this.state = State.Loading;
     const response = await apiRequest<ProjectData>(`/project/${this.name}/get`);
@@ -162,7 +166,7 @@ export class Project extends Subscribable<ProjectData> {
   public async importImages(
     data: NewProjectRequest,
     onMessage: (msg: string) => void,
-  ): Promise<boolean> {
+  ) {
     return await eventRequest(
       `/project/${data.name}/import?path=${encodeURIComponent(data.importDirPath)}&remove_duplicates=${data.removeDuplicates}`,
       onMessage,
@@ -267,6 +271,30 @@ export class Project extends Subscribable<ProjectData> {
 
     this.notifyListeners();
     return true;
+  }
+
+  public selectedImageTxtFile(): string {
+    if (!this.selectedImage?.tags.length) {
+      return null;
+    }
+    const tags: string[] = [];
+    if (this.triggerWord) {
+      tags.push(this.triggerWord);
+    }
+    if (this.selectedImage.tags?.length > 0) {
+      this.tagLayout.map((category) => {
+        category.tags.forEach((tagTemplate) => {
+          findMatchingTags(tagTemplate, this.selectedImage.tags).forEach(
+            (matchingTag) => tags.push(matchingTag),
+          );
+        });
+      });
+    }
+    // Add any remaining tags at the end.
+    this.selectedImage.tags
+      .filter((tag) => !tags.includes(tag))
+      .forEach((tag) => tags.push(tag));
+    return tags.join(", ");
   }
 
   public async addTagToLayout(category: string, tag: string): Promise<boolean> {

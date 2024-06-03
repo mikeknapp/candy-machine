@@ -4,28 +4,27 @@ import { FaCheck } from "react-icons/fa";
 import { TbAlertTriangleFilled } from "react-icons/tb";
 import { API_BASE_URL } from "../../api";
 import { useProjectValue } from "../../hooks/useProject";
-import { imgSize, previewTextFile } from "../../models/image";
+import { imgSize } from "../../models/image";
 import { AutoTagComparison } from "./AutoTagComparison";
 import { QuickActions } from "./QuickActions";
 
 export function SelectedImage() {
   const scrollRef = React.useRef<HTMLDivElement>(null);
-  const project = useProjectValue(false);
-  const size = imgSize(project?.selectedImage?.filename);
-  const txtFile = previewTextFile(project);
+  const projectValue = useProjectValue();
+  const size = imgSize(projectValue?.selectedImage?.filename);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [project?.selectedImage]);
+  }, [projectValue.selectedImage]);
 
   return (
     <div
       ref={scrollRef}
       className="flex w-1/4 min-w-[700px] flex-col justify-start gap-5 overflow-y-auto p-5"
     >
-      {project?.selectedImage && (
+      {projectValue.selectedImage && (
         <>
           {/* Quick actions menu (next image, crop, delete etc) */}
           <QuickActions />
@@ -33,7 +32,7 @@ export function SelectedImage() {
           {/* Image preview */}
           <div className="flex flex-row justify-center">
             <img
-              src={`${API_BASE_URL}/project/${project.name}/imgs/${project.selectedImage.filename}`}
+              src={`${API_BASE_URL}/project/${projectValue.name}/imgs/${projectValue.selectedImage.filename}`}
               className="aspect-auto max-h-[550px] w-auto max-w-[550px] rounded-md shadow-md"
               alt="Preview"
             />
@@ -42,7 +41,7 @@ export function SelectedImage() {
           {/* Image information */}
           <div className="flex flex-row items-center justify-center gap-3 rounded-md bg-green-50 px-1 text-center font-mono text-sm dark:bg-slate-900 dark:text-blue-500 md:px-4 md:py-2 md:text-base">
             <span className="text-sm font-bold">
-              {project.selectedImage?.filename}:
+              {projectValue.selectedImage.filename}:
             </span>{" "}
             {size.width} x {size.height}
             {size.width >= 1024 || size.height >= 1024 ? (
@@ -57,25 +56,25 @@ export function SelectedImage() {
           </div>
 
           {/* Tags .txt file preview */}
-          {txtFile && (
+          {projectValue.selectedImageTxtFile && (
             <>
               <h2 className="text-sm font-bold  text-gray-700 md:mt-2">
                 Your Image Tags
               </h2>
               <div className="rounded-md bg-gray-100 p-1 font-mono text-sm font-bold text-blue-500 dark:bg-slate-900 md:p-6 md:text-base">
-                {txtFile}
+                {projectValue.selectedImageTxtFile}
               </div>
             </>
           )}
 
           {/* Auto tags */}
-          {project.selectedImage?.autoTags.length > 0 && (
+          {projectValue.selectedImage?.autoTags.length > 0 && (
             <>
               <h2 className="text-sm font-bold text-gray-700 md:mt-2">
                 Auto Tags (Not Applied, FYI Only)
               </h2>
               <div className="rounded-md bg-gray-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
-                <AutoTagComparison selectedImage={project.selectedImage} />
+                <AutoTagComparison selectedImage={projectValue.selectedImage} />
               </div>
             </>
           )}

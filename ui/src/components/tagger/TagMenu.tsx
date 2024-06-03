@@ -2,56 +2,34 @@ import { Button, Tooltip } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaPencil, FaWandMagicSparkles } from "react-icons/fa6";
-import { useRecoilStateLoadable, useRecoilValue } from "recoil";
-import { SelectedImageTags } from "../../models/image";
-import { Project_old } from "../../models/project";
-import {
-  disableKeyboardShortcutsSelector,
-  selectedImgTagsSelector,
-} from "../../state/atoms";
+import { useRecoilValue } from "recoil";
+import { useProjectState } from "../../hooks/useProject";
+import { disableKeyboardShortcutsSelector } from "../../state/atoms";
 import { ClearTagsModal } from "./ClearTagsModal";
 import { TagSearch } from "./TagSearch";
 
-export function TagMenu({ project }: { project: Project_old }) {
-  const [showClearTagsModal, setShowClearTagsModal] = useState(false);
+export function TagMenu() {
+  const [projectValue, project] = useProjectState();
+  const img = projectValue.selectedImage;
+  const imgTagsLoaded = img?.isLoaded ?? false;
 
   const disableShortcuts = useRecoilValue(disableKeyboardShortcutsSelector);
-  const [selectedTagsLoading, setSelectedTags] = useRecoilStateLoadable(
-    selectedImgTagsSelector({
-      projectName: project.name,
-      image: project.selectedImage,
-    }),
-  );
-  const isLoadingTags = selectedTagsLoading.state === "loading";
-  let selectedTags = null;
-  if (selectedTagsLoading.state === "hasValue") {
-    selectedTags = selectedTagsLoading.contents as SelectedImageTags;
-  }
 
-  // Add any tags we found in automatic analysis that aren't already in the list and are in the tag layout.
-  // TODO: apply fill-ins!
-  const addAutoTags = () => {
-    setSelectedTags((prev) => {
-      let tags = new Set(prev.selected);
-      project.tagLayout.forEach((category) => {
-        category.tags.forEach((tag) => {
-          if (selectedTags.autoTags.includes(tag)) {
-            tags.add(tag);
-          }
-        });
-      });
-      return { ...prev, selected: Array.from(tags) };
-    });
+  const [showClearTagsModal, setShowClearTagsModal] = useState(false);
+
+  const applyAutoTags = () => {
+    project.selectedImage?.applyAutoTags(projectValue.tagLayout);
   };
 
   // Shortcut listener.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (disableShortcuts || showClearTagsModal || isLoadingTags) return;
+      if (disableShortcuts || showClearTagsModal || imgTagsLoaded) return;
 
+      // TODO: Fix - doesn't seem to be working.
       switch (event.key) {
         case "a":
-          addAutoTags();
+          applyAutoTags();
           break;
         case "x":
           setShowClearTagsModal(true);
@@ -65,7 +43,7 @@ export function TagMenu({ project }: { project: Project_old }) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [disableShortcuts, showClearTagsModal, isLoadingTags]);
+  }, [disableShortcuts, showClearTagsModal, imgTagsLoaded]);
 
   return (
     <>
@@ -78,8 +56,8 @@ export function TagMenu({ project }: { project: Project_old }) {
               size="xl"
               color="light"
               className="border-r-none rounded-r-none"
-              disabled={isLoadingTags || selectedTags?.autoTags.length === 0}
-              onClick={() => addAutoTags()}
+              disabled={!imgTagsLoaded || !img?.autoTags.length}
+              onClick={applyAutoTags}
             >
               <FaWandMagicSparkles />
             </Button>
@@ -89,7 +67,7 @@ export function TagMenu({ project }: { project: Project_old }) {
               size="xl"
               color="light"
               className="border-r-none rounded-none"
-              disabled={isLoadingTags || !selectedTags?.selected.length}
+              disabled={!imgTagsLoaded || !img?.tags.length}
               onClick={() => setShowClearTagsModal(true)}
             >
               <FaTimes />
@@ -100,7 +78,7 @@ export function TagMenu({ project }: { project: Project_old }) {
               size="xl"
               color="light"
               className="rounded-l-none"
-              disabled={isLoadingTags}
+              disabled={projectValue.isLoading}
             >
               <FaPencil />
             </Button>
@@ -109,8 +87,6 @@ export function TagMenu({ project }: { project: Project_old }) {
       </div>
 
       <ClearTagsModal
-        project={project}
-        selectedImg={project.selectedImage}
         show={showClearTagsModal}
         onClose={() => setShowClearTagsModal(false)}
       />
