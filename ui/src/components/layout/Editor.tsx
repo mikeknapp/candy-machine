@@ -8,10 +8,21 @@ import { Tagger } from "../tagger/Tagger";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
-  const app = useAppValue();
-  const project = useProjectValue();
+  const appValue = useAppValue();
+  const projectValue = useProjectValue();
 
-  if (app.isLoading || project.isLoading) {
+  if (appValue.isError) {
+    return (
+      <div className="center-full">
+        <h1 className="mb-4 text-3xl font-bold dark:text-white">
+          Can't Load Projects!
+        </h1>
+        <p className="text-lg dark:text-gray-200">Is the server running?</p>
+      </div>
+    );
+  }
+
+  if (appValue.isLoading || projectValue.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" />
@@ -19,7 +30,7 @@ export function Editor() {
     );
   }
 
-  if (!project) {
+  if (!projectValue) {
     return <NoSelectedProject />;
   }
 

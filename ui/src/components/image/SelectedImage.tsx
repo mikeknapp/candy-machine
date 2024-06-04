@@ -56,13 +56,13 @@ export function SelectedImage() {
           </div>
 
           {/* Tags .txt file preview */}
-          {projectValue.selectedImageTxtFile && (
+          {projectValue.selectedImage?.txtFile && (
             <>
               <h2 className="text-sm font-bold  text-gray-700 md:mt-2">
                 Your Image Tags
               </h2>
               <div className="rounded-md bg-gray-100 p-1 font-mono text-sm font-bold text-blue-500 dark:bg-slate-900 md:p-6 md:text-base">
-                {projectValue.selectedImageTxtFile}
+                {projectValue.selectedImage?.txtFile}
               </div>
             </>
           )}

@@ -28,7 +28,6 @@ export const apiRequest = async <T>(
     const data = await response.json();
     return { success: true, data };
   } catch (error) {
-    alert("API request failed, is the server running?");
     return { success: false, errors: { message: "API request failed" } };
   }
 };

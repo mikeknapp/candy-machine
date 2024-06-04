@@ -13,22 +13,24 @@ export function Header() {
       <div className="text-gray text-base font-bold text-gray-700 dark:text-white">
         <img
           src={require("../../assets/logo.png")}
-          alt="Candy Machine Logo"
+          alt="Candy Machine"
           className="aspect-square h-20 dark:rounded-full"
         />
       </div>
       <div className="flex h-full flex-row items-center gap-2">
         <ProjectSelector />
 
-        <Tooltip content="New Project">
-          <Button
-            size="lg"
-            gradientDuoTone="pinkToOrange"
-            onClick={() => (app.showCreateProjectModal = true)}
-          >
-            <HiFolderPlus className="text-2xl font-bold" />
-          </Button>
-        </Tooltip>
+        {!app.isLoading && !app.isError && (
+          <Tooltip content="New Project">
+            <Button
+              size="lg"
+              gradientDuoTone="pinkToOrange"
+              onClick={() => (app.showCreateProjectModal = true)}
+            >
+              <HiFolderPlus className="text-2xl font-bold" />
+            </Button>
+          </Tooltip>
+        )}
 
         <Tooltip content="Toggle Dark Mode">
           <DarkThemeToggle

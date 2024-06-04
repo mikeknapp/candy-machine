@@ -177,9 +177,9 @@ class Project:
                 fp,
             )
 
-    def save_selected_image_tags(self, tags):
+    def save_txt_file(self, txtFileContents):
         with open(self.selected_image_txt_path(), "w") as fp:
-            fp.write(", ".join(tags))
+            fp.write(txtFileContents)
 
     def get_selected_image_tags(self):
         return self._load_tags_from_file(self.selected_image_txt_path())

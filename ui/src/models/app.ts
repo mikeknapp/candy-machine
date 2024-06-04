@@ -5,6 +5,7 @@ import { DEFAULT_PROJECT_DATA, Project, ProjectData } from "./project";
 export interface AppData {
   state: State;
   isLoading: boolean;
+  isError: boolean;
   project: ProjectData;
   projects: string[];
   showCreateProjectModal: boolean;
@@ -14,6 +15,7 @@ export interface AppData {
 export const DEFAULT_APP_DATA: AppData = {
   state: State.Init,
   isLoading: true,
+  isError: false,
   project: DEFAULT_PROJECT_DATA,
   projects: [],
   showCreateProjectModal: false,
@@ -43,12 +45,21 @@ export class App extends Subscribable<AppData> {
   public get readOnly(): AppData {
     return {
       state: this.state,
-      isLoading: [State.Init, State.Loading].includes(this.state),
+      isLoading: this.isLoading,
+      isError: this.isError,
       project: this._project.readOnly,
       projects: this._projects,
       showCreateProjectModal: this.showCreateProjectModal,
       disableKeyboardShortcuts: this.disableKeyboardShortcuts,
     };
+  }
+
+  public get isLoading() {
+    return this.state === State.Loading;
+  }
+
+  public get isError() {
+    return this.state === State.Error;
   }
 
   public get project() {
@@ -73,7 +84,7 @@ export class App extends Subscribable<AppData> {
       this.setStateAndNotify(State.Loading);
       const response = await apiRequest<string[]>("/projects/list");
       if (response.errors) {
-        console.log(`Error fetching projects: ${response.errors}`);
+        console.log(`Error fetching projects`, response.errors);
         this.setStateAndNotify(State.Error);
       } else if (response.data) {
         this._projects = response.data;

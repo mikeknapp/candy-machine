@@ -2,7 +2,7 @@ import { PixelCrop } from "react-image-crop";
 import { ApiResponse, apiRequest, eventRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
 import { State } from "./base";
-import { Image, LoadableImage, SelectedImage, findMatchingTags } from "./image";
+import { Image, SelectedImage } from "./image";
 
 export interface ProjectData {
   state: State;
@@ -11,7 +11,6 @@ export interface ProjectData {
   triggerWord: string;
   images: string[];
   selectedImage: SelectedImage;
-  selectedImageTxtFile: string;
   autoTags: AutoTag[];
   tagLayout: CategoryData[];
   requiresSetup: boolean;
@@ -22,7 +21,6 @@ export const DEFAULT_PROJECT_DATA: ProjectData = {
   triggerWord: "",
   images: [],
   selectedImage: null,
-  selectedImageTxtFile: "",
   tagLayout: [],
   autoTags: [],
   requiresSetup: false,
@@ -44,68 +42,90 @@ export interface AutoTag {
 }
 
 export class Project {
-  protected onChange: () => void;
-  public state = State.Init;
-  public name: string = "";
-  public triggerWord: string = "";
-  public images: string[] = [];
-  public selectedImage: Image = null;
-  public autoTags: AutoTag[] = [];
-  public tagLayout: CategoryData[] = [];
-  public requiresSetup: boolean = false;
+  private _onChange: () => void;
+  private _state = State.Init;
+  private _name: string = "";
+  private _triggerWord: string = "";
+  private _images: string[] = [];
+  private _selectedImage: Image = null;
+  private _autoTags: AutoTag[] = [];
+  private _tagLayout: CategoryData[] = [];
+  private _requiresSetup: boolean = false;
 
   constructor(onChange: () => void) {
-    this.onChange = onChange;
+    this._onChange = onChange;
+  }
+
+  public onChange() {
+    this._onChange();
+  }
+
+  public setStateAndNotify(state: State) {
+    this._state = state;
+    this.onChange();
   }
 
   private reset(newName: string = "") {
-    this.state = State.Init;
-    this.name = newName;
-    this.triggerWord = "";
-    this.images = [];
-    this.selectedImage = null;
-    this.autoTags = [];
-    this.tagLayout = [];
-    this.requiresSetup = false;
+    this._state = State.Init;
+    this._name = newName;
+    this._triggerWord = "";
+    this._images = [];
+    this._selectedImage = null;
+    this._autoTags = [];
+    this._tagLayout = [];
+    this._requiresSetup = false;
     this.onChange();
   }
 
   public get readOnly(): ProjectData {
     return {
-      state: this.state,
-      isLoading: [State.Loading, State.Init].includes(this.state),
-      name: this.name,
-      triggerWord: this.triggerWord,
-      images: this.images,
-      selectedImage: this.selectedImage?.readOnly ?? null,
-      selectedImageTxtFile: this.selectedImageTxtFile(),
-      autoTags: this.autoTags,
-      tagLayout: this.tagLayout,
-      requiresSetup: this.requiresSetup,
+      state: this._state,
+      isLoading: this.isLoading,
+      name: this._name,
+      triggerWord: this._triggerWord,
+      images: this._images,
+      selectedImage: this._selectedImage?.readOnly ?? null,
+
+      tagLayout: this._tagLayout,
+      autoTags: this._autoTags,
+      requiresSetup: this._requiresSetup,
     };
   }
 
-  // TODO: use the same internal naming convention as App.
-  // i.e. _requiresSetup, and use getter and setters.
-  public setRequiresSetup(value: boolean) {
-    this.requiresSetup = value;
-    this.onChange();
+  public get isLoading(): boolean {
+    return this._state === State.Loading;
   }
 
-  public setStateAndNotify(state: State) {
-    this.state = state;
+  public get name(): string {
+    return this._name;
+  }
+
+  public get triggerWord(): string {
+    return this._triggerWord;
+  }
+
+  public get autoTags(): AutoTag[] {
+    return this._autoTags;
+  }
+
+  public get tagLayout(): CategoryData[] {
+    return this._tagLayout;
+  }
+
+  public get selectedImage(): Image {
+    return this._selectedImage;
+  }
+
+  public setRequiresSetup(value: boolean) {
+    this._requiresSetup = value;
     this.onChange();
   }
 
   public async setSelectedImage(filename: string) {
-    if (!filename || this.selectedImage?.filename === filename) {
+    if (!filename || this._selectedImage?.filename === filename) {
       return;
     }
-    this.selectedImage = new LoadableImage(
-      () => this.onChange(),
-      this.name,
-      filename,
-    );
+    this._selectedImage = new Image(this, filename, [], [], State.Loading);
     await this.save();
   }
 
@@ -126,7 +146,7 @@ export class Project {
 
   public async save() {
     const response = await apiRequest<{ result: string }>(
-      `/project/${this.name}/save`,
+      `/project/${this._name}/save`,
       {
         body: JSON.stringify(this.readOnly),
       },
@@ -138,30 +158,31 @@ export class Project {
 
   public async loadProject(projectName: string) {
     this.reset(projectName);
-    this.state = State.Loading;
-    const response = await apiRequest<ProjectData>(`/project/${this.name}/get`);
+    this._state = State.Loading;
+    const response = await apiRequest<ProjectData>(
+      `/project/${this._name}/get`,
+    );
     if (response.success && response.data) {
-      this.triggerWord = response.data.triggerWord;
-      this.images = response.data.images;
-      this.autoTags = response.data.autoTags;
-      this.tagLayout = response.data.tagLayout;
-      this.requiresSetup = response.data.requiresSetup;
+      this._triggerWord = response.data.triggerWord;
+      this._images = response.data.images;
+      this._autoTags = response.data.autoTags;
+      this._tagLayout = response.data.tagLayout;
+      this._requiresSetup = response.data.requiresSetup;
       if (response.data.selectedImage) {
-        this.selectedImage = new Image(
-          () => this.onChange(),
-          this.name,
+        this._selectedImage = new Image(
+          this,
           response.data.selectedImage.filename,
           response.data.selectedImage.tags,
           response.data.selectedImage.autoTags,
         );
       } else {
-        this.selectedImage = null;
+        this._selectedImage = null;
       }
       this.setStateAndNotify(State.Loaded);
       return true;
     }
     this.setStateAndNotify(State.Error);
-    console.log(`Failed to load project '${this.name}': ${response.errors}`);
+    console.log(`Failed to load project '${this._name}': ${response.errors}`);
   }
 
   public async importImages(
@@ -175,22 +196,22 @@ export class Project {
   }
 
   public navigateImages(direction: "next" | "prev"): string {
-    // Returns the name of the next or previous image in the list.
-    const currentIndex = this.images.indexOf(this.selectedImage?.filename);
+    // Returns the name of the next or previous image in the list. However, it does not set the selected image!
+    const currentIndex = this._images.indexOf(this._selectedImage?.filename);
     if (currentIndex === -1) {
       return;
     }
     switch (direction) {
       case "next":
         const nextIndex = currentIndex + 1;
-        if (nextIndex < this.images.length) {
-          return this.images[nextIndex];
+        if (nextIndex < this._images.length) {
+          return this._images[nextIndex];
         }
         break;
       case "prev":
         const previousIndex = currentIndex - 1;
         if (previousIndex >= 0) {
-          return this.images[previousIndex];
+          return this._images[previousIndex];
         }
         break;
     }
@@ -203,32 +224,28 @@ export class Project {
     const bestImage = nextImage || prevImage;
 
     // Remove the image from the list.
-    const index = this.images.indexOf(filename);
+    const index = this._images.indexOf(filename);
     if (index !== -1) {
-      this.images.splice(index, 1);
+      this._images.splice(index, 1);
     }
 
     // Select the best image.
     if (bestImage) {
       this.setSelectedImage(bestImage);
     } else {
-      this.selectedImage = null;
+      this._selectedImage = null;
       this.onChange();
     }
 
     // Perform the delete on the server.
-    const response = await apiRequest(`/project/${this.name}/img/delete`, {
+    const response = await apiRequest(`/project/${this._name}/img/delete`, {
       body: JSON.stringify({
         filename: filename,
       }),
     });
     if (!response.success) {
-      this.images.splice(index, 0, filename);
-      this.selectedImage = new LoadableImage(
-        () => this.onChange(),
-        this.name,
-        filename,
-      );
+      this._images.splice(index, 0, filename);
+      this._selectedImage = new Image(this, filename, [], [], State.Loading);
       setTimeout(() => {
         alert(`Failed to delete image; check server logs`);
       }, 500);
@@ -244,7 +261,7 @@ export class Project {
     crop: PixelCrop,
   ): Promise<boolean> {
     const response = await apiRequest<{ newFilename: string }>(
-      `/project/${this.name}/img/edit`,
+      `/project/${this._name}/img/edit`,
       {
         body: JSON.stringify({
           filename: oldFilename,
@@ -262,9 +279,9 @@ export class Project {
 
     // Update the image in the list.
     const newFilename = response.data.newFilename;
-    const oldIndex = this.images.indexOf(oldFilename);
+    const oldIndex = this._images.indexOf(oldFilename);
     if (oldIndex !== -1) {
-      this.images[oldIndex] = newFilename;
+      this._images[oldIndex] = newFilename;
     }
 
     // Update the selected image.
@@ -272,32 +289,8 @@ export class Project {
     return true;
   }
 
-  public selectedImageTxtFile(): string {
-    if (!this.selectedImage?.tags.length) {
-      return null;
-    }
-    const tags: string[] = [];
-    if (this.triggerWord) {
-      tags.push(this.triggerWord);
-    }
-    if (this.selectedImage.tags?.length > 0) {
-      this.tagLayout.map((category) => {
-        category.tags.forEach((tagTemplate) => {
-          findMatchingTags(tagTemplate, this.selectedImage.tags).forEach(
-            (matchingTag) => tags.push(matchingTag),
-          );
-        });
-      });
-    }
-    // Add any remaining tags at the end.
-    this.selectedImage.tags
-      .filter((tag) => !tags.includes(tag))
-      .forEach((tag) => tags.push(tag));
-    return tags.join(", ");
-  }
-
   public async addTagToLayout(category: string, tag: string): Promise<boolean> {
-    this.tagLayout = this.tagLayout.map((cat) => {
+    this._tagLayout = this._tagLayout.map((cat) => {
       if (cat.title === category) {
         cat.tags = [tag, ...cat.tags];
       }
@@ -308,7 +301,7 @@ export class Project {
   }
 
   public async removeTagFromLayout(tag: string): Promise<boolean> {
-    this.tagLayout = this.tagLayout.map((cat) => {
+    this._tagLayout = this._tagLayout.map((cat) => {
       cat.tags = cat.tags.filter((t) => t !== tag);
       return cat;
     });

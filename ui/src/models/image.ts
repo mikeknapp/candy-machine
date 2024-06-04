@@ -1,47 +1,58 @@
 import { apiRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
 import { State } from "./base";
+import { Project } from "./project";
 
 export interface SelectedImage {
   projectName: string;
   filename: string;
   tags: string[];
   autoTags: string[];
+  txtFile: string;
   isLoaded: boolean;
 }
 
 export class Image {
-  protected onChange: () => void;
   protected _state: State;
-  protected _projectName: string;
+  protected _project: Project;
   protected _filename: string;
   protected _tags: string[] = [];
   protected _autoTags: string[] = [];
 
   constructor(
-    onChange: () => void,
-    projectName: string,
+    project: Project,
     filename: string,
     tags: string[],
     autoTags: string[],
     state = State.Loaded,
   ) {
-    this.onChange = onChange;
-    this._projectName = projectName;
+    this._project = project;
     this._filename = filename;
     this._tags = tags;
     this._autoTags = autoTags;
     this._state = state;
+    if (this.isLoading) {
+      this.load();
+    }
+  }
+
+  public onChange() {
+    this._project.onChange();
   }
 
   public get readOnly(): SelectedImage {
     return {
-      projectName: this._projectName,
+      projectName: this._project.name,
       filename: this._filename,
       tags: this._tags,
       autoTags: this._autoTags,
-      isLoaded: this._state === State.Loaded,
+      txtFile: this.txtFile(),
+      isLoaded: !this.isLoading,
     };
+  }
+
+  public get isLoading(): boolean {
+    return [State.Loading, State.Init].includes(this._state);
   }
 
   public get filename(): string {
@@ -50,6 +61,24 @@ export class Image {
 
   public get tags(): string[] {
     return this._tags;
+  }
+
+  private async load(): Promise<void> {
+    const response = await apiRequest<{
+      autoTags: string[];
+      tags: string[];
+    }>(`/project/${this._project.name}/tags/load?image=${this._filename}`, {
+      method: "GET",
+    });
+    if (!response.success) {
+      this._state = State.Error;
+      console.error("Failed to load image:", response.errors);
+    } else {
+      this._state = State.Loaded;
+      this._tags = response.data.tags;
+      this._autoTags = response.data.autoTags;
+    }
+    this.onChange();
   }
 
   public async addTags(tags: string[]) {
@@ -91,45 +120,43 @@ export class Image {
     return await this.saveTags();
   }
 
+  public txtFile(): string {
+    if (!this.tags.length) {
+      return null;
+    }
+    const tags: string[] = [];
+    if (this._project.triggerWord) {
+      tags.push(this._project.triggerWord);
+    }
+    if (this.tags?.length > 0) {
+      this._project.tagLayout.map((category) => {
+        category.tags.forEach((tagTemplate) => {
+          findMatchingTags(tagTemplate, this.tags).forEach((matchingTag) =>
+            tags.push(matchingTag),
+          );
+        });
+      });
+    }
+    // Add any remaining tags at the end.
+    this.tags
+      .filter((tag) => !tags.includes(tag))
+      .forEach((tag) => tags.push(tag));
+    return tags.join(", ");
+  }
+
   public async saveTags() {
-    // TODO: Reorder tags correctly (or maybe we do that on the server?)
     const response = await apiRequest<{ result: string }>(
-      `/project/${this._projectName}/tags/save`,
+      `/project/${this._project.name}/tags/save`,
       {
-        body: JSON.stringify({ filename: this._filename, tags: this._tags }),
+        body: JSON.stringify({
+          filename: this._filename,
+          txtFile: this.txtFile(),
+        }),
       },
     );
     if (response.success && response.data) {
       return response.data.result === "OK";
     }
-  }
-}
-
-export class LoadableImage extends Image {
-  constructor(onChange: () => void, projectName: string, filename: string) {
-    super(onChange, projectName, filename, [], [], State.Loading);
-    // Load the image asynchonously so that the UI isn't blocked by the constructor.
-    new Promise(() => {
-      setTimeout(() => this.load(), 0);
-    });
-  }
-
-  private async load(): Promise<void> {
-    const response = await apiRequest<{
-      autoTags: string[];
-      tags: string[];
-    }>(`/project/${this._projectName}/tags/load?image=${this._filename}`, {
-      method: "GET",
-    });
-    if (!response.success) {
-      this._state = State.Error;
-      console.error("Failed to load image:", response.errors);
-    } else {
-      this._state = State.Loaded;
-      this._tags = response.data.tags;
-      this._autoTags = response.data.autoTags;
-    }
-    this.onChange();
   }
 }
 
