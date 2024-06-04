@@ -6,8 +6,15 @@ from pathlib import Path
 from typing import Tuple
 
 import imagehash
-from consts import (AUTO_TAGS, DEFAULT_CATEGORY_FILE, IMG_EXT, IMGS_DIR,
-                    PROJECT_CATEGORY_FILE, PROJECT_CONFIG_FILE, PROJECTS_DIR)
+from consts import (
+    AUTO_TAGS,
+    DEFAULT_CATEGORY_FILE,
+    IMG_EXT,
+    IMGS_DIR,
+    PROJECT_CATEGORY_FILE,
+    PROJECT_CONFIG_FILE,
+    PROJECTS_DIR,
+)
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
 from tags import common_suffixes

@@ -106,8 +106,7 @@ export class Project {
       this.name,
       filename,
     );
-    this.onChange();
-    this.save();
+    await this.save();
   }
 
   public async createProject(
@@ -129,7 +128,7 @@ export class Project {
     const response = await apiRequest<{ result: string }>(
       `/project/${this.name}/save`,
       {
-        body: JSON.stringify(this),
+        body: JSON.stringify(this.readOnly),
       },
     );
     if (response.success && response.data) {
@@ -255,22 +254,21 @@ export class Project {
         }),
       },
     );
+
     if (!response.success) {
       alert(`Failed to edit image; check server logs`);
       return false;
     }
-    const newFilename = response.data.newFilename;
+
     // Update the image in the list.
+    const newFilename = response.data.newFilename;
     const oldIndex = this.images.indexOf(oldFilename);
     if (oldIndex !== -1) {
       this.images[oldIndex] = newFilename;
     }
 
-    // If this image was selected, update the selected image.
-    if (this.selectedImage && this.selectedImage.filename === oldFilename) {
-      this.setSelectedImage(newFilename);
-    }
-    this.onChange();
+    // Update the selected image.
+    await this.setSelectedImage(newFilename);
     return true;
   }
 
