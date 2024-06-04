@@ -1,7 +1,6 @@
 import type { CustomFlowbiteTheme } from "flowbite-react";
 import { Flowbite } from "flowbite-react";
 import React, { createContext, useEffect } from "react";
-import { RecoilRoot } from "recoil";
 import { ErrorBoundary } from "./components/errors/ErrorBoundary";
 import { Editor } from "./components/layout/Editor";
 import { Header } from "./components/layout/Header";
@@ -39,12 +38,10 @@ export function RootNode() {
       <Flowbite theme={{ theme: customTheme }}>
         <AppContext.Provider value={appState}>
           <TagSearchContext.Provider value={useTagSearch()}>
-            <RecoilRoot>
-              <main className="flex h-screen w-full flex-col overflow-hidden dark:bg-gray-800">
-                <Header />
-                <Editor />
-              </main>
-            </RecoilRoot>
+            <main className="flex h-screen w-full flex-col overflow-hidden dark:bg-gray-800">
+              <Header />
+              <Editor />
+            </main>
           </TagSearchContext.Provider>
         </AppContext.Provider>
       </Flowbite>

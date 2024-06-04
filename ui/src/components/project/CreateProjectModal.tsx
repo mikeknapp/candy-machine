@@ -14,16 +14,11 @@ import { isWindows } from "react-device-detect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
-import { useApp } from "../../hooks/useApp";
+import { useAppState } from "../../hooks/useApp";
 import { useProject } from "../../hooks/useProject";
-import { NewProject, NewProjectRequest } from "../../models/project";
+import { NewProjectRequest } from "../../models/project";
 
-export interface CreateProjectModalProps {
-  show: boolean;
-  onClose: (open: boolean) => void;
-}
-
-export function CreateProjectModal(props: CreateProjectModalProps) {
+export function CreateProjectModal() {
   const {
     reset,
     register,
@@ -32,8 +27,8 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
     setFocus,
     watch,
     formState: { errors },
-  } = useForm<NewProject>();
-  const app = useApp();
+  } = useForm<NewProjectRequest>();
+  const [appValue, app] = useAppState();
   const project = useProject();
 
   const importDirPath = watch("importDirPath", "");
@@ -41,13 +36,17 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
   const [importPercent, setImportPercent] = useState<number>(-1);
   const [totalImages, setTotalImages] = useState<number>(0);
 
+  const showModal = appValue.showCreateProjectModal;
+  const onClose = () => {
+    app.showCreateProjectModal = false;
+  };
+
   const onSubmit: SubmitHandler<NewProjectRequest> = async (data) => {
     setIsProcessing(true);
-
     const resp = await project.createProject(data);
     if (resp.errors) {
       for (const [field, message] of Object.entries(resp.errors)) {
-        setError(field as keyof NewProject, {
+        setError(field as keyof NewProjectRequest, {
           type: "manual",
           message: message as string,
         });
@@ -55,7 +54,7 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
       setIsProcessing(false);
       return;
     }
-    props.onClose(false);
+    onClose();
 
     // Import the images if a directory path was provided and show a progress bar.
     if (data.importDirPath) {
@@ -93,22 +92,22 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
 
   // Reset the form when the modal is opened.
   useEffect(() => {
-    if (props.show) {
+    if (showModal) {
       reset();
       setTimeout(() => setFocus("name"), 500);
     } else {
       setImportPercent(-1);
     }
-  }, [props.show]);
+  }, [showModal]);
 
   // Disable the keyboard shortcuts when the modal is open or when importing images.
   useEffect(() => {
-    app.disableKeyboardShortcuts = props.show || importPercent > -1;
-  }, [props.show, importPercent]);
+    app.disableKeyboardShortcuts = showModal || importPercent > -1;
+  }, [showModal, importPercent]);
 
   return (
     <>
-      <Modal show={props.show} onClose={() => props.onClose(false)} size="lg">
+      <Modal show={showModal} onClose={() => onClose()} size="lg">
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader>Create New Project</ModalHeader>
           <ModalBody className="flex flex-col gap-5">
@@ -201,7 +200,7 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
             </div>
 
             <div className="flex flex-row justify-end gap-2 pt-4">
-              <Button color="gray" onClick={() => props.onClose(false)}>
+              <Button color="gray" onClick={() => onClose()}>
                 Cancel
               </Button>
               <Button

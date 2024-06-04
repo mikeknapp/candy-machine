@@ -1,15 +1,11 @@
 import { Button, Modal } from "flowbite-react";
 import React from "react";
 import { HiArrowRight } from "react-icons/hi";
-import { useRecoilState } from "recoil";
-import { useProjectValue } from "../../hooks/useProject";
-import { projectRequiresSetupSelector } from "../../state/atoms";
+import { useProjectState } from "../../hooks/useProject";
 import { SuggestedAutoTags } from "./SuggestedAutoTags";
 
 export function ProjectCategoriesModal() {
-  const projectValue = useProjectValue();
-
-  const [isOpen, setIsOpen] = useRecoilState(projectRequiresSetupSelector);
+  const [projectValue, project] = useProjectState();
 
   if (projectValue.autoTags.length === 0) {
     return null;
@@ -17,7 +13,7 @@ export function ProjectCategoriesModal() {
 
   return (
     <Modal
-      show={isOpen}
+      show={projectValue.requiresSetup}
       size="2xl"
       dismissible={false}
       theme={{
@@ -51,7 +47,7 @@ export function ProjectCategoriesModal() {
         <Button
           gradientDuoTone="greenToBlue"
           size="xl"
-          onClick={() => setIsOpen(false)}
+          onClick={() => project.setRequiresSetup(false)}
           fullSized
         >
           Start Tagging <HiArrowRight className="ml-2 h-6 w-6" />

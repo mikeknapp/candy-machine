@@ -1,12 +1,12 @@
 import { Button, DarkThemeToggle, Tooltip } from "flowbite-react";
 import React from "react";
 import { HiFolderPlus } from "react-icons/hi2";
+import { useApp } from "../../hooks/useApp";
 import { CreateProjectModal } from "../project/CreateProjectModal";
 import { ProjectSelector } from "../project/ProjectSelector";
 
 export function Header() {
-  const [showCreateProjectModal, setShowCreateProjectModal] =
-    React.useState(false);
+  const app = useApp();
 
   return (
     <div className="flex h-[80px] w-full flex-row items-center justify-between bg-accent p-3 dark:bg-slate-950">
@@ -24,7 +24,7 @@ export function Header() {
           <Button
             size="lg"
             gradientDuoTone="pinkToOrange"
-            onClick={() => setShowCreateProjectModal(true)}
+            onClick={() => (app.showCreateProjectModal = true)}
           >
             <HiFolderPlus className="text-2xl font-bold" />
           </Button>
@@ -42,10 +42,7 @@ export function Header() {
         </Tooltip>
       </div>
 
-      <CreateProjectModal
-        show={showCreateProjectModal}
-        onClose={() => setShowCreateProjectModal(false)}
-      />
+      <CreateProjectModal />
     </div>
   );
 }

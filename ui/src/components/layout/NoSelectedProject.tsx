@@ -1,17 +1,16 @@
 import { Button } from "flowbite-react";
 import React from "react";
-import { useSetRecoilState } from "recoil";
-import { showNewProjectModalAtom } from "../../state/atoms";
+import { useApp } from "../../hooks/useApp";
 
 export function NoSelectedProject() {
-  const openNewProjectDialog = useSetRecoilState(showNewProjectModalAtom);
+  const app = useApp();
 
   return (
     <div className="flex h-screen w-full flex-row items-center justify-center">
       <Button
         gradientDuoTone="pinkToOrange"
         outline
-        onClick={() => openNewProjectDialog(true)}
+        onClick={() => (app.showCreateProjectModal = true)}
       >
         Create Your First Project
       </Button>

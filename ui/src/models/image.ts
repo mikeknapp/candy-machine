@@ -1,15 +1,6 @@
-import { PixelCrop } from "react-image-crop";
 import { apiRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
 import { State } from "./base";
-import { Project_old } from "./project";
-
-export interface SelectedImageTags {
-  projectName: string;
-  image: string;
-  selected: string[];
-  autoTags: string[];
-}
 
 export interface SelectedImage {
   projectName: string;
@@ -186,45 +177,4 @@ export const findMatchingTags = (tagTemplate: string, candidates: string[]) => {
     }
   }
   return results;
-};
-
-export const deleteImage = async (
-  project: Project_old,
-  filename: string,
-): Promise<boolean> => {
-  const response = await apiRequest(`/project/${project.name}/img/delete`, {
-    body: JSON.stringify({
-      filename: filename,
-    }),
-  });
-  if (!response.success) {
-    console.error("Error deleting image:", response.errors);
-    return false;
-  }
-  return true;
-};
-
-export const editImage = async (
-  project: Project_old,
-  filename: string,
-  rotate: number,
-  flip: boolean,
-  crop: PixelCrop,
-): Promise<string> => {
-  const response = await apiRequest<{ newFilename: string }>(
-    `/project/${project.name}/img/edit`,
-    {
-      body: JSON.stringify({
-        filename: filename,
-        rotate: rotate,
-        flip: flip,
-        crop: crop,
-      }),
-    },
-  );
-  if (!response.success) {
-    console.error("Error editing image:", response.errors);
-    return null;
-  }
-  return response.data.newFilename;
 };

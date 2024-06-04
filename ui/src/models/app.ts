@@ -7,6 +7,7 @@ export interface AppData {
   isLoading: boolean;
   project: ProjectData;
   projects: string[];
+  showCreateProjectModal: boolean;
   disableKeyboardShortcuts: boolean;
 }
 
@@ -15,12 +16,14 @@ export const DEFAULT_APP_DATA: AppData = {
   isLoading: true,
   project: DEFAULT_PROJECT_DATA,
   projects: [],
+  showCreateProjectModal: false,
   disableKeyboardShortcuts: false,
 };
 
 export class App extends Subscribable<AppData> {
   private _project: Project;
   private _projects: string[] = [];
+  private _showCreateProjectModal = false;
   private _disableKeyboardShortcuts = false;
 
   private constructor() {
@@ -43,6 +46,7 @@ export class App extends Subscribable<AppData> {
       isLoading: [State.Init, State.Loading].includes(this.state),
       project: this._project.readOnly,
       projects: this._projects,
+      showCreateProjectModal: this.showCreateProjectModal,
       disableKeyboardShortcuts: this.disableKeyboardShortcuts,
     };
   }
@@ -77,6 +81,15 @@ export class App extends Subscribable<AppData> {
       }
     }
     return this._projects;
+  }
+
+  public get showCreateProjectModal(): boolean {
+    return this._showCreateProjectModal;
+  }
+
+  public set showCreateProjectModal(show: boolean) {
+    this._showCreateProjectModal = show;
+    this.notifyListeners();
   }
 
   public get disableKeyboardShortcuts(): boolean {
