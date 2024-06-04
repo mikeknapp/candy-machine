@@ -1,7 +1,7 @@
 import { PixelCrop } from "react-image-crop";
 import { ApiResponse, apiRequest, eventRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { State, Subscribable } from "./base";
+import { State } from "./base";
 import {
   Image,
   LoadableImage,
@@ -49,7 +49,8 @@ export interface AutoTag {
   examples: string[];
 }
 
-export class Project extends Subscribable<ProjectData> {
+export class Project {
+  protected onChange: () => void;
   public state = State.Init;
   public name: string = "";
   public triggerWord: string = "";
@@ -59,13 +60,8 @@ export class Project extends Subscribable<ProjectData> {
   public tagLayout: CategoryData[] = [];
   public requiresSetup: boolean = false;
 
-  private static instance: Project;
-
-  public static getInstance(): Project {
-    if (!Project.instance) {
-      Project.instance = new Project();
-    }
-    return Project.instance;
+  constructor(onChange: () => void) {
+    this.onChange = onChange;
   }
 
   private reset(newName: string = "") {
@@ -77,7 +73,7 @@ export class Project extends Subscribable<ProjectData> {
     this.autoTags = [];
     this.tagLayout = [];
     this.requiresSetup = false;
-    this.notifyListeners();
+    this.onChange();
   }
 
   public get readOnly(): ProjectData {
@@ -95,16 +91,21 @@ export class Project extends Subscribable<ProjectData> {
     };
   }
 
+  public setStateAndNotify(state: State) {
+    this.state = state;
+    this.onChange();
+  }
+
   public async setSelectedImage(filename: string) {
     if (!filename || this.selectedImage?.filename === filename) {
       return;
     }
     this.selectedImage = new LoadableImage(
-      () => this.notifyListeners(),
+      () => this.onChange(),
       this.name,
       filename,
     );
-    this.notifyListeners();
+    this.onChange();
     this.save();
   }
 
@@ -147,7 +148,7 @@ export class Project extends Subscribable<ProjectData> {
       this.requiresSetup = response.data.requiresSetup;
       if (response.data.selectedImage) {
         this.selectedImage = new Image(
-          () => this.notifyListeners(),
+          () => this.onChange(),
           this.name,
           response.data.selectedImage.filename,
           response.data.selectedImage.tags,
@@ -212,7 +213,7 @@ export class Project extends Subscribable<ProjectData> {
       this.setSelectedImage(bestImage);
     } else {
       this.selectedImage = null;
-      this.notifyListeners();
+      this.onChange();
     }
 
     // Perform the delete on the server.
@@ -224,7 +225,7 @@ export class Project extends Subscribable<ProjectData> {
     if (!response.success) {
       this.images.splice(index, 0, filename);
       this.selectedImage = new LoadableImage(
-        () => this.notifyListeners(),
+        () => this.onChange(),
         this.name,
         filename,
       );
@@ -268,8 +269,7 @@ export class Project extends Subscribable<ProjectData> {
     if (this.selectedImage && this.selectedImage.filename === oldFilename) {
       this.setSelectedImage(newFilename);
     }
-
-    this.notifyListeners();
+    this.onChange();
     return true;
   }
 
@@ -304,7 +304,7 @@ export class Project extends Subscribable<ProjectData> {
       }
       return cat;
     });
-    this.notifyListeners();
+    this.onChange();
     return await this.save();
   }
 
@@ -313,7 +313,7 @@ export class Project extends Subscribable<ProjectData> {
       cat.tags = cat.tags.filter((t) => t !== tag);
       return cat;
     });
-    this.notifyListeners();
+    this.onChange();
     return await this.save();
   }
 }

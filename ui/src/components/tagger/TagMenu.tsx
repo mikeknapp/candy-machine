@@ -1,10 +1,9 @@
 import { Button, Tooltip } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaPencil, FaWandMagicSparkles } from "react-icons/fa6";
-import { useRecoilValue } from "recoil";
 import { useProjectState } from "../../hooks/useProject";
-import { disableKeyboardShortcutsSelector } from "../../state/atoms";
+import { useShortcut } from "../../hooks/useShortcut";
 import { ClearTagsModal } from "./ClearTagsModal";
 import { TagSearch } from "./TagSearch";
 
@@ -13,37 +12,27 @@ export function TagMenu() {
   const img = projectValue.selectedImage;
   const imgTagsLoaded = img?.isLoaded ?? false;
 
-  const disableShortcuts = useRecoilValue(disableKeyboardShortcutsSelector);
-
   const [showClearTagsModal, setShowClearTagsModal] = useState(false);
 
   const applyAutoTags = () => {
     project.selectedImage?.applyAutoTags(projectValue.tagLayout);
   };
 
-  // Shortcut listener.
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (disableShortcuts || showClearTagsModal || imgTagsLoaded) return;
+  const allowShortcuts = !showClearTagsModal || imgTagsLoaded;
 
-      // TODO: Fix - doesn't seem to be working.
-      switch (event.key) {
-        case "a":
-          applyAutoTags();
-          break;
-        case "x":
-          setShowClearTagsModal(true);
-          break;
-        case "l":
-          // TODO: Implement tag layout edit.
-          break;
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [disableShortcuts, showClearTagsModal, imgTagsLoaded]);
+  useShortcut({
+    // Apply auto tags when the user presses the "a" key.
+    keys: "a",
+    action: () => allowShortcuts && applyAutoTags(),
+    deps: [allowShortcuts],
+  });
+
+  useShortcut({
+    // Apply auto tags when the user presses the "a" key.
+    keys: "x",
+    action: () => allowShortcuts && setShowClearTagsModal(true),
+    deps: [allowShortcuts],
+  });
 
   return (
     <>

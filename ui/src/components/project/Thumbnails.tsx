@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { useRecoilValue } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { useProjectState } from "../../hooks/useProject";
+import { useShortcut } from "../../hooks/useShortcut";
 import { imgAspectRatio } from "../../models/image";
-import { disableKeyboardShortcutsSelector } from "../../state/atoms";
 import { ProgressPieChart } from "../layout/ProgressPieChart";
 
 const BORDER_WIDTH = 4;
@@ -27,53 +26,37 @@ export const scrollToThumbnail = (img: string) => {
 export function Thumbnails() {
   const observer = useRef<IntersectionObserver | null>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
-
   const [projectValue, project] = useProjectState();
 
-  const disableKeyboardShortcuts = useRecoilValue(
-    disableKeyboardShortcutsSelector,
-  );
-
-  const saveSelectedImage = (img: string) => {
-    project.setSelectedImage(img);
-    scrollToThumbnail(img);
+  const moveToImage = (mode: "next" | "prev" | "filename", img = "") => {
+    if (mode === "next" || mode === "prev") {
+      img = project.navigateImages(mode);
+    }
+    if (img) {
+      project.setSelectedImage(img);
+      scrollToThumbnail(img);
+    }
   };
 
-  // Keyboard navigation.
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (disableKeyboardShortcuts) return;
+  useShortcut({
+    // Navigate to the next image.
+    keys: ["j", "ArrowDown", "ArrowRight"],
+    action: () => moveToImage("next"),
+    deps: [],
+  });
 
-      let imgToSelect;
-      switch (event.key) {
-        case "j":
-        case "ArrowDown":
-        case "ArrowRight":
-          imgToSelect = project.navigateImages("next");
-          break;
-        case "k":
-        case "ArrowUp":
-        case "ArrowLeft":
-          imgToSelect = project.navigateImages("prev");
-      }
-      if (imgToSelect) {
-        saveSelectedImage(imgToSelect);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [projectValue, disableKeyboardShortcutsSelector]);
+  useShortcut({
+    // Navigate to the previous image.
+    keys: ["k", "ArrowUp", "ArrowLeft"],
+    action: () => moveToImage("prev"),
+    deps: [],
+  });
 
   // Lazy load the thumbnails.
   useEffect(() => {
     if (observer.current) {
       observer.current.disconnect();
     }
-
     observer.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -137,7 +120,7 @@ export function Thumbnails() {
             data-src={`${API_BASE_URL}/project/${projectValue.name}/imgs/${img}?thumbnail=true`}
             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             alt={img}
-            onClick={() => saveSelectedImage(img)}
+            onClick={() => moveToImage("filename", img)}
           />
         ))}
         <div className="absolute bottom-3 left-3">

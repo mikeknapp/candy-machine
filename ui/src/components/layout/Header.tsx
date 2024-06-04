@@ -5,7 +5,8 @@ import { CreateProjectModal } from "../project/CreateProjectModal";
 import { ProjectSelector } from "../project/ProjectSelector";
 
 export function Header() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [showCreateProjectModal, setShowCreateProjectModal] =
+    React.useState(false);
 
   return (
     <div className="flex h-[80px] w-full flex-row items-center justify-between bg-accent p-3 dark:bg-slate-950">
@@ -23,7 +24,7 @@ export function Header() {
           <Button
             size="lg"
             gradientDuoTone="pinkToOrange"
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => setShowCreateProjectModal(true)}
           >
             <HiFolderPlus className="text-2xl font-bold" />
           </Button>
@@ -42,8 +43,8 @@ export function Header() {
       </div>
 
       <CreateProjectModal
-        show={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        show={showCreateProjectModal}
+        onClose={() => setShowCreateProjectModal(false)}
       />
     </div>
   );

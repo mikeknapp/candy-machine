@@ -1,19 +1,21 @@
 import { useContext, useState } from "react";
-import { ProjectContext } from "../app";
+import { AppContext } from "../app";
+import { AppData } from "../models/app";
 import { DEFAULT_PROJECT_DATA, Project, ProjectData } from "../models/project";
 import { useSubscribe } from "./useSubscribe";
 
 export function useProjectState(): [ProjectData, Project] {
-  let projectContext = useContext(ProjectContext);
+  let appContext = useContext(AppContext);
 
-  const [projectValue, project] = useState<ProjectData>(DEFAULT_PROJECT_DATA);
+  const [projectValue, setProject] =
+    useState<ProjectData>(DEFAULT_PROJECT_DATA);
 
   // Listen to updates from the selected project.
-  useSubscribe(ProjectContext, (newValue: ProjectData) => {
-    project(newValue);
+  useSubscribe(AppContext, (newValue: AppData) => {
+    setProject(newValue.project);
   });
 
-  return [projectValue, projectContext];
+  return [projectValue, appContext.project];
 }
 
 export function useProjectValue(): ProjectData {

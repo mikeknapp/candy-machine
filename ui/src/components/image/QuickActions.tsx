@@ -6,24 +6,19 @@ import {
   FaCropSimple,
   FaRegTrashCan,
 } from "react-icons/fa6";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useApp } from "../../hooks/useApp";
 import { useProjectState } from "../../hooks/useProject";
-import {
-  disableKeyboardShortcutsSelector,
-  showCropImageModalAtom,
-} from "../../state/atoms";
+import { useShortcut } from "../../hooks/useShortcut";
 import { scrollToThumbnail } from "../project/Thumbnails";
-import { CropImageModal } from "./CropImageModal";
 import { DeleteImageModal } from "./DeleteImageModal";
+import { EditImageModal } from "./EditImageModal";
 
 export function QuickActions() {
+  const app = useApp();
   const [projectValue, project] = useProjectState();
+  const hasSelectedImage = Boolean(projectValue.selectedImage?.filename);
 
-  const setShowEditImageModal = useSetRecoilState(showCropImageModalAtom);
-  const disableKeyboardShortcuts = useRecoilValue(
-    disableKeyboardShortcutsSelector,
-  );
-
+  const [showEditImageModal, setShowEditImageModal] = useState(false);
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
   const navigate = (direction: "next" | "prev") => {
@@ -34,26 +29,23 @@ export function QuickActions() {
     }
   };
 
-  // Shortcut listener.
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (disableKeyboardShortcuts || showDeleteImageModal) return;
+  useShortcut({
+    // Show the edit image modal.
+    keys: "e",
+    action: () => hasSelectedImage && setShowEditImageModal(true),
+    deps: [hasSelectedImage],
+  });
 
-      switch (event.key) {
-        case "e":
-          setShowEditImageModal(true);
-          break;
-        case "Delete":
-        case "d":
-          setShowDeleteImageModal(true);
-          break;
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [disableKeyboardShortcuts, showDeleteImageModal]);
+  useShortcut({
+    // Show the delete image modal.
+    keys: "d",
+    action: () => hasSelectedImage && setShowDeleteImageModal(true),
+    deps: [hasSelectedImage],
+  });
+
+  useEffect(() => {
+    app.disableKeyboardShortcuts = showEditImageModal || showDeleteImageModal;
+  }, [showEditImageModal, showDeleteImageModal]);
 
   return (
     <div className="flex flex-row justify-center">
@@ -69,11 +61,11 @@ export function QuickActions() {
             <FaArrowLeft />
           </Button>
         </Tooltip>
-        <Tooltip content="Edit Image (Crop / Rotate) [e]">
+        <Tooltip content="Edit Image [e]">
           <Button
             size="xl"
             color="light"
-            onClick={() => setShowEditImageModal(true)}
+            onClick={() => hasSelectedImage && setShowEditImageModal(true)}
             className="rounded-none border-r-0"
           >
             <FaCropSimple />
@@ -83,7 +75,7 @@ export function QuickActions() {
           <Button
             size="xl"
             color="light"
-            onClick={() => setShowDeleteImageModal(true)}
+            onClick={() => hasSelectedImage && setShowDeleteImageModal(true)}
             className="rounded-none border-r-0"
           >
             <FaRegTrashCan />
@@ -102,15 +94,16 @@ export function QuickActions() {
         </Tooltip>
       </div>
 
-      <CropImageModal />
+      <EditImageModal
+        show={showEditImageModal}
+        onClose={() => setShowEditImageModal(false)}
+      />
 
-      {projectValue && (
-        <DeleteImageModal
-          selectedImg={projectValue.selectedImage?.filename}
-          show={showDeleteImageModal}
-          onClose={() => setShowDeleteImageModal(false)}
-        />
-      )}
+      <DeleteImageModal
+        selectedImg={projectValue.selectedImage?.filename}
+        show={showDeleteImageModal}
+        onClose={() => setShowDeleteImageModal(false)}
+      />
     </div>
   );
 }

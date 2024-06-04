@@ -20,10 +20,8 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { useRecoilState } from "recoil";
 import { API_BASE_URL } from "../../api";
 import { useProjectState } from "../../hooks/useProject";
-import { showCropImageModalAtom } from "../../state/atoms";
 
 const INITIAL_CROP: PercentCrop = {
   unit: "%",
@@ -70,10 +68,13 @@ enum Rotation {
   TWO_SEVENTY = 270,
 }
 
-export function CropImageModal() {
-  const [projectValue, project] = useProjectState();
+export interface CropImageModalProps {
+  show: boolean;
+  onClose: () => void;
+}
 
-  const [showModal, setShowModal] = useRecoilState(showCropImageModalAtom);
+export function EditImageModal(props: CropImageModalProps) {
+  const [projectValue, project] = useProjectState();
 
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<PercentCrop>(INITIAL_CROP);
@@ -163,32 +164,32 @@ export function CropImageModal() {
       finalCrop,
     );
     setIsSaving(false);
-    setShowModal(false);
+    props.onClose();
   };
 
   useEffect(() => {
-    if (showModal) {
+    if (props.show) {
       setAspect(AspectRatio.CUSTOM);
       setRotate(0);
       setFlipHorizontal(false);
     }
-  }, [showModal]);
+  }, [props.show]);
 
   useEffect(() => {
-    if (showModal && projectValue.selectedImage) {
+    if (props.show && projectValue.selectedImage) {
       refreshCrop();
     }
   }, [imgSize, aspect]);
 
   useEffect(() => {
-    if (showModal && projectValue.selectedImage) {
+    if (props.show && projectValue.selectedImage) {
       setCrop(INITIAL_CROP);
       setAspect(AspectRatio.CUSTOM);
       setRotate(Rotation.ZERO);
       setFlipHorizontal(false);
       setImgSize(INITIAL_SIZE);
     }
-  }, [showModal, projectValue.selectedImage]);
+  }, [props.show, projectValue.selectedImage]);
 
   const pixelCrop = convertToPixelCrop(crop, imgSize.w, imgSize.h);
 
@@ -196,9 +197,9 @@ export function CropImageModal() {
     <>
       {projectValue.selectedImage && (
         <Modal
-          show={showModal}
+          show={props.show}
           dismissible={true}
-          onClose={() => setShowModal(false)}
+          onClose={props.onClose}
           size="4xl"
         >
           <Modal.Body>
@@ -281,7 +282,7 @@ export function CropImageModal() {
             </div>
 
             <div className="flex flex-row justify-end gap-2 pt-4">
-              <Button color="gray" onClick={() => setShowModal(false)}>
+              <Button color="gray" onClick={() => props.onClose()}>
                 Cancel
               </Button>
               <Button

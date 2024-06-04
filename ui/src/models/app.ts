@@ -1,23 +1,32 @@
 import { apiRequest } from "../api";
 import { State, Subscribable } from "./base";
+import { DEFAULT_PROJECT_DATA, Project, ProjectData } from "./project";
 
 export interface AppData {
   state: State;
   isLoading: boolean;
+  project: ProjectData;
   projects: string[];
   disableKeyboardShortcuts: boolean;
 }
 
 export const DEFAULT_APP_DATA: AppData = {
-  projects: [],
   state: State.Init,
   isLoading: true,
+  project: DEFAULT_PROJECT_DATA,
+  projects: [],
   disableKeyboardShortcuts: false,
 };
 
 export class App extends Subscribable<AppData> {
+  private _project: Project;
   private _projects: string[] = [];
   private _disableKeyboardShortcuts = false;
+
+  private constructor() {
+    super();
+    this._project = new Project(() => this.notifyListeners());
+  }
 
   private static instance: App;
 
@@ -31,10 +40,15 @@ export class App extends Subscribable<AppData> {
   public get readOnly(): AppData {
     return {
       state: this.state,
-      projects: this._projects,
       isLoading: [State.Init, State.Loading].includes(this.state),
+      project: this._project.readOnly,
+      projects: this._projects,
       disableKeyboardShortcuts: this.disableKeyboardShortcuts,
     };
+  }
+
+  public get project() {
+    return this._project;
   }
 
   public get projects() {

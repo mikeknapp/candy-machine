@@ -17,7 +17,6 @@ export interface SelectedImage {
   tags: string[];
   autoTags: string[];
   isLoaded: boolean;
-  searchTerm: string;
 }
 
 export class Image {
@@ -27,7 +26,6 @@ export class Image {
   protected _filename: string;
   protected _tags: string[] = [];
   protected _autoTags: string[] = [];
-  protected _searchTerm: string;
 
   constructor(
     onChange: () => void,
@@ -52,7 +50,6 @@ export class Image {
       tags: this._tags,
       autoTags: this._autoTags,
       isLoaded: this._state === State.Loaded,
-      searchTerm: this._searchTerm,
     };
   }
 
@@ -62,11 +59,6 @@ export class Image {
 
   public get tags(): string[] {
     return this._tags;
-  }
-
-  public set searchTerm(value: string) {
-    this._searchTerm = value;
-    this.onChange();
   }
 
   public async addTags(tags: string[]) {

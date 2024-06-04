@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
-import { useRecoilState } from "recoil";
+import { TagSearchContext } from "../../app";
 import { useProjectState } from "../../hooks/useProject";
 import { findMatchingTags } from "../../models/image";
-import { tagSearchTerm } from "../../state/atoms";
 import { Tag } from "./Tag";
 
 export type CategoryData = {
@@ -14,7 +13,7 @@ export type CategoryData = {
 
 export function TagCategory({ category }: { category: CategoryData }) {
   const [projectValue, project] = useProjectState();
-  const [tagSearch, setTagSearch] = useRecoilState(tagSearchTerm);
+  const { query, update } = useContext(TagSearchContext);
   const [categoryTags, setCategoryTags] = useState(category.tags);
 
   let selectedTags = projectValue.selectedImage?.tags || [];
@@ -30,29 +29,22 @@ export function TagCategory({ category }: { category: CategoryData }) {
       });
     });
 
-    setCategoryTags(Array.from(relevantTags));
-  }, [category, tagSearch, selectedTags]);
+    // Move selected tags to the front of the list.
+    const tags = Array.from(relevantTags);
+    const selected = tags.filter((t) => selectedTags.includes(t)) || [];
+    const unselected = tags.filter((t) => !selectedTags.includes(t)) || [];
+    let results = [...selected, ...unselected];
 
-  useEffect(() => {
+    // Apply any active search filter.
+    if (query) {
+      results = results.filter((tag) =>
+        tag.toLowerCase().includes(query.toLowerCase()),
+      );
+    }
+
     // Sort + apply any active search filter.
-    setCategoryTags((prev) => {
-      if (!prev) return []; // Wait for tags to load.
-
-      // Move selected tags to the front of the list.
-      const selected = prev.filter((tag) => selectedTags.includes(tag)) || [];
-      const unselected =
-        prev.filter((tag) => !selectedTags.includes(tag)) || [];
-      const orderedTags = [...selected, ...unselected];
-
-      // Apply any active search filter.
-      if (tagSearch) {
-        return orderedTags.filter((tag) =>
-          tag.toLowerCase().includes(tagSearch.toLowerCase()),
-        );
-      }
-      return orderedTags;
-    });
-  }, [categoryTags]);
+    setCategoryTags(results);
+  }, [category, query, selectedTags]);
 
   if (categoryTags.length === 0) {
     return null;
@@ -79,7 +71,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
             text={tag}
             onClick={() => {
               project.selectedImage?.toggleTag(tag);
-              setTimeout(() => setTagSearch(null), 500);
+              update("", false);
             }}
             color={category.color}
             isSelected={selectedTags.includes(tag)}

@@ -1,7 +1,7 @@
 import { Button, Modal } from "flowbite-react";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
-import { ProjectContext } from "../../app";
+import { useProject } from "../../hooks/useProject";
 
 type DeleteImageModalProps = {
   selectedImg: string;
@@ -10,7 +10,7 @@ type DeleteImageModalProps = {
 };
 
 export function DeleteImageModal(props: DeleteImageModalProps) {
-  const projectContext = useContext(ProjectContext);
+  const project = useProject();
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -36,7 +36,7 @@ export function DeleteImageModal(props: DeleteImageModalProps) {
               isProcessing={isDeleting}
               onClick={async () => {
                 setIsDeleting(true);
-                await projectContext.deleteImage(props.selectedImg);
+                await project.deleteImage(props.selectedImg);
                 props.onClose();
                 setIsDeleting(false);
               }}

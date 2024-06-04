@@ -74,6 +74,7 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
     setIsProcessing(false);
   };
 
+  // Get the import status message based on the percentage complete.
   const getImportStatus = (percent: number, totalImages: number) => {
     if (percent === -1) {
       return "Analyzing images....";
@@ -90,6 +91,7 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
     return "Analyzing images...";
   };
 
+  // Reset the form when the modal is opened.
   useEffect(() => {
     if (props.show) {
       reset();
@@ -99,9 +101,10 @@ export function CreateProjectModal(props: CreateProjectModalProps) {
     }
   }, [props.show]);
 
+  // Disable the keyboard shortcuts when the modal is open or when importing images.
   useEffect(() => {
-    app.disableKeyboardShortcuts = isProcessing || importPercent > -1;
-  }, [isProcessing, importPercent]);
+    app.disableKeyboardShortcuts = props.show || importPercent > -1;
+  }, [props.show, importPercent]);
 
   return (
     <>

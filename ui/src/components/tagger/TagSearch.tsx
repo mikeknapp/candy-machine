@@ -1,66 +1,74 @@
-import { TextInput, Tooltip } from "flowbite-react";
-import React, { useEffect } from "react";
+import { TextInput } from "flowbite-react";
+import React, { useContext, useRef } from "react";
 import { FaTimesCircle } from "react-icons/fa";
 import { FaMagnifyingGlass } from "react-icons/fa6";
-import { useRecoilState, useRecoilValue } from "recoil";
-import {
-  disableKeyboardShortcutsSelector,
-  tagSearchTerm,
-} from "../../state/atoms";
+import { TagSearchContext } from "../../app";
+import { useShortcut } from "../../hooks/useShortcut";
 
 export function TagSearch() {
-  const ref = React.useRef<HTMLInputElement>(null);
-  const [tagSearch, setTagSearch] = useRecoilState(tagSearchTerm);
-  const disableShortcuts = useRecoilValue(disableKeyboardShortcutsSelector);
+  const ref = useRef<HTMLInputElement>(null);
+  const { query, hasFocus, update } = useContext(TagSearchContext);
 
-  // Shortcut listener.
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (tagSearch !== null) {
-          setTagSearch(null);
-          ref.current?.blur();
+  const exitAndClearQuery = () => {
+    setTimeout(() => {
+      update("", false, true);
+    }, 0);
+    ref.current?.blur();
+  };
+
+  useShortcut({
+    // Focus on the search bar.
+    keys: "f",
+    action: () => {
+      if (!query) {
+        update("", true);
+        setTimeout(() => ref.current?.focus(), 200);
+      }
+    },
+    deps: [query],
+  });
+
+  useShortcut(
+    {
+      // Clear the search bar on "Escape".
+      keys: "Escape",
+      action: (e) => {
+        if (hasFocus) {
+          e.preventDefault();
+          exitAndClearQuery();
         }
-      }
-      if (!disableShortcuts && event.key === "f") {
-        event.preventDefault();
-        setTagSearch("");
-        ref.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [disableShortcuts, tagSearch]);
+      },
+      deps: [hasFocus],
+    },
+    false,
+  );
 
   return (
     <>
-      <Tooltip content="Filter tags [f]">
+      <div
+        className={`transform transition-all duration-300 ${hasFocus ? "w-[200px]" : "w-[130px]"}`}
+      >
         <TextInput
           ref={ref}
-          className="h-full"
-          placeholder={tagSearch?.length > 0 ? "Filter Tags" : "Filter"}
-          size={tagSearch !== null ? 20 : 3}
+          key="tag-search"
+          className="h-full w-full"
+          placeholder={hasFocus ? "" : "Filter [f]"}
+          size={20}
           icon={FaMagnifyingGlass}
           rightIcon={() =>
-            tagSearch?.length > 0 ? (
+            hasFocus ? (
               <FaTimesCircle
                 className="!cursor-pointer text-gray-500"
-                onClick={() => {
-                  console.log("here I am!");
-                  setTagSearch(null);
-                  ref.current?.blur();
-                }}
+                onClick={() => exitAndClearQuery()}
               />
             ) : undefined
           }
-          onFocus={() => tagSearch === null && setTagSearch("")}
-          onBlur={() => tagSearch?.trim() === "" && setTagSearch(null)}
-          onChange={(e) => setTagSearch(e.target.value)}
-          value={tagSearch || ""}
+          onFocus={() => update(query, true)}
+          onBlur={() => setTimeout(() => update(query, false), 500)}
+          onChange={(e) => update(e.target.value, true)}
+          value={query}
         />
-      </Tooltip>
+      </div>
     </>
   );
 }
