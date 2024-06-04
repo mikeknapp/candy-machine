@@ -18,15 +18,19 @@ export const apiRequest = async <T>(
   };
   options = { ...defaultOptions, ...options };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { success: false, errors: errorData.errors };
+    }
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    return { success: false, errors: errorData.errors };
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    alert("API request failed, is the server running?");
+    return { success: false, errors: { message: "API request failed" } };
   }
-
-  const data = await response.json();
-  return { success: true, data };
 };
 
 export const eventRequest = async (
