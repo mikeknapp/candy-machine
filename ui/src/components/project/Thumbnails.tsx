@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../../api";
 import { useProjectState } from "../../hooks/useProject";
 import { imgAspectRatio } from "../../models/image";
 import { disableKeyboardShortcutsSelector } from "../../state/atoms";
-import { ProgressPieChart } from "../nav/ProgressPieChart";
+import { ProgressPieChart } from "../layout/ProgressPieChart";
 
 const BORDER_WIDTH = 4;
 const CONTAINER_WIDTH = 300;

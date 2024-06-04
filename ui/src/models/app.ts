@@ -5,16 +5,20 @@ export interface AppData {
   state: State;
   isLoading: boolean;
   projects: string[];
+  disableKeyboardShortcuts: boolean;
 }
 
 export const DEFAULT_APP_DATA: AppData = {
   projects: [],
   state: State.Init,
   isLoading: true,
+  disableKeyboardShortcuts: false,
 };
 
 export class App extends Subscribable<AppData> {
-  private projectNames: string[] = [];
+  private _projects: string[] = [];
+  private _disableKeyboardShortcuts = false;
+
   private static instance: App;
 
   public static getInstance(): App {
@@ -27,21 +31,22 @@ export class App extends Subscribable<AppData> {
   public get readOnly(): AppData {
     return {
       state: this.state,
-      projects: this.projectNames,
+      projects: this._projects,
       isLoading: [State.Init, State.Loading].includes(this.state),
+      disableKeyboardShortcuts: this.disableKeyboardShortcuts,
     };
   }
 
   public get projects() {
-    return this.projectNames;
+    return this._projects;
   }
 
   public get hasProjects() {
-    return this.projectNames.length > 0;
+    return this._projects.length > 0;
   }
 
   async addProject(project: string) {
-    this.projectNames = [project, ...this.projectNames];
+    this._projects = [project, ...this._projects];
     this.notifyListeners();
   }
 
@@ -53,10 +58,19 @@ export class App extends Subscribable<AppData> {
         console.log(`Error fetching projects: ${response.errors}`);
         this.setStateAndNotify(State.Error);
       } else if (response.data) {
-        this.projectNames = response.data;
+        this._projects = response.data;
         this.setStateAndNotify(State.Loaded);
       }
     }
-    return this.projectNames;
+    return this._projects;
+  }
+
+  public get disableKeyboardShortcuts(): boolean {
+    return this._disableKeyboardShortcuts;
+  }
+
+  public set disableKeyboardShortcuts(disable: boolean) {
+    this._disableKeyboardShortcuts = disable;
+    this.notifyListeners();
   }
 }

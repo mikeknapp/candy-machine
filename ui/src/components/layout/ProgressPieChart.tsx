@@ -10,11 +10,11 @@ export function ProgressPieChart() {
 
   const project = useProjectValue();
 
-  if (!project || project.images.length === 0) {
+  if (project?.images.length === 0) {
     return;
   }
 
-  const imageIndex = project.images.indexOf(project.selectedImage);
+  const imageIndex = project.images.indexOf(project.selectedImage?.filename);
   percentage = Math.round(((imageIndex + 1) / project.images.length) * 100);
 
   return (

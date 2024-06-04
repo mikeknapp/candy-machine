@@ -4,8 +4,7 @@ import React, { useEffect } from "react";
 import { RecoilRoot } from "recoil";
 import { ErrorBoundary } from "./components/errors/ErrorBoundary";
 import { Editor } from "./components/layout/Editor";
-import { Header } from "./components/nav/Header";
-import { CreateProjectModal } from "./components/project/CreateProjectModal";
+import { Header } from "./components/layout/Header";
 import { App } from "./models/app";
 import { Project } from "./models/project";
 
@@ -45,7 +44,6 @@ export function RootNode() {
               <main className="flex h-screen w-full flex-col overflow-hidden dark:bg-gray-800">
                 <Header />
                 <Editor />
-                <CreateProjectModal />
               </main>
             </RecoilRoot>
           </ProjectContext.Provider>

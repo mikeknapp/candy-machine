@@ -17,15 +17,17 @@ export interface SelectedImage {
   tags: string[];
   autoTags: string[];
   isLoaded: boolean;
+  searchTerm: string;
 }
 
 export class Image {
   protected onChange: () => void;
-  protected state: State;
-  public projectName: string;
-  public filename: string;
-  public tags: string[] = [];
-  public autoTags: string[] = [];
+  protected _state: State;
+  protected _projectName: string;
+  protected _filename: string;
+  protected _tags: string[] = [];
+  protected _autoTags: string[] = [];
+  protected _searchTerm: string;
 
   constructor(
     onChange: () => void,
@@ -36,34 +38,48 @@ export class Image {
     state = State.Loaded,
   ) {
     this.onChange = onChange;
-    this.projectName = projectName;
-    this.filename = filename;
-    this.tags = tags;
-    this.autoTags = autoTags;
-    this.state = state;
+    this._projectName = projectName;
+    this._filename = filename;
+    this._tags = tags;
+    this._autoTags = autoTags;
+    this._state = state;
   }
 
   public get readOnly(): SelectedImage {
     return {
-      projectName: this.projectName,
-      filename: this.filename,
-      tags: this.tags,
-      autoTags: this.autoTags,
-      isLoaded: this.state === State.Loaded,
+      projectName: this._projectName,
+      filename: this._filename,
+      tags: this._tags,
+      autoTags: this._autoTags,
+      isLoaded: this._state === State.Loaded,
+      searchTerm: this._searchTerm,
     };
   }
 
+  public get filename(): string {
+    return this._filename;
+  }
+
+  public get tags(): string[] {
+    return this._tags;
+  }
+
+  public set searchTerm(value: string) {
+    this._searchTerm = value;
+    this.onChange();
+  }
+
   public async addTags(tags: string[]) {
-    this.tags = Array.from(new Set([...this.tags, ...tags]));
+    this._tags = Array.from(new Set([...this._tags, ...tags]));
     this.onChange();
     await this.saveTags();
   }
 
   public async toggleTag(tag: string) {
-    if (this.tags.includes(tag)) {
-      this.tags = this.tags.filter((value) => value !== tag);
+    if (this._tags.includes(tag)) {
+      this._tags = this._tags.filter((value) => value !== tag);
     } else {
-      this.tags.push(tag);
+      this._tags.push(tag);
     }
     this.onChange();
     await this.saveTags();
@@ -75,7 +91,7 @@ export class Image {
     tagLayout.forEach((category) => {
       category.tags.forEach((tagTemplate) => {
         // Look for broad and exact matches.
-        findMatchingTags(tagTemplate, this.autoTags).forEach((tag) => {
+        findMatchingTags(tagTemplate, this._autoTags).forEach((tag) => {
           newTags.add(tag);
         });
       });
@@ -87,7 +103,7 @@ export class Image {
   }
 
   public async clearTags() {
-    this.tags = [];
+    this._tags = [];
     this.onChange();
     return await this.saveTags();
   }
@@ -95,9 +111,9 @@ export class Image {
   public async saveTags() {
     // TODO: Reorder tags correctly (or maybe we do that on the server?)
     const response = await apiRequest<{ result: string }>(
-      `/project/${this.projectName}/tags/save`,
+      `/project/${this._projectName}/tags/save`,
       {
-        body: JSON.stringify({ filename: this.filename, tags: this.tags }),
+        body: JSON.stringify({ filename: this._filename, tags: this._tags }),
       },
     );
     if (response.success && response.data) {
@@ -119,16 +135,16 @@ export class LoadableImage extends Image {
     const response = await apiRequest<{
       autoTags: string[];
       tags: string[];
-    }>(`/project/${this.projectName}/tags/load?image=${this.filename}`, {
+    }>(`/project/${this._projectName}/tags/load?image=${this._filename}`, {
       method: "GET",
     });
     if (!response.success) {
-      this.state = State.Error;
+      this._state = State.Error;
       console.error("Failed to load image:", response.errors);
     } else {
-      this.state = State.Loaded;
-      this.tags = response.data.tags;
-      this.autoTags = response.data.autoTags;
+      this._state = State.Loaded;
+      this._tags = response.data.tags;
+      this._autoTags = response.data.autoTags;
     }
     this.onChange();
   }

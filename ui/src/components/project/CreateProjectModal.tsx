@@ -14,13 +14,16 @@ import { isWindows } from "react-device-detect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
-import { useRecoilState } from "recoil";
 import { useApp } from "../../hooks/useApp";
 import { useProject } from "../../hooks/useProject";
 import { NewProject, NewProjectRequest } from "../../models/project";
-import { showNewProjectModalAtom } from "../../state/atoms";
 
-export function CreateProjectModal() {
+export interface CreateProjectModalProps {
+  show: boolean;
+  onClose: (open: boolean) => void;
+}
+
+export function CreateProjectModal(props: CreateProjectModalProps) {
   const {
     reset,
     register,
@@ -32,8 +35,6 @@ export function CreateProjectModal() {
   } = useForm<NewProject>();
   const app = useApp();
   const project = useProject();
-
-  const [isOpen, setIsOpen] = useRecoilState(showNewProjectModalAtom);
 
   const importDirPath = watch("importDirPath", "");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -54,7 +55,7 @@ export function CreateProjectModal() {
       setIsProcessing(false);
       return;
     }
-    setIsOpen(false);
+    props.onClose(false);
 
     // Import the images if a directory path was provided and show a progress bar.
     if (data.importDirPath) {
@@ -90,17 +91,21 @@ export function CreateProjectModal() {
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (props.show) {
       reset();
       setTimeout(() => setFocus("name"), 500);
     } else {
-      setIsProcessing(false);
+      setImportPercent(-1);
     }
-  }, [isOpen]);
+  }, [props.show]);
+
+  useEffect(() => {
+    app.disableKeyboardShortcuts = isProcessing || importPercent > -1;
+  }, [isProcessing, importPercent]);
 
   return (
     <>
-      <Modal show={isOpen} onClose={() => setIsOpen(false)} size="lg">
+      <Modal show={props.show} onClose={() => props.onClose(false)} size="lg">
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader>Create New Project</ModalHeader>
           <ModalBody className="flex flex-col gap-5">
@@ -193,7 +198,7 @@ export function CreateProjectModal() {
             </div>
 
             <div className="flex flex-row justify-end gap-2 pt-4">
-              <Button color="gray" onClick={() => setIsOpen(false)}>
+              <Button color="gray" onClick={() => props.onClose(false)}>
                 Cancel
               </Button>
               <Button
