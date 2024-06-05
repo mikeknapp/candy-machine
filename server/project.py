@@ -453,7 +453,7 @@ class Project:
     def is_valid_name(name: str) -> Tuple[bool, str]:
         if not name.strip():
             return False, "A directory name is required"
-        if not all(c.isalnum() or c in ("_", "-") for c in name):
+        if not all(c.isalnum() or c in (".", "_", "-") for c in name):
             return (
                 False,
                 "Only alphanumeric characters, underscores, and hyphens allowed",

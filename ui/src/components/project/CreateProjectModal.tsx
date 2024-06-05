@@ -16,6 +16,7 @@ import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
 import { useAppState } from "../../hooks/useApp";
 import { useProject } from "../../hooks/useProject";
+import { useShortcut } from "../../hooks/useShortcut";
 import { NewProjectRequest } from "../../models/project";
 
 export function CreateProjectModal() {
@@ -40,6 +41,13 @@ export function CreateProjectModal() {
   const onClose = () => {
     app.showCreateProjectModal = false;
   };
+
+  useShortcut({
+    description: "New Project",
+    keys: "n",
+    onKeyDown: () => (app.showCreateProjectModal = true),
+    deps: [],
+  });
 
   const onSubmit: SubmitHandler<NewProjectRequest> = async (data) => {
     setIsProcessing(true);
@@ -121,7 +129,7 @@ export function CreateProjectModal() {
                 {...register("name", {
                   required: "A project name is required",
                   pattern: {
-                    value: /^[a-zA-Z0-9_-]*$/,
+                    value: /^\.?[a-zA-Z0-9_-]*$/,
                     message:
                       "Only alphanumeric characters, underscores, and hyphens allowed",
                   },

@@ -30,16 +30,16 @@ export function QuickActions() {
   };
 
   useShortcut({
-    // Show the edit image modal.
+    description: "Edit Image (Crop, Rotate etc)",
     keys: "e",
-    action: () => hasSelectedImage && setShowEditImageModal(true),
+    onKeyDown: () => hasSelectedImage && setShowEditImageModal(true),
     deps: [hasSelectedImage],
   });
 
   useShortcut({
-    // Show the delete image modal.
+    description: "Delete Image",
     keys: "d",
-    action: () => hasSelectedImage && setShowDeleteImageModal(true),
+    onKeyDown: () => hasSelectedImage && setShowDeleteImageModal(true),
     deps: [hasSelectedImage],
   });
 

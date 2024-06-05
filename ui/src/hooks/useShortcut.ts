@@ -2,9 +2,16 @@ import { DependencyList, useContext, useEffect } from "react";
 import { AppContext, TagSearchContext } from "../app";
 
 export interface UseShortcutProps {
+  description?: string; // Adds the shortcut to the '?' modal.
   keys: string | string[];
-  action: (event: KeyboardEvent) => void;
+  onKeyDown: (event: KeyboardEvent) => void;
+  onKeyUp?: (event: KeyboardEvent) => void;
   deps: DependencyList;
+}
+
+export interface ShortcutInfo {
+  description: string;
+  keys: string[];
 }
 
 export function useShortcut(
@@ -14,8 +21,16 @@ export function useShortcut(
   const appContext = useContext(AppContext);
   const { hasFocus: searchHasFocus } = useContext(TagSearchContext);
 
+  // Register the shortcut with the app.
+  if (args.description && !appContext.hasShortcut(args.description)) {
+    appContext.registerShortcut({
+      description: args.description,
+      keys: Array.isArray(args.keys) ? args.keys : [args.keys],
+    });
+  }
+
   useEffect(() => {
-    const listener = (event: KeyboardEvent) => {
+    const onKeyDownCallback = (event: KeyboardEvent) => {
       const isCorrectKey = Array.isArray(args.keys)
         ? args.keys.includes(event.key)
         : args.keys === event.key;
@@ -26,10 +41,21 @@ export function useShortcut(
       );
 
       if (isCorrectKey && keyboardShortcutsEnabled) {
-        args.action(event);
+        args.onKeyDown(event);
       }
     };
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
+    window.addEventListener("keydown", onKeyDownCallback);
+
+    const onKeyUpCallback = (event: KeyboardEvent) => {
+      if (args.onKeyUp) {
+        args.onKeyUp(event);
+      }
+    };
+    window.addEventListener("keyup", onKeyUpCallback);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDownCallback);
+      window.removeEventListener("keyup", args.onKeyUp);
+    };
   }, [appContext.disableKeyboardShortcuts, searchHasFocus, ...args.deps]);
 }

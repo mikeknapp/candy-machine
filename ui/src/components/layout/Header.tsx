@@ -4,6 +4,7 @@ import { HiFolderPlus } from "react-icons/hi2";
 import { useApp } from "../../hooks/useApp";
 import { CreateProjectModal } from "../project/CreateProjectModal";
 import { ProjectSelector } from "../project/ProjectSelector";
+import { ShortcutsModal } from "./ShortcutsModal";
 
 export function Header() {
   const app = useApp();
@@ -45,6 +46,7 @@ export function Header() {
       </div>
 
       <CreateProjectModal />
+      <ShortcutsModal />
     </div>
   );
 }

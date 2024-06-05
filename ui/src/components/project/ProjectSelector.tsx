@@ -1,12 +1,35 @@
 import { Dropdown, Spinner } from "flowbite-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { HiFolderOpen } from "react-icons/hi2";
-import { useAppValue } from "../../hooks/useApp";
+import { useAppState } from "../../hooks/useApp";
 import { useProjectState } from "../../hooks/useProject";
+import { useShortcut } from "../../hooks/useShortcut";
 
 export function ProjectSelector() {
-  const appValue = useAppValue();
+  const [appValue, app] = useAppState();
   const [projectValue, project] = useProjectState();
+  const [showAllProjects, setShowAllProjects] = useState(false);
+
+  useShortcut({
+    description: "Refresh Projects",
+    keys: "r",
+    onKeyDown: () => {
+      app.load(true);
+    },
+    deps: [],
+  });
+
+  useShortcut({
+    description: "Projects: Show All Folders",
+    keys: "Shift",
+    onKeyDown: () => {
+      setShowAllProjects(true);
+    },
+    onKeyUp: () => {
+      setShowAllProjects(false);
+    },
+    deps: [],
+  });
 
   useEffect(() => {
     if (projectValue !== null) {
@@ -15,6 +38,10 @@ export function ProjectSelector() {
       document.title = "Candy Machine";
     }
   }, [projectValue]);
+
+  const projects = showAllProjects
+    ? appValue.projects
+    : appValue.projects.filter((p) => !p.startsWith("."));
 
   return (
     <>
@@ -42,7 +69,7 @@ export function ProjectSelector() {
           color="gray"
           dismissOnClick
         >
-          {appValue.projects.map((projectName) => (
+          {projects.map((projectName) => (
             <Dropdown.Item
               key={`project-${projectName}`}
               value={projectName}

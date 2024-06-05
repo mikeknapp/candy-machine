@@ -17,9 +17,9 @@ export function TagSearch() {
   };
 
   useShortcut({
-    // Focus on the search bar.
+    description: "Find Tag",
     keys: "f",
-    action: () => {
+    onKeyDown: () => {
       if (!query) {
         update("", true);
         setTimeout(() => ref.current?.focus(), 200);
@@ -32,7 +32,7 @@ export function TagSearch() {
     {
       // Clear the search bar on "Escape".
       keys: "Escape",
-      action: (e) => {
+      onKeyDown: (e) => {
         if (hasFocus) {
           e.preventDefault();
           exitAndClearQuery();
@@ -46,13 +46,13 @@ export function TagSearch() {
   return (
     <>
       <div
-        className={`transform transition-all duration-300 ${hasFocus ? "w-[200px]" : "w-[130px]"}`}
+        className={`transform transition-all duration-300 ${hasFocus ? "w-[200px]" : "w-[140px]"}`}
       >
         <TextInput
           ref={ref}
           key="tag-search"
           className="h-full w-full"
-          placeholder={hasFocus ? "" : "Filter [f]"}
+          placeholder={hasFocus ? "" : "Find Tag"}
           size={20}
           icon={FaMagnifyingGlass}
           rightIcon={() =>

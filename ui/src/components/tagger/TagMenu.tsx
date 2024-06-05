@@ -21,16 +21,16 @@ export function TagMenu() {
   const allowShortcuts = !showClearTagsModal || imgTagsLoaded;
 
   useShortcut({
-    // Apply auto tags when the user presses the "a" key.
+    description: "Apply Auto Tags",
     keys: "a",
-    action: () => allowShortcuts && applyAutoTags(),
+    onKeyDown: () => allowShortcuts && applyAutoTags(),
     deps: [allowShortcuts],
   });
 
   useShortcut({
-    // Apply auto tags when the user presses the "a" key.
+    description: "Clear Selected Tags",
     keys: "x",
-    action: () => allowShortcuts && setShowClearTagsModal(true),
+    onKeyDown: () => allowShortcuts && setShowClearTagsModal(true),
     deps: [allowShortcuts],
   });
 

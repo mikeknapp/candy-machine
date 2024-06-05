@@ -22,13 +22,7 @@ export const TagSearchContext = createContext<UseTagSearch>(null);
 
 export function RootNode() {
   useEffect(() => {
-    const loadProjects = async () => {
-      const projects = await appState.load();
-      if (projects.length > 0) {
-        await appState.project.loadProject(projects[0]);
-      }
-    };
-    setTimeout(loadProjects, 0);
+    appState.load();
   }, []);
 
   return (

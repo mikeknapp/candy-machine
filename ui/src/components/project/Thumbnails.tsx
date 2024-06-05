@@ -39,16 +39,16 @@ export function Thumbnails() {
   };
 
   useShortcut({
-    // Navigate to the next image.
+    description: "Next Image",
     keys: ["j", "ArrowDown", "ArrowRight"],
-    action: () => moveToImage("next"),
+    onKeyDown: () => moveToImage("next"),
     deps: [],
   });
 
   useShortcut({
-    // Navigate to the previous image.
+    description: "Previous Image",
     keys: ["k", "ArrowUp", "ArrowLeft"],
-    action: () => moveToImage("prev"),
+    onKeyDown: () => moveToImage("prev"),
     deps: [],
   });
 

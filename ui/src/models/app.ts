@@ -1,4 +1,5 @@
 import { apiRequest } from "../api";
+import { ShortcutInfo } from "../hooks/useShortcut";
 import { State, Subscribable } from "./base";
 import { DEFAULT_PROJECT_DATA, Project, ProjectData } from "./project";
 
@@ -27,6 +28,7 @@ export class App extends Subscribable<AppData> {
   private _projects: string[] = [];
   private _showCreateProjectModal = false;
   private _disableKeyboardShortcuts = false;
+  private _shortcuts: ShortcutInfo[] = [];
 
   private constructor() {
     super();
@@ -74,6 +76,18 @@ export class App extends Subscribable<AppData> {
     return this._projects.length > 0;
   }
 
+  public get shortcuts() {
+    return this._shortcuts;
+  }
+
+  public registerShortcut(shortcut: ShortcutInfo) {
+    this._shortcuts.push(shortcut);
+  }
+
+  public hasShortcut(description: string): boolean {
+    return this._shortcuts.some((s) => s.description === description);
+  }
+
   async addProject(project: string) {
     this._projects = [project, ...this._projects];
     this.notifyListeners();
@@ -88,10 +102,21 @@ export class App extends Subscribable<AppData> {
         this.setStateAndNotify(State.Error);
       } else if (response.data) {
         this._projects = response.data;
+        await this.loadBestProject();
         this.setStateAndNotify(State.Loaded);
       }
     }
     return this._projects;
+  }
+
+  async loadBestProject() {
+    if (this._projects.length) {
+      // Find the first project that doesn't start with a .
+      const projectName = this._projects.find((p) => !p.startsWith("."));
+      if (projectName) {
+        await this.project.loadProject(projectName);
+      }
+    }
   }
 
   public get showCreateProjectModal(): boolean {
