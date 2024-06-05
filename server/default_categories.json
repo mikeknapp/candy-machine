@@ -143,7 +143,7 @@
       "sky",
       "food",
       "drink",
-      "flowers",
+      "flower",
       "chair",
       "table",
       "desk",
@@ -158,7 +158,8 @@
       "cup",
       "bag",
       "window",
-      "{type} vehicle"
+      "{type} vehicle",
+      "{type} background"
     ],
     "color": "#ee34d2"
   },
