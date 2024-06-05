@@ -14,6 +14,7 @@ from consts import (
     PROJECT_CATEGORY_FILE,
     PROJECT_CONFIG_FILE,
     PROJECTS_DIR,
+    SUPPRESSED_AUTO_TAGS,
 )
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
@@ -118,6 +119,7 @@ class Project:
         self.project_layout = self._project_tag_categories()
         self.imgs = self._list_all_imgs()
         self.trigger_word = ""
+        self.trigger_synonyms = []
         self.selected_image = ""
         self.auto_tags = []
         self.requires_setup = False
@@ -135,7 +137,7 @@ class Project:
         file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
         if not os.path.exists(file_path):
             return
-        # TODO: If this continues to prove an issue, cache the project config instead of reading it off disk.
+        # TODO: If contention proves to still be an issue, cache the project config instead of reading it off disk.
         retries = 3
         delay = 1
         for i in range(retries):
@@ -146,6 +148,8 @@ class Project:
                         self.selected_image = data["selectedImage"]
                     if "triggerWord" in data:
                         self.trigger_word = data["triggerWord"]
+                    if "triggerSynonyms" in data:
+                        self.trigger_synonyms = data["triggerSynonyms"]
                 break
             except IOError:
                 if i < retries - 1:
@@ -167,12 +171,16 @@ class Project:
         if "triggerWord" in data:
             self.trigger_word = data["triggerWord"]
 
+        if "triggerSynonyms" in data:
+            self.trigger_synonyms = data["triggerSynonyms"]
+
         file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
         with open(file_path, "w") as fp:
             json.dump(
                 {
                     "selectedImage": self.selected_image,
                     "triggerWord": self.trigger_word,
+                    "triggerSynonyms": self.trigger_synonyms,
                 },
                 fp,
             )
@@ -195,6 +203,7 @@ class Project:
         return {
             "name": self.name,
             "triggerWord": self.trigger_word,
+            "triggerSynonyms": self.trigger_synonyms,
             "images": self.imgs,
             "autoTags": self.auto_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],
@@ -436,6 +445,9 @@ class Project:
 
         # Remove any tags with count < median.
         tags = {k: v for k, v in tags.items() if v >= median}
+
+        # Remove any globally suppressed tags.
+        tags = {k: v for k, v in tags.items() if k not in SUPPRESSED_AUTO_TAGS}
 
         # Sort by count.
         results = sorted(tags.items(), key=lambda x: x[1], reverse=True)

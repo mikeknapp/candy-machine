@@ -1,7 +1,7 @@
 [
   {
     "title": "Image Quality",
-    "tags": ["HD", "low quality", "blurry", "realistic", "pixel art"],
+    "tags": ["HD", "low quality", "blurry", "pixel art"],
     "color": "#ff355e"
   },
   {
@@ -11,7 +11,7 @@
   },
   {
     "title": "Main Subject",
-    "tags": ["man", "woman", "mountain", "trees", "building", "fantasy scene", "cityscape"],
+    "tags": ["man", "woman", "fantasy scene", "cityscape"],
     "color": "#ff6037"
   },
   {
@@ -23,9 +23,9 @@
     "title": "Perspective",
     "tags": [
       "selfie",
+      "from front",
       "from above",
       "from below",
-      "from front",
       "from behind",
       "from side",
       "three-quarters view",
@@ -38,7 +38,7 @@
   },
   {
     "title": "Pose",
-    "tags": ["lying", "sitting", "standing", "leaning", "walking", "running", "bent over", "squatting"],
+    "tags": ["standing", "sitting", "leaning", "walking", "running", "lying", "bent over", "squatting"],
     "color": "#ffcc33"
   },
   {
@@ -59,64 +59,59 @@
   },
   {
     "title": "Location",
-    "tags": ["indoors", "outdoors", "street", "office", "cafe", "forest", "mountains", "beach", "park", "car"],
+    "tags": ["indoors", "outdoors", "street", "office", "cafe", "forest", "mountains", "beach", "park", "car interior"],
     "color": "#ccff00"
   },
   {
     "title": "Gaze",
-    "tags": ["looking at viewer", "looking away", "looking up", "looking down", "looking sideways", "looking back"],
+    "tags": [
+      "{type} eyes",
+      "looking at viewer",
+      "looking away",
+      "looking up",
+      "looking down",
+      "looking sideways",
+      "looking back"
+    ],
     "color": "#66ff66"
   },
   {
     "title": "Mouth",
-    "tags": [
-      "closed mouth",
-      "open mouth",
-      "slightly open mouth",
-      "smirk",
-      "slight smile",
-      "smile",
-      "grin",
-      "laughing",
-      "grinning",
-      "teeth"
-    ],
+    "tags": ["{type} mouth", "smirk", "slight smile", "smile", "grinning", "laughing", "teeth", "lips"],
     "color": "#aaf0d1"
   },
   {
     "title": "Hair",
-    "tags": [
-      "{type} hair",
-      "long {color} hair",
-      "short {color} hair",
-      "curly {color} hair",
-      "straight {color} hair",
-      "bangs",
-      "bald"
-    ],
+    "tags": ["{type} hair", "bangs", "bald"],
     "color": "#16d0cb"
   },
   {
-    "title": "Limbs",
+    "title": "Body",
     "tags": [
+      "pointing",
       "bent knee",
       "crossed legs",
-      "arms raised above head",
-      "arms extended sideways",
-      "{left|right} palm on forehead",
-      "{left|right} arm on belly",
+      "{limb} above head",
+      "{limb} on forehead",
+      "{limb} on belly",
       "feet",
       "hands",
       "fingers",
-      "toes"
+      "toes",
+      "forehead"
     ],
     "color": "#50bfe6"
   },
   {
     "title": "Clothing etc",
     "tags": [
+      "{type} shirt",
+      "{type} clothes",
+      "{type} shoes",
       "hat",
       "shirt",
+      "{type} sleeves",
+      "sleeveless",
       "necklace",
       "sunglasses",
       "glasses",
@@ -160,13 +155,15 @@
       "stairs",
       "backpack",
       "cup",
-      "bag"
+      "bag",
+      "window",
+      "{type} vehicle"
     ],
     "color": "#ee34d2"
   },
   {
-    "title": "Lighting",
-    "tags": ["flash", "sunset", "strong shadows", "golden hour", "night", "day", "raining", "snowing"],
+    "title": "Light Conditions",
+    "tags": ["flash", "day", "golden hour", "sunset", "strong shadows", "night", "raining", "snowing"],
     "color": "#ff00cc"
   },
   {

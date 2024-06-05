@@ -45,7 +45,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
 
     // Sort + apply any active search filter.
     setCategoryTags(results);
-  }, [category, query, selectedTags]);
+  }, [projectValue.tagLayout, category, query, selectedTags]);
 
   if (categoryTags.length === 0) {
     return null;

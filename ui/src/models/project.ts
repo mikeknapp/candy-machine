@@ -9,6 +9,7 @@ export interface ProjectData {
   isLoading: boolean;
   name: string;
   triggerWord: string;
+  triggerSynonyms: string[];
   images: string[];
   selectedImage: SelectedImage;
   autoTags: AutoTag[];
@@ -19,6 +20,7 @@ export interface ProjectData {
 export const DEFAULT_PROJECT_DATA: ProjectData = {
   name: "",
   triggerWord: "",
+  triggerSynonyms: [],
   images: [],
   selectedImage: null,
   tagLayout: [],
@@ -46,6 +48,7 @@ export class Project {
   private _state = State.Init;
   private _name: string = "";
   private _triggerWord: string = "";
+  private _triggerSynonyms: string[] = [];
   private _images: string[] = [];
   private _selectedImage: Image = null;
   private _autoTags: AutoTag[] = [];
@@ -83,6 +86,7 @@ export class Project {
       isLoading: this.isLoading,
       name: this.name,
       triggerWord: this.triggerWord,
+      triggerSynonyms: this.triggerSynonyms,
       images: this.images,
       selectedImage: this.selectedImage?.readOnly ?? null,
       tagLayout: this.tagLayout,
@@ -112,6 +116,24 @@ export class Project {
     this.selectedImage?.invalidateCaches();
     this.onChange();
     this.save();
+  }
+
+  public get triggerSynonyms(): string[] {
+    return this._triggerSynonyms;
+  }
+
+  public setTriggerSynonyms(value: string[]) {
+    this._triggerSynonyms = value;
+    this.onChange();
+    this.save();
+  }
+
+  public toggleTriggerSynonym(tag: string) {
+    if (this._triggerSynonyms.includes(tag)) {
+      this.setTriggerSynonyms(this._triggerSynonyms.filter((t) => t !== tag));
+    } else {
+      this.setTriggerSynonyms([...this._triggerSynonyms, tag]);
+    }
   }
 
   public get images(): string[] {
@@ -200,6 +222,7 @@ export class Project {
     );
     if (response.success && response.data) {
       this._triggerWord = response.data.triggerWord;
+      this._triggerSynonyms = response.data.triggerSynonyms;
       this._images = response.data.images;
       this._autoTags = response.data.autoTags;
       this._tagLayout = response.data.tagLayout;
@@ -325,11 +348,14 @@ export class Project {
     return true;
   }
 
-  public async addTagToLayout(category: string, tag: string) {
+  public async moveTagtoLayoutCategory(category: string, tag: string) {
+    // Also removes the tag from any other categories.
     this.setTagLayout(
       this.tagLayout.map((cat) => {
         if (cat.title === category) {
           cat.tags = [tag, ...cat.tags];
+        } else {
+          cat.tags = cat.tags.filter((t) => t !== tag);
         }
         return cat;
       }),

@@ -23,7 +23,10 @@ export const Tag: React.FC<TagProps> = ({
     if (!isSelected || !color) {
       return undefined;
     }
-
+    // If the color is already black, don't change it, since that's for the misc category.
+    if (color.startsWith("#000")) {
+      return color;
+    }
     let newColor = tinycolor(color);
     newColor = isDarkMode ? newColor : newColor.setAlpha(0.25);
     let i = 0;

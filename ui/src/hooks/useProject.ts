@@ -7,12 +7,12 @@ import { useSubscribe } from "./useSubscribe";
 export function useProjectState(): [ProjectData, Project] {
   let appContext = useContext(AppContext);
 
-  const [projectValue, setProject] =
+  const [projectValue, setProjectValue] =
     useState<ProjectData>(DEFAULT_PROJECT_DATA);
 
   // Listen to updates from the selected project.
   useSubscribe(AppContext, (newValue: AppData) => {
-    setProject(newValue.project);
+    setProjectValue(newValue.project);
   });
 
   return [projectValue, appContext.project];

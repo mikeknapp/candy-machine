@@ -28,18 +28,21 @@ export function ProjectCategoriesModal() {
       }}
     >
       <Modal.Header className="text-center">
-        Setup Your Project Tags{" "}
+        Setup Project-Specific Tags{" "}
         <span className="text-sm text-gray-400 dark:text-gray-200">
           (optional)
         </span>
       </Modal.Header>
       <Modal.Body>
-        <p className="p-1 dark:text-white">
-          Here are {projectValue.autoTags.length} tags that might come in handy.
-          Generally you don't want to tag things <i>already</i> implicit in your
-          trigger word. For example, when training a face, if you tag someone's
-          distinctive mole or freckles, the model may not learn those to be part
-          of your trigger word.
+        <p className="p-1 text-sm dark:text-white">
+          Here{" "}
+          {projectValue.autoTags.length === 1 ? "is a tag" : "are some tags"}{" "}
+          you might want to add to your project. Generally you don't want to tag
+          things <em>already</em> implicit in your trigger word. For example,
+          when training a face, if you tag someone's distinctive mole or
+          freckles, the model may not learn them as part of your trigger word.
+          Your tags should <em>resemble the prompt</em> you'd like to use once
+          the model is trained.
         </p>
         <SuggestedAutoTags />
       </Modal.Body>
