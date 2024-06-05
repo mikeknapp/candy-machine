@@ -155,15 +155,27 @@ export class Project {
     this.save();
   }
 
-  public get allLayoutTagsIncTrigger(): string[] {
+  public allLayoutTags(includeTrigger = true): string[] {
     let allTags = this.tagLayout.reduce(
       (prev, cat) => [...prev, ...cat.tags],
       [],
     );
-    if (this.triggerWord) {
+    if (includeTrigger && this.triggerWord) {
       allTags.push(this.triggerWord);
     }
     return allTags;
+  }
+
+  public addTagToSelectedImage(category: string, tag: string) {
+    tag = tag.trim();
+    if (!this.selectedImage || !category || !tag) {
+      return;
+    }
+    if (!this.allLayoutTags(false).includes(tag)) {
+      // This is a new tag that isn't in the layout. Add it.
+      this.moveTagtoLayoutCategory(category, tag);
+    }
+    this.selectedImage?.addTag(tag);
   }
 
   public get autoTags(): AutoTag[] {
@@ -349,11 +361,11 @@ export class Project {
   }
 
   public async moveTagtoLayoutCategory(category: string, tag: string) {
-    // Also removes the tag from any other categories.
+    // Also removes the tag from any other categories. The category must exist.
     this.setTagLayout(
       this.tagLayout.map((cat) => {
         if (cat.title === category) {
-          cat.tags = [tag, ...cat.tags];
+          cat.tags = [...cat.tags, tag];
         } else {
           cat.tags = cat.tags.filter((t) => t !== tag);
         }

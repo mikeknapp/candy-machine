@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { TagCategory } from "./TagCategory";
 
 import { useProjectValue } from "../../hooks/useProject";
@@ -6,8 +6,7 @@ import { ProjectCategoriesModal } from "./ProjectCategoriesModal";
 import { TagMenu } from "./TagMenu";
 
 export function Tagger() {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
+  const scrollRef = useRef<HTMLDivElement>(null);
   const projectValue = useProjectValue();
 
   useEffect(() => {

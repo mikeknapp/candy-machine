@@ -9,6 +9,3 @@ DEFAULT_CATEGORY_FILE = "default_categories.json"
 PROJECT_CONFIG_FILE = "config.json"
 SUPPORTED_IMG_EXTS = ["png", "jpg", "jpeg", "gif", "bmp", "webp"]
 LOWERCASE_IS_TRUE = ["true", "1", "yes", "t", "y", True]
-SUPPRESSED_AUTO_TAGS = [
-    "realistic",
-]

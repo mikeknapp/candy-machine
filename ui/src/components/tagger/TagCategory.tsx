@@ -3,6 +3,7 @@ import { HiPlusCircle } from "react-icons/hi";
 import { TagSearchContext } from "../../app";
 import { useProjectState } from "../../hooks/useProject";
 import { findMatchingTags } from "../../models/image";
+import { AddTagPopup } from "./AddTagPopup";
 import { Tag } from "./Tag";
 
 export type CategoryData = {
@@ -12,10 +13,19 @@ export type CategoryData = {
   hideAddButton?: boolean;
 };
 
+const DEFAULT_ADD_TAG_STATE = {
+  show: false,
+  category: "",
+  tagTemplate: "",
+};
+
 export function TagCategory({ category }: { category: CategoryData }) {
   const [projectValue, project] = useProjectState();
   const { query, update } = useContext(TagSearchContext);
   const [categoryTags, setCategoryTags] = useState(category.tags);
+
+  // State for adding a tag.
+  const [addTag, setAddTag] = useState(DEFAULT_ADD_TAG_STATE);
 
   let selectedTags = projectValue.selectedImage?.tags || [];
 
@@ -64,7 +74,16 @@ export function TagCategory({ category }: { category: CategoryData }) {
       >
         {category.title.toUpperCase()}
         {!(category?.hideAddButton ?? false) && (
-          <HiPlusCircle className="cursor-pointer text-lg text-gray-500 hover:text-green-500" />
+          <HiPlusCircle
+            onClick={() =>
+              setAddTag({
+                show: true,
+                category: category.title,
+                tagTemplate: "",
+              })
+            }
+            className="cursor-pointer text-lg text-gray-500 hover:text-green-500"
+          />
         )}
       </h2>
       <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
@@ -73,14 +92,33 @@ export function TagCategory({ category }: { category: CategoryData }) {
             key={`${tag}-${i}`}
             text={tag}
             onClick={() => {
-              project.selectedImage?.toggleTag(tag);
-              update("", false);
+              if (tag.indexOf("{") > -1) {
+                setAddTag({
+                  show: true,
+                  category: category.title,
+                  tagTemplate: tag,
+                });
+              } else {
+                project.selectedImage?.toggleTag(tag);
+                update("", false);
+              }
             }}
             color={category.color}
             isSelected={selectedTags.includes(tag)}
           />
         ))}
       </div>
+
+      {addTag.show && (
+        <AddTagPopup
+          show
+          onClose={() => {
+            setAddTag(DEFAULT_ADD_TAG_STATE);
+          }}
+          category={addTag.category}
+          tagTemplate={addTag.tagTemplate}
+        />
+      )}
     </div>
   );
 }

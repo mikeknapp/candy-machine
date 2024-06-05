@@ -14,7 +14,6 @@ from consts import (
     PROJECT_CATEGORY_FILE,
     PROJECT_CONFIG_FILE,
     PROJECTS_DIR,
-    SUPPRESSED_AUTO_TAGS,
 )
 from image import Crop, choose_image_filename, valid_images_for_import
 from PIL import Image
@@ -445,9 +444,6 @@ class Project:
 
         # Remove any tags with count < median.
         tags = {k: v for k, v in tags.items() if v >= median}
-
-        # Remove any globally suppressed tags.
-        tags = {k: v for k, v in tags.items() if k not in SUPPRESSED_AUTO_TAGS}
 
         # Sort by count.
         results = sorted(tags.items(), key=lambda x: x[1], reverse=True)

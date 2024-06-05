@@ -57,14 +57,14 @@ export const Tag: React.FC<TagProps> = ({
     const suffix = text.split(fillInSuffix)[1];
     inner = (
       <>
-        <span className="text-blue-700">{fillInSuffix}</span>
+        <span className="text-blue-700 dark:text-teal-400">{fillInSuffix}</span>
         <span>{suffix}</span>
       </>
     );
   }
 
   return React.createElement(onClick ? "button" : "div", {
-    className: `whitespace-nowrap text-sm rounded-md border-[1px] border-slate-500 dark:border-slate-700 px-[10px] pt-[5px] pb-[6px] drop-shadow-md dark:text-white ${isSelected ? "" : "bg-slate-200 dark:bg-slate-800"}`,
+    className: `whitespace-nowrap text-sm rounded-md border-[1px] border-slate-500 dark:border-slate-700 px-[10px] pt-[5px] pb-[6px] drop-shadow-md dark:text-white font-mono ${isSelected ? "" : "bg-slate-200 dark:bg-slate-800"}`,
     onClick: onClick,
     style: {
       backgroundColor: bgColor,

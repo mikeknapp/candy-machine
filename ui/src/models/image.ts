@@ -83,14 +83,16 @@ export class Image {
   }
 
   public setTags(newTags: string[]) {
+    // Remove any empty tags.
+    newTags = newTags.filter((tag) => tag.trim().length > 0);
     this._tags = newTags;
     this.invalidateCaches();
   }
 
   public get validTags(): string[] {
-    return this._project.allLayoutTagsIncTrigger.flatMap((t) =>
-      findMatchingTags(t, this.tags),
-    );
+    return this._project
+      .allLayoutTags()
+      .flatMap((t) => findMatchingTags(t, this.tags));
   }
 
   public get uncategorizedTags(): string[] {
@@ -157,6 +159,10 @@ export class Image {
   }
 
   public async addTag(newTag: string) {
+    if (newTag.includes("{")) {
+      // Don't allow adding tags with {placeholders}.
+      return;
+    }
     await this.addTags([newTag]);
   }
 
