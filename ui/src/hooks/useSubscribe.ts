@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Subscribable } from "../models/base";
 
 export function useSubscribe<DataType>(
@@ -6,7 +6,7 @@ export function useSubscribe<DataType>(
   callback: (newValue: DataType) => void,
 ) {
   let context = useContext(Context);
-  const oldValueRef = useRef<DataType | null>(null);
+  const [oldValue, setOldValue] = useState<DataType>(null);
 
   // Listen to updates from the selected project.
   useEffect(() => {
@@ -15,8 +15,8 @@ export function useSubscribe<DataType>(
     }
     const callbackWrapper = (newValue: DataType) => {
       // Only send updates if the underlying data changes.
-      if (JSON.stringify(oldValueRef.current) !== JSON.stringify(newValue)) {
-        oldValueRef.current = newValue;
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        setOldValue(newValue);
         callback(newValue);
       }
     };

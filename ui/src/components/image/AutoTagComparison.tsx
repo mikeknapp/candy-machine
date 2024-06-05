@@ -3,15 +3,19 @@ import { SelectedImage } from "../../models/image";
 
 export function AutoTagComparison({
   selectedImage,
+  synonyms,
 }: {
   selectedImage: SelectedImage;
+  synonyms: string[];
 }) {
+  const selected = (selectedImage?.tags ?? []).concat(synonyms);
+
   return (
     <>
       {selectedImage?.autoTags?.map((tag, i) => {
         return (
           <span key={`auto-tag-${i}`}>
-            {selectedImage?.tags?.includes(tag) ? (
+            {selected.includes(tag) ? (
               <span className="font-normal text-gray-500">{tag}</span>
             ) : (
               <span className="text-red-500">{tag}</span>

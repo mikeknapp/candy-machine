@@ -1,12 +1,12 @@
 [
   {
     "title": "Image Quality",
-    "tags": ["HD", "low quality", "blurry", "pixel art"],
+    "tags": ["HD", "low quality", "blurry"],
     "color": "#ff355e"
   },
   {
     "title": "Image Type",
-    "tags": ["photo", "portrait", "drawing", "illustration", "painting", "render", "cartoon", "anime"],
+    "tags": ["photo", "portrait", "drawing", "illustration", "painting", "render", "cartoon", "anime", "pixel art"],
     "color": "#fd5b78"
   },
   {
@@ -16,7 +16,7 @@
   },
   {
     "title": "Camera Shot",
-    "tags": ["full body", "upper body", "medium shot", "close-up", "extreme close-up", "macro shot"],
+    "tags": ["full body", "upper body", "lower body", "medium shot", "close-up", "extreme close-up", "macro shot"],
     "color": "#ff9966"
   },
   {
@@ -107,7 +107,8 @@
     "tags": [
       "{type} shirt",
       "{type} clothes",
-      "{type} shoes",
+      "{type} socks",
+      "{type} footwear",
       "hat",
       "shirt",
       "{type} sleeves",

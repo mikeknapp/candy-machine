@@ -74,7 +74,10 @@ export function SelectedImage() {
                 Auto Tags (Not Applied, FYI Only)
               </h2>
               <div className="rounded-md bg-gray-50 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:p-6 md:text-base">
-                <AutoTagComparison selectedImage={projectValue.selectedImage} />
+                <AutoTagComparison
+                  selectedImage={projectValue.selectedImage}
+                  synonyms={projectValue.triggerSynonyms}
+                />
               </div>
             </>
           )}
