@@ -196,6 +196,7 @@ export class Project {
       return;
     }
     this._selectedImage = new Image(this, filename, [], [], State.Loading);
+    this.onChange();
     await this.save();
   }
 

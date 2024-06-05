@@ -36,7 +36,7 @@ export class Image {
     this._autoTags = autoTags;
     this._state = state;
     if (this.isLoading) {
-      this.load();
+      setTimeout(() => this.load(), 1000);
     }
   }
 
