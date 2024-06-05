@@ -4,20 +4,24 @@ import { State } from "./base";
 import { Project } from "./project";
 
 export interface SelectedImage {
+  isLoaded: boolean;
+  isError: boolean;
   projectName: string;
   filename: string;
   tags: string[];
+  uncategorizedTags: string[];
   autoTags: string[];
   txtFile: string;
-  isLoaded: boolean;
 }
 
 export class Image {
-  protected _state: State;
-  protected _project: Project;
-  protected _filename: string;
-  protected _tags: string[] = [];
-  protected _autoTags: string[] = [];
+  private _state: State;
+  private _project: Project;
+  private _filename: string;
+  private _tags: string[] = [];
+  private _txtFileCache: string = null;
+  private _uncategorizedCache: string[] = null;
+  private _autoTags: string[] = [];
 
   constructor(
     project: Project,
@@ -40,19 +44,34 @@ export class Image {
     this._project.onChange();
   }
 
+  public invalidateCaches() {
+    this._txtFileCache = null;
+    this._uncategorizedCache = null;
+  }
+
   public get readOnly(): SelectedImage {
     return {
+      isLoaded: this.isLoaded,
+      isError: this.isError,
       projectName: this._project.name,
-      filename: this._filename,
-      tags: this._tags,
-      autoTags: this._autoTags,
-      txtFile: this.txtFile(),
-      isLoaded: !this.isLoading,
+      filename: this.filename,
+      tags: this.tags,
+      uncategorizedTags: this.uncategorizedTags,
+      autoTags: this.autoTags,
+      txtFile: this.txtFile,
     };
   }
 
   public get isLoading(): boolean {
-    return [State.Loading, State.Init].includes(this._state);
+    return this._state === State.Loading;
+  }
+
+  public get isLoaded(): boolean {
+    return this._state === State.Loaded;
+  }
+
+  public get isError(): boolean {
+    return this._state === State.Error;
   }
 
   public get filename(): string {
@@ -61,6 +80,56 @@ export class Image {
 
   public get tags(): string[] {
     return this._tags;
+  }
+
+  public setTags(newTags: string[]) {
+    this._tags = newTags;
+    this.invalidateCaches();
+  }
+
+  public get validTags(): string[] {
+    return this._project.allLayoutTagsIncTrigger.flatMap((t) =>
+      findMatchingTags(t, this.tags),
+    );
+  }
+
+  public get uncategorizedTags(): string[] {
+    if (!this._uncategorizedCache && this.tags.length) {
+      this._uncategorizedCache = this.tags.filter(
+        (tag) => !this.validTags.flat().includes(tag),
+      );
+    }
+    return this._uncategorizedCache || [];
+  }
+
+  public get autoTags(): string[] {
+    return this._autoTags;
+  }
+
+  public get txtFile(): string {
+    if (this._txtFileCache !== null || !this.tags.length) {
+      return this._txtFileCache || "";
+    }
+    const result: string[] = [];
+    if (this._project.triggerWord) {
+      result.push(this._project.triggerWord);
+    }
+    if (this.tags?.length > 0) {
+      this._project.tagLayout.map((category) => {
+        category.tags.forEach((tagTemplate) => {
+          findMatchingTags(tagTemplate, this.tags).forEach((matchingTag) =>
+            result.push(matchingTag),
+          );
+        });
+      });
+    }
+    // Add any remaining tags at the end.
+    this.tags
+      .filter((tag) => !result.includes(tag))
+      .forEach((tag) => result.push(tag));
+
+    this._txtFileCache = result.join(", ");
+    return this._txtFileCache;
   }
 
   private async load(): Promise<void> {
@@ -75,26 +144,34 @@ export class Image {
       console.error("Failed to load image:", response.errors);
     } else {
       this._state = State.Loaded;
-      this._tags = response.data.tags;
       this._autoTags = response.data.autoTags;
+      this._tags = response.data.tags;
     }
     this.onChange();
   }
 
-  public async addTags(tags: string[]) {
-    this._tags = Array.from(new Set([...this._tags, ...tags]));
+  public async removeTag(oldTag: string) {
+    this.setTags(this.tags.filter((value) => value !== oldTag));
+    this.onChange();
+    await this.saveTags();
+  }
+
+  public async addTag(newTag: string) {
+    await this.addTags([newTag]);
+  }
+
+  public async addTags(newTags: string[]) {
+    this.setTags(Array.from(new Set([...this.tags, ...newTags])));
     this.onChange();
     await this.saveTags();
   }
 
   public async toggleTag(tag: string) {
-    if (this._tags.includes(tag)) {
-      this._tags = this._tags.filter((value) => value !== tag);
+    if (this.tags.includes(tag)) {
+      await this.removeTag(tag);
     } else {
-      this._tags.push(tag);
+      await this.addTag(tag);
     }
-    this.onChange();
-    await this.saveTags();
   }
 
   public async applyAutoTags(tagLayout: CategoryData[]) {
@@ -115,33 +192,9 @@ export class Image {
   }
 
   public async clearTags() {
-    this._tags = [];
+    this.setTags([]);
     this.onChange();
     return await this.saveTags();
-  }
-
-  public txtFile(): string {
-    if (!this.tags.length) {
-      return null;
-    }
-    const tags: string[] = [];
-    if (this._project.triggerWord) {
-      tags.push(this._project.triggerWord);
-    }
-    if (this.tags?.length > 0) {
-      this._project.tagLayout.map((category) => {
-        category.tags.forEach((tagTemplate) => {
-          findMatchingTags(tagTemplate, this.tags).forEach((matchingTag) =>
-            tags.push(matchingTag),
-          );
-        });
-      });
-    }
-    // Add any remaining tags at the end.
-    this.tags
-      .filter((tag) => !tags.includes(tag))
-      .forEach((tag) => tags.push(tag));
-    return tags.join(", ");
   }
 
   public async saveTags() {
@@ -150,7 +203,7 @@ export class Image {
       {
         body: JSON.stringify({
           filename: this._filename,
-          txtFile: this.txtFile(),
+          txtFile: this.txtFile,
         }),
       },
     );

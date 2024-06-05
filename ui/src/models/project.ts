@@ -81,15 +81,18 @@ export class Project {
     return {
       state: this._state,
       isLoading: this.isLoading,
-      name: this._name,
-      triggerWord: this._triggerWord,
-      images: this._images,
-      selectedImage: this._selectedImage?.readOnly ?? null,
-
-      tagLayout: this._tagLayout,
-      autoTags: this._autoTags,
-      requiresSetup: this._requiresSetup,
+      name: this.name,
+      triggerWord: this.triggerWord,
+      images: this.images,
+      selectedImage: this.selectedImage?.readOnly ?? null,
+      tagLayout: this.tagLayout,
+      autoTags: this.autoTags,
+      requiresSetup: this.requiresSetup,
     };
+  }
+
+  public get state(): State {
+    return this._state;
   }
 
   public get isLoading(): boolean {
@@ -104,16 +107,49 @@ export class Project {
     return this._triggerWord;
   }
 
-  public get autoTags(): AutoTag[] {
-    return this._autoTags;
+  public setTriggerWord(value: string) {
+    this._triggerWord = value;
+    this.selectedImage?.invalidateCaches();
+    this.onChange();
+    this.save();
+  }
+
+  public get images(): string[] {
+    return this._images;
+  }
+
+  public get selectedImage(): Image {
+    return this._selectedImage;
   }
 
   public get tagLayout(): CategoryData[] {
     return this._tagLayout;
   }
 
-  public get selectedImage(): Image {
-    return this._selectedImage;
+  public setTagLayout(value: CategoryData[]) {
+    this._tagLayout = value;
+    this.selectedImage?.invalidateCaches();
+    this.onChange();
+    this.save();
+  }
+
+  public get allLayoutTagsIncTrigger(): string[] {
+    let allTags = this.tagLayout.reduce(
+      (prev, cat) => [...prev, ...cat.tags],
+      [],
+    );
+    if (this.triggerWord) {
+      allTags.push(this.triggerWord);
+    }
+    return allTags;
+  }
+
+  public get autoTags(): AutoTag[] {
+    return this._autoTags;
+  }
+
+  public get requiresSetup(): boolean {
+    return this._requiresSetup;
   }
 
   public setRequiresSetup(value: boolean) {
@@ -289,23 +325,23 @@ export class Project {
     return true;
   }
 
-  public async addTagToLayout(category: string, tag: string): Promise<boolean> {
-    this._tagLayout = this._tagLayout.map((cat) => {
-      if (cat.title === category) {
-        cat.tags = [tag, ...cat.tags];
-      }
-      return cat;
-    });
-    this.onChange();
-    return await this.save();
+  public async addTagToLayout(category: string, tag: string) {
+    this.setTagLayout(
+      this.tagLayout.map((cat) => {
+        if (cat.title === category) {
+          cat.tags = [tag, ...cat.tags];
+        }
+        return cat;
+      }),
+    );
   }
 
-  public async removeTagFromLayout(tag: string): Promise<boolean> {
-    this._tagLayout = this._tagLayout.map((cat) => {
-      cat.tags = cat.tags.filter((t) => t !== tag);
-      return cat;
-    });
-    this.onChange();
-    return await this.save();
+  public async removeTagFromLayout(tag: string) {
+    this.setTagLayout(
+      this.tagLayout.map((cat) => {
+        cat.tags = cat.tags.filter((t) => t !== tag);
+        return cat;
+      }),
+    );
   }
 }

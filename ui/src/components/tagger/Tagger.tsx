@@ -31,6 +31,18 @@ export function Tagger() {
         {projectValue.tagLayout.map((category) => (
           <TagCategory key={category.title} category={category} />
         ))}
+
+        {projectValue.selectedImage?.uncategorizedTags.length > 0 && (
+          <TagCategory
+            key="non-standard"
+            category={{
+              title: "Uncategorized",
+              tags: projectValue.selectedImage?.uncategorizedTags,
+              color: "#ccc",
+              hideAddButton: true,
+            }}
+          />
+        )}
       </div>
 
       <ProjectCategoriesModal />

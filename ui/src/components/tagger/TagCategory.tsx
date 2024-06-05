@@ -9,6 +9,7 @@ export type CategoryData = {
   title: string;
   tags: string[];
   color: string;
+  hideAddButton?: boolean;
 };
 
 export function TagCategory({ category }: { category: CategoryData }) {
@@ -22,7 +23,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
     // Ensure we have all of the relevant tags for this category, starting with the default layout.
     let relevantTags = new Set<string>(category.tags);
 
-    // Create a new tage for any selected tags that match a broad match tag.
+    // Create a new tag for any selected tags that match a broad match tag.
     category.tags.forEach((tagTemplate) => {
       findMatchingTags(tagTemplate, selectedTags).forEach((tag) => {
         relevantTags.add(tag);
@@ -62,7 +63,9 @@ export function TagCategory({ category }: { category: CategoryData }) {
         }}
       >
         {category.title.toUpperCase()}
-        <HiPlusCircle className="cursor-pointer text-lg text-gray-500 hover:text-green-500" />
+        {!(category?.hideAddButton ?? false) && (
+          <HiPlusCircle className="cursor-pointer text-lg text-gray-500 hover:text-green-500" />
+        )}
       </h2>
       <div className="flex w-[90%] flex-row flex-wrap items-center gap-2">
         {categoryTags.map((tag, i) => (
