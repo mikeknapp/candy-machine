@@ -8,14 +8,17 @@ import { TagMenu } from "./TagMenu";
 export function Tagger() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const projectValue = useProjectValue();
+  const selectedImage = projectValue.selectedImage;
+  const filename = selectedImage?.filename;
+  const isLoading = !selectedImage?.isLoaded;
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [projectValue.selectedImage?.filename]);
+  }, [filename]);
 
-  if (projectValue.isLoading || !projectValue.selectedImage) {
+  if (projectValue.isLoading || !selectedImage) {
     return null;
   }
 
@@ -25,7 +28,7 @@ export function Tagger() {
 
       <div
         ref={scrollRef}
-        className="flex h-full w-full flex-col !overflow-y-auto"
+        className={`flex h-full w-full flex-col ${isLoading ? "" : "!overflow-y-auto"}`}
       >
         {projectValue.tagLayout.map((category) => (
           <TagCategory key={category.title} category={category} />
