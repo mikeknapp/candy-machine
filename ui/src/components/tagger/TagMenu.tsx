@@ -24,14 +24,14 @@ export function TagMenu() {
     description: "Apply Auto Tags",
     keys: "a",
     onKeyDown: () => allowShortcuts && applyAutoTags(),
-    deps: [allowShortcuts],
+    deps: [projectValue, showClearTagsModal, allowShortcuts],
   });
 
   useShortcut({
     description: "Clear Selected Tags",
     keys: "x",
     onKeyDown: () => allowShortcuts && setShowClearTagsModal(true),
-    deps: [allowShortcuts],
+    deps: [projectValue, showClearTagsModal, allowShortcuts],
   });
 
   return (

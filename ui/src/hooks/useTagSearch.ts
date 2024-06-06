@@ -3,7 +3,11 @@ import { useState } from "react";
 export interface UseTagSearch {
   query: string;
   hasFocus: boolean;
-  update: (value: string, hasFocus: boolean, exiting?: boolean) => void;
+  updateTagSearch: (
+    value: string,
+    hasFocus: boolean,
+    exiting?: boolean,
+  ) => void;
 }
 
 export function useTagSearch(): UseTagSearch {
@@ -12,7 +16,11 @@ export function useTagSearch(): UseTagSearch {
   const [willClearQuerySoon, setWillClearQuerySoon] =
     useState<NodeJS.Timeout | null>(null);
 
-  const update = (value: string, hasFocus: boolean, exiting = false) => {
+  const updateTagSearch = (
+    value: string,
+    hasFocus: boolean,
+    exiting = false,
+  ) => {
     if (willClearQuerySoon) {
       clearTimeout(willClearQuerySoon);
       setWillClearQuerySoon(null);
@@ -27,5 +35,5 @@ export function useTagSearch(): UseTagSearch {
     setHasFocus(hasFocus);
   };
 
-  return { query, hasFocus, update };
+  return { query, hasFocus, updateTagSearch };
 }

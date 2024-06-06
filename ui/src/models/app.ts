@@ -1,6 +1,6 @@
 import { apiRequest } from "../api";
 import { ShortcutInfo } from "../hooks/useShortcut";
-import { State, Subscribable } from "./base";
+import { ERROR_STATES, LOADING_STATES, State, Subscribable } from "./base";
 import { DEFAULT_PROJECT_DATA, Project, ProjectData } from "./project";
 
 export interface AppData {
@@ -57,11 +57,11 @@ export class App extends Subscribable<AppData> {
   }
 
   public get isLoading() {
-    return this.state === State.Loading;
+    return LOADING_STATES.has(this.state);
   }
 
   public get isError() {
-    return this.state === State.Error;
+    return ERROR_STATES.has(this.state);
   }
 
   public get project() {
@@ -99,7 +99,7 @@ export class App extends Subscribable<AppData> {
       const response = await apiRequest<string[]>("/projects/list");
       if (response.errors) {
         console.log(`Error fetching projects`, response.errors);
-        this.setStateAndNotify(State.Error);
+        this.setStateAndNotify(State.ErrorLoading);
       } else if (response.data) {
         this._projects = response.data;
         await this.loadBestProject();

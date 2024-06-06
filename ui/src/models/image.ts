@@ -1,9 +1,15 @@
 import { apiRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { State } from "./base";
+import { ERROR_STATES, LOADED_STATES, LOADING_STATES, State } from "./base";
 import { Project } from "./project";
 
+export interface SIZE {
+  width: number;
+  height: number;
+}
+
 export interface SelectedImage {
+  state: State;
   isLoaded: boolean;
   isError: boolean;
   projectName: string;
@@ -51,6 +57,7 @@ export class Image {
 
   public get readOnly(): SelectedImage {
     return {
+      state: this.state,
       isLoaded: this.isLoaded,
       isError: this.isError,
       projectName: this._project.name,
@@ -62,16 +69,27 @@ export class Image {
     };
   }
 
+  public get state(): State {
+    return this._state;
+  }
+
+  public setStateAndNotify(newState: State) {
+    if (this._state !== newState) {
+      this._state = newState;
+      this.onChange();
+    }
+  }
+
   public get isLoading(): boolean {
-    return this._state === State.Loading;
+    return LOADING_STATES.has(this._state);
   }
 
   public get isLoaded(): boolean {
-    return this._state === State.Loaded;
+    return LOADED_STATES.has(this._state);
   }
 
   public get isError(): boolean {
-    return this._state === State.Error;
+    return ERROR_STATES.has(this._state);
   }
 
   public get filename(): string {
@@ -142,7 +160,7 @@ export class Image {
       method: "GET",
     });
     if (!response.success) {
-      this._state = State.Error;
+      this._state = State.ErrorLoading;
       console.error("Failed to load image:", response.errors);
     } else {
       this._state = State.Loaded;
@@ -203,7 +221,7 @@ export class Image {
     return await this.saveTags();
   }
 
-  public async saveTags() {
+  public async saveTags(): Promise<boolean> {
     const response = await apiRequest<{ result: string }>(
       `/project/${this._project.name}/tags/save`,
       {
@@ -214,14 +232,21 @@ export class Image {
       },
     );
     if (response.success && response.data) {
+      if (this._state !== State.Loaded) {
+        this._state = State.Loaded;
+        this.onChange();
+      }
       return response.data.result === "OK";
+    } else {
+      console.error("Failed to save tags:", response.errors);
+      this._state = State.ErrorSaving;
+      this.onChange();
+      return false;
     }
   }
 }
 
-export const imgSize = (
-  filename: string,
-): { width: number; height: number } => {
+export const imgSize = (filename: string): SIZE => {
   // Extract the height and width from the image ID i.e. f4227273f1f071f_589x753_0.png
   if (!filename) {
     return { width: 0, height: 0 };
@@ -241,6 +266,35 @@ export const imgAspectRatio = (filename: string) => {
     return undefined;
   }
   return width / height;
+};
+
+export const resizeImage = ({
+  size,
+  maxHeight,
+  maxWidth,
+}: {
+  size: SIZE;
+  maxHeight?: number;
+  maxWidth?: number;
+}): SIZE => {
+  let s = { ...size };
+  if (s.width === 0 || s.height === 0) {
+    return s;
+  }
+
+  let ratio = 1;
+  if (maxWidth && maxHeight) {
+    ratio = Math.min(maxWidth / s.width, maxHeight / s.height);
+  } else if (maxHeight) {
+    ratio = maxHeight / s.height;
+  } else if (maxWidth) {
+    ratio = maxWidth / s.width;
+  }
+
+  s.width = Math.round(s.width * ratio);
+  s.height = Math.round(s.height * ratio);
+
+  return s;
 };
 
 export const findMatchingTags = (tagTemplate: string, candidates: string[]) => {

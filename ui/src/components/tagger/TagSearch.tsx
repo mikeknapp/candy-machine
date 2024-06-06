@@ -7,11 +7,11 @@ import { useShortcut } from "../../hooks/useShortcut";
 
 export function TagSearch() {
   const ref = useRef<HTMLInputElement>(null);
-  const { query, hasFocus, update } = useContext(TagSearchContext);
+  const { query, hasFocus, updateTagSearch } = useContext(TagSearchContext);
 
   const exitAndClearQuery = () => {
     setTimeout(() => {
-      update("", false, true);
+      updateTagSearch("", false, true);
     }, 0);
     ref.current?.blur();
   };
@@ -21,7 +21,7 @@ export function TagSearch() {
     keys: "f",
     onKeyDown: () => {
       if (!query) {
-        update("", true);
+        updateTagSearch("", true);
         setTimeout(() => ref.current?.focus(), 200);
       }
     },
@@ -63,9 +63,9 @@ export function TagSearch() {
               />
             ) : undefined
           }
-          onFocus={() => update(query, true)}
-          onBlur={() => setTimeout(() => update(query, false), 500)}
-          onChange={(e) => update(e.target.value, true)}
+          onFocus={() => updateTagSearch(query, true)}
+          onBlur={() => setTimeout(() => updateTagSearch(query, false), 500)}
+          onChange={(e) => updateTagSearch(e.target.value, true)}
           value={query}
         />
       </div>

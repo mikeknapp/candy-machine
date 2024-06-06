@@ -2,8 +2,15 @@ export enum State {
   Init = "init",
   Loading = "loading",
   Loaded = "loaded",
-  Error = "error",
+  ErrorLoading = "errorLoading",
+  ErrorSaving = "errorSaving",
 }
+
+export const LOADING_STATES = new Set([State.Init, State.Loading]);
+
+export const LOADED_STATES = new Set([State.Loaded]);
+
+export const ERROR_STATES = new Set([State.ErrorLoading, State.ErrorSaving]);
 
 export abstract class Subscribable<DataType> {
   public state: State = State.Init;
@@ -12,9 +19,11 @@ export abstract class Subscribable<DataType> {
 
   public abstract get readOnly(): DataType;
 
-  public setStateAndNotify(state: State) {
-    this.state = state;
-    this.notifyListeners();
+  public setStateAndNotify(newState: State) {
+    if (this.state !== newState) {
+      this.state = newState;
+      this.notifyListeners();
+    }
   }
 
   public get getState(): State {

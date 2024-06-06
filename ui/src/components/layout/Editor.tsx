@@ -3,6 +3,7 @@ import React from "react";
 import { useAppValue } from "../../hooks/useApp";
 import { useProjectValue } from "../../hooks/useProject";
 import { SelectedImage } from "../image/SelectedImage";
+import { ErrorSavingModal } from "../project/ErrorSavingModal";
 import { Thumbnails } from "../project/Thumbnails";
 import { Tagger } from "../tagger/Tagger";
 import { NoSelectedProject } from "./NoSelectedProject";
@@ -25,7 +26,7 @@ export function Editor() {
   if (appValue.isLoading || projectValue.isLoading) {
     return (
       <div className="center-full">
-        <Spinner size="xl" />
+        <Spinner size="xl" color="gray" />
       </div>
     );
   }
@@ -39,6 +40,7 @@ export function Editor() {
       <Thumbnails />
       <SelectedImage />
       <Tagger />
+      <ErrorSavingModal />
     </div>
   );
 }

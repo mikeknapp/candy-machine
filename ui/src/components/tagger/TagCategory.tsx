@@ -21,12 +21,13 @@ const DEFAULT_ADD_TAG_STATE = {
 
 export function TagCategory({ category }: { category: CategoryData }) {
   const [projectValue, project] = useProjectState();
-  const { query, update } = useContext(TagSearchContext);
+  const { query, updateTagSearch } = useContext(TagSearchContext);
   const [categoryTags, setCategoryTags] = useState(category.tags);
 
   // State for adding a tag.
   const [addTag, setAddTag] = useState(DEFAULT_ADD_TAG_STATE);
 
+  const isDisabled = !projectValue.selectedImage?.isLoaded;
   let selectedTags = projectValue.selectedImage?.tags || [];
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
         }}
       >
         {category.title.toUpperCase()}
-        {!(category?.hideAddButton ?? false) && (
+        {!(category?.hideAddButton ?? false) && !isDisabled && (
           <HiPlusCircle
             onClick={() =>
               setAddTag({
@@ -92,7 +93,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
             key={`${tag}-${i}`}
             text={tag}
             onClick={() => {
-              if (tag.indexOf("{") > -1) {
+              if (tag.includes("{") && tag.includes("}")) {
                 setAddTag({
                   show: true,
                   category: category.title,
@@ -100,11 +101,12 @@ export function TagCategory({ category }: { category: CategoryData }) {
                 });
               } else {
                 project.selectedImage?.toggleTag(tag);
-                update("", false);
+                updateTagSearch("", false, true);
               }
             }}
             color={category.color}
             isSelected={selectedTags.includes(tag)}
+            isDisabled={isDisabled}
           />
         ))}
       </div>

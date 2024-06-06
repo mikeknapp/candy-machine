@@ -1,12 +1,13 @@
 import { PixelCrop } from "react-image-crop";
 import { ApiResponse, apiRequest, eventRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { State } from "./base";
+import { ERROR_STATES, LOADING_STATES, State } from "./base";
 import { Image, SelectedImage } from "./image";
 
 export interface ProjectData {
   state: State;
   isLoading: boolean;
+  isError: boolean;
   name: string;
   triggerWord: string;
   triggerSynonyms: string[];
@@ -18,6 +19,9 @@ export interface ProjectData {
 }
 
 export const DEFAULT_PROJECT_DATA: ProjectData = {
+  state: State.Init,
+  isLoading: true,
+  isError: false,
   name: "",
   triggerWord: "",
   triggerSynonyms: [],
@@ -26,8 +30,6 @@ export const DEFAULT_PROJECT_DATA: ProjectData = {
   tagLayout: [],
   autoTags: [],
   requiresSetup: false,
-  state: State.Init,
-  isLoading: true,
 };
 
 export interface NewProjectRequest {
@@ -63,9 +65,11 @@ export class Project {
     this._onChange();
   }
 
-  public setStateAndNotify(state: State) {
-    this._state = state;
-    this.onChange();
+  public setStateAndNotify(newState: State) {
+    if (this._state !== newState) {
+      this._state = newState;
+      this.onChange();
+    }
   }
 
   private reset(newName: string = "") {
@@ -84,6 +88,7 @@ export class Project {
     return {
       state: this._state,
       isLoading: this.isLoading,
+      isError: this.isError,
       name: this.name,
       triggerWord: this.triggerWord,
       triggerSynonyms: this.triggerSynonyms,
@@ -100,7 +105,11 @@ export class Project {
   }
 
   public get isLoading(): boolean {
-    return this._state === State.Loading;
+    return LOADING_STATES.has(this._state);
+  }
+
+  public get isError(): boolean {
+    return ERROR_STATES.has(this._state);
   }
 
   public get name(): string {
@@ -134,6 +143,10 @@ export class Project {
     } else {
       this.setTriggerSynonyms([...this._triggerSynonyms, tag]);
     }
+  }
+
+  public setState(): State {
+    return this._state;
   }
 
   public get images(): string[] {
@@ -215,15 +228,20 @@ export class Project {
     }
   }
 
-  public async save() {
+  public async save(): Promise<boolean> {
     const response = await apiRequest<{ result: string }>(
       `/project/${this._name}/save`,
       {
         body: JSON.stringify(this.readOnly),
       },
     );
-    if (response.success && response.data) {
-      return response.data.result === "OK";
+    if (response.success && response.data && response.data.result === "OK") {
+      this.setStateAndNotify(State.Loaded);
+      return true;
+    } else {
+      this.setStateAndNotify(State.ErrorSaving);
+      console.log(`Failed to save project '${this._name}': ${response.errors}`);
+      return false;
     }
   }
 
@@ -253,7 +271,7 @@ export class Project {
       this.setStateAndNotify(State.Loaded);
       return true;
     }
-    this.setStateAndNotify(State.Error);
+    this.setStateAndNotify(State.ErrorLoading);
     console.log(`Failed to load project '${this._name}': ${response.errors}`);
   }
 

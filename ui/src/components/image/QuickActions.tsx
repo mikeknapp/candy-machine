@@ -7,15 +7,16 @@ import {
   FaRegTrashCan,
 } from "react-icons/fa6";
 import { useApp } from "../../hooks/useApp";
-import { useProjectState } from "../../hooks/useProject";
+import { useProject } from "../../hooks/useProject";
 import { useShortcut } from "../../hooks/useShortcut";
+import { ProjectData } from "../../models/project";
 import { scrollToThumbnail } from "../project/Thumbnails";
 import { DeleteImageModal } from "./DeleteImageModal";
 import { EditImageModal } from "./EditImageModal";
 
-export function QuickActions() {
+export function QuickActions({ projectValue }: { projectValue: ProjectData }) {
   const app = useApp();
-  const [projectValue, project] = useProjectState();
+  const project = useProject();
   const hasSelectedImage = Boolean(projectValue.selectedImage?.filename);
 
   const [showEditImageModal, setShowEditImageModal] = useState(false);
