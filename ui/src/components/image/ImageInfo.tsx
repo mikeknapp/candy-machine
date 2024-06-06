@@ -15,10 +15,11 @@ export function ImageInfo(props: ImageInfoProps) {
 
   return (
     <div
-      className={`flex w-[90%] flex-row items-center justify-center gap-3 rounded-md px-1 text-center font-mono text-sm dark:bg-slate-900 dark:text-blue-500 md:px-4 md:py-2 md:text-base ${smallImg ? "bg-orange-50" : "bg-green-50"}`}
+      className={`flex w-[90%] flex-row items-center justify-center gap-3 rounded-md px-1 text-center font-mono text-sm text-gray-500 dark:bg-slate-900 dark:text-teal-400 md:px-4 md:py-2 md:text-base ${smallImg ? "bg-orange-50" : "bg-green-50"}`}
     >
-      <span className="text-sm font-bold">{filename}:</span> {props.size.width}{" "}
-      x {props.size.height}
+      <span className="text-sm font-bold">
+        {filename}: {props.size.width} x {props.size.height}
+      </span>
       {!smallImg ? (
         <Tooltip content="Image is larger than 1024x1024">
           <FaCheck className="pointer text-xl text-green-500" />

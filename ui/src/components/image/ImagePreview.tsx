@@ -48,6 +48,7 @@ export function ImagePreview(props: ImagePreviewProps) {
         }}
         src=""
         alt="Image Preview"
+        className="rounded-md"
       />
     </div>
   );

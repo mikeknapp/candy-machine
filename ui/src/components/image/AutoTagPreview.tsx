@@ -17,11 +17,11 @@ export function AutoTagPreview(props: AutoTagProps) {
       {(isLoading || hasTags) && (
         <div className="w-[90%]">
           <div
-            className={`min-h-[110px] rounded-md bg-gray-100 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-blue-500 md:px-6 md:pb-6 md:pt-2 md:text-base ${isLoading ? "animate-pulse" : ""}`}
+            className={`min-h-[110px] rounded-md bg-gray-100 p-1 font-mono text-sm font-bold dark:bg-slate-900 dark:text-lime-500 md:px-6 md:pb-6 md:pt-2 md:text-base ${isLoading ? "animate-pulse" : ""}`}
           >
             {hasTags && (
               <>
-                <h2 className="my-2 text-center text-sm font-bold text-gray-700">
+                <h2 className="my-2 text-center text-sm font-bold text-gray-700 dark:text-gray-500">
                   AUTO TAGS (FYI)
                 </h2>
                 <AutoTagComparison

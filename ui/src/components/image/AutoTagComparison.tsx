@@ -16,7 +16,7 @@ export function AutoTagComparison({
         return (
           <span key={`auto-tag-${i}`}>
             {selected.includes(tag) ? (
-              <span className="font-normal text-gray-500">{tag}</span>
+              <span className="font-normal text-green-500">{tag}</span>
             ) : (
               <span className="text-red-500">{tag}</span>
             )}
