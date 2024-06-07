@@ -1,6 +1,6 @@
 import { apiRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { ERROR_STATES, LOADED_STATES, LOADING_STATES, State } from "./base";
+import { State, SubscribableChild, SubscribableType } from "./base";
 import { Project } from "./project";
 
 export interface SIZE {
@@ -8,10 +8,7 @@ export interface SIZE {
   height: number;
 }
 
-export interface SelectedImage {
-  state: State;
-  isLoaded: boolean;
-  isError: boolean;
+export interface SelectedImage extends SubscribableType {
   projectName: string;
   filename: string;
   tags: string[];
@@ -20,9 +17,7 @@ export interface SelectedImage {
   txtFile: string;
 }
 
-export class Image {
-  private _state: State;
-  private _project: Project;
+export class Image extends SubscribableChild {
   private _filename: string;
   private _tags: string[] = [];
   private _txtFileCache: string = null;
@@ -30,13 +25,13 @@ export class Image {
   private _autoTags: string[] = [];
 
   constructor(
-    project: Project,
+    parent: Project,
     filename: string,
     tags: string[],
     autoTags: string[],
     state = State.Loaded,
   ) {
-    this._project = project;
+    super(parent);
     this._filename = filename;
     this._tags = tags;
     this._autoTags = autoTags;
@@ -46,8 +41,8 @@ export class Image {
     }
   }
 
-  public onChange() {
-    this._project.onChange();
+  public get project(): Project {
+    return this._parent as Project;
   }
 
   public invalidateCaches() {
@@ -58,9 +53,9 @@ export class Image {
   public get readOnly(): SelectedImage {
     return {
       state: this.state,
-      isLoaded: this.isLoaded,
+      isLoading: this.isLoading,
       isError: this.isError,
-      projectName: this._project.name,
+      projectName: this.project.name,
       filename: this.filename,
       tags: this.tags,
       uncategorizedTags: this.uncategorizedTags,
@@ -76,20 +71,8 @@ export class Image {
   public setStateAndNotify(newState: State) {
     if (this._state !== newState) {
       this._state = newState;
-      this.onChange();
+      this.notifyListeners();
     }
-  }
-
-  public get isLoading(): boolean {
-    return LOADING_STATES.has(this._state);
-  }
-
-  public get isLoaded(): boolean {
-    return LOADED_STATES.has(this._state);
-  }
-
-  public get isError(): boolean {
-    return ERROR_STATES.has(this._state);
   }
 
   public get filename(): string {
@@ -108,7 +91,7 @@ export class Image {
   }
 
   public get validTags(): string[] {
-    return this._project
+    return this.project
       .allLayoutTags()
       .flatMap((t) => findMatchingTags(t, this.tags));
   }
@@ -131,11 +114,11 @@ export class Image {
       return this._txtFileCache || "";
     }
     const result: string[] = [];
-    if (this._project.triggerWord) {
-      result.push(this._project.triggerWord);
+    if (this.project.triggerWord) {
+      result.push(this.project.triggerWord);
     }
     if (this.tags?.length > 0) {
-      this._project.tagLayout.map((category) => {
+      this.project.tagLayout.map((category) => {
         category.tags.forEach((tagTemplate) => {
           findMatchingTags(tagTemplate, this.tags).forEach((matchingTag) =>
             result.push(matchingTag),
@@ -156,7 +139,7 @@ export class Image {
     const response = await apiRequest<{
       autoTags: string[];
       tags: string[];
-    }>(`/project/${this._project.name}/tags/load?image=${this._filename}`, {
+    }>(`/project/${this.project.name}/tags/load?image=${this._filename}`, {
       method: "GET",
     });
     if (!response.success) {
@@ -167,12 +150,12 @@ export class Image {
       this._autoTags = response.data.autoTags;
       this._tags = response.data.tags;
     }
-    this.onChange();
+    this.notifyListeners();
   }
 
   public async removeTag(oldTag: string) {
     this.setTags(this.tags.filter((value) => value !== oldTag));
-    this.onChange();
+    this.notifyListeners();
     await this.saveTags();
   }
 
@@ -186,7 +169,7 @@ export class Image {
 
   public async addTags(newTags: string[]) {
     this.setTags(Array.from(new Set([...this.tags, ...newTags])));
-    this.onChange();
+    this.notifyListeners();
     await this.saveTags();
   }
 
@@ -217,13 +200,13 @@ export class Image {
 
   public async clearTags() {
     this.setTags([]);
-    this.onChange();
+    this.notifyListeners();
     return await this.saveTags();
   }
 
   public async saveTags(): Promise<boolean> {
     const response = await apiRequest<{ result: string }>(
-      `/project/${this._project.name}/tags/save`,
+      `/project/${this.project.name}/tags/save`,
       {
         body: JSON.stringify({
           filename: this._filename,
@@ -234,13 +217,13 @@ export class Image {
     if (response.success && response.data) {
       if (this._state !== State.Loaded) {
         this._state = State.Loaded;
-        this.onChange();
+        this.notifyListeners();
       }
       return response.data.result === "OK";
     } else {
       console.error("Failed to save tags:", response.errors);
       this._state = State.ErrorSaving;
-      this.onChange();
+      this.notifyListeners();
       return false;
     }
   }

@@ -1,7 +1,6 @@
 import { Spinner } from "flowbite-react";
 import React from "react";
 import { useAppValue } from "../../hooks/useApp";
-import { useProjectValue } from "../../hooks/useProject";
 import { SelectedImage } from "../image/SelectedImage";
 import { ErrorSavingModal } from "../project/ErrorSavingModal";
 import { Thumbnails } from "../project/Thumbnails";
@@ -9,8 +8,14 @@ import { Tagger } from "../tagger/Tagger";
 import { NoSelectedProject } from "./NoSelectedProject";
 
 export function Editor() {
-  const appValue = useAppValue();
-  const projectValue = useProjectValue();
+  const appValue = useAppValue(
+    "isError",
+    "isLoading",
+    "project.name",
+    "project.isLoading",
+  );
+
+  console.log("re-rendering editor", appValue);
 
   if (appValue.isError) {
     return (
@@ -23,7 +28,7 @@ export function Editor() {
     );
   }
 
-  if (appValue.isLoading || projectValue.isLoading) {
+  if (appValue.isLoading || appValue.project.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" color="gray" />
@@ -31,7 +36,7 @@ export function Editor() {
     );
   }
 
-  if (!projectValue) {
+  if (!appValue.project) {
     return <NoSelectedProject />;
   }
 

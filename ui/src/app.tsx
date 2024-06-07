@@ -25,13 +25,15 @@ export function RootNode() {
     appState.load();
   }, []);
 
+  const initialTagSearch = useTagSearch();
+
   return (
     <ErrorBoundary
       fallback={<div>Oops! Something went wrong. Check the console.</div>}
     >
       <Flowbite theme={{ theme: customTheme }}>
         <AppContext.Provider value={appState}>
-          <TagSearchContext.Provider value={useTagSearch()}>
+          <TagSearchContext.Provider value={initialTagSearch}>
             <main className="flex h-screen w-full flex-col overflow-hidden dark:bg-gray-800">
               <Header />
               <Editor />

@@ -1,22 +1,45 @@
-import { useContext, useEffect, useState } from "react";
-import { Subscribable } from "../models/base";
+import _, { get } from "lodash";
 
-export function useSubscribe<DataType>(
-  Context: React.Context<Subscribable<DataType>>,
-  callback: (newValue: DataType) => void,
+import { useContext, useEffect, useRef } from "react";
+import { Subscribable, SubscribableType } from "../models/base";
+
+export function valueDidChange(
+  selector: string,
+  state1: any,
+  state2: any,
+): boolean {
+  const value1 = get(state1, selector, null);
+  const value2 = get(state2, selector, null);
+  return !_.isEqual(value1, value2);
+}
+
+export function useSubscribe(
+  Context: React.Context<Subscribable<SubscribableType>>,
+  callback: (newValue: SubscribableType) => void,
+  selectors: string[] = [],
 ) {
   let context = useContext(Context);
-  const [oldValue, setOldValue] = useState<DataType>(null);
+  const oldValue = useRef<SubscribableType>(null);
 
   // Listen to updates from the selected project.
   useEffect(() => {
     if (!context) {
       return;
     }
-    const callbackWrapper = (newValue: DataType) => {
-      // Only send updates if the underlying data changes.
-      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-        setOldValue(newValue);
+    const callbackWrapper = (newValue: SubscribableType) => {
+      let didChange = true;
+
+      if (oldValue.current) {
+        didChange = false;
+        if (selectors.length > 0) {
+          // Map over the selectors, and stop as soon as we found a match.
+          didChange = selectors.some((selector) =>
+            valueDidChange(selector, oldValue.current, newValue),
+          );
+        }
+      }
+      if (didChange) {
+        oldValue.current = newValue;
         callback(newValue);
       }
     };

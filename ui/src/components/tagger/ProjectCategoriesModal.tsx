@@ -1,19 +1,22 @@
 import { Button, Modal } from "flowbite-react";
 import React from "react";
 import { HiArrowRight } from "react-icons/hi";
-import { useProjectState } from "../../hooks/useProject";
+import { useAppState } from "../../hooks/useApp";
 import { SuggestedAutoTags } from "./SuggestedAutoTags";
 
 export function ProjectCategoriesModal() {
-  const [projectValue, project] = useProjectState();
+  const [appValue, app] = useAppState(
+    "project.requiresSetup",
+    "project.autoTags",
+  );
 
-  if (projectValue.autoTags.length === 0) {
+  if (appValue.project.autoTags.length === 0) {
     return null;
   }
 
   return (
     <Modal
-      show={projectValue.requiresSetup}
+      show={appValue.project.requiresSetup}
       size="2xl"
       dismissible={false}
       theme={{
@@ -36,7 +39,9 @@ export function ProjectCategoriesModal() {
       <Modal.Body>
         <p className="p-1 text-sm dark:text-white">
           Here{" "}
-          {projectValue.autoTags.length === 1 ? "is a tag" : "are some tags"}{" "}
+          {appValue.project.autoTags.length === 1
+            ? "is a tag"
+            : "are some tags"}{" "}
           you might want to add to your project. Generally you don't want to tag
           things <em>already</em> implicit in your trigger word. For example,
           when training a face, if you tag someone's distinctive mole or
@@ -50,7 +55,7 @@ export function ProjectCategoriesModal() {
         <Button
           gradientDuoTone="greenToBlue"
           size="xl"
-          onClick={() => project.setRequiresSetup(false)}
+          onClick={() => app.project.setRequiresSetup(false)}
           fullSized
         >
           Start Tagging <HiArrowRight className="ml-2 h-6 w-6" />

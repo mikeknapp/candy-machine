@@ -2,12 +2,17 @@ import { Dropdown, Spinner } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiFolderOpen } from "react-icons/hi2";
 import { useAppState } from "../../hooks/useApp";
-import { useProjectState } from "../../hooks/useProject";
 import { useShortcut } from "../../hooks/useShortcut";
 
 export function ProjectSelector() {
-  const [appValue, app] = useAppState();
-  const [projectValue, project] = useProjectState();
+  const [appValue, app] = useAppState(
+    "isLoading",
+    "isError",
+    "project.name",
+    "project.images",
+    "projects",
+    "project.isLoading",
+  );
   const [showAllProjects, setShowAllProjects] = useState(false);
 
   useShortcut({
@@ -32,12 +37,12 @@ export function ProjectSelector() {
   });
 
   useEffect(() => {
-    if (projectValue !== null) {
-      document.title = `Candy Machine (${projectValue?.images.length})`;
+    if (appValue.project !== null) {
+      document.title = `Candy Machine (${appValue.project?.images.length})`;
     } else {
       document.title = "Candy Machine";
     }
-  }, [projectValue]);
+  }, [appValue.project]);
 
   const projects = showAllProjects
     ? appValue.projects
@@ -51,7 +56,7 @@ export function ProjectSelector() {
           className="min-w-[200px]"
           label={
             <div className="flex flex-row items-center gap-2">
-              {projectValue.isLoading ? (
+              {appValue.project.isLoading ? (
                 <>
                   <Spinner size="sm" color="success" />
                   <span className="text-sm text-gray-700 dark:text-gray-400">
@@ -61,7 +66,9 @@ export function ProjectSelector() {
               ) : (
                 <>
                   <HiFolderOpen className="h-5 w-5 text-primary-600" />{" "}
-                  {projectValue.name ? projectValue.name : "No Projects"}
+                  {appValue.project.name
+                    ? appValue.project.name
+                    : "No Projects"}
                 </>
               )}
             </div>
@@ -75,7 +82,7 @@ export function ProjectSelector() {
               value={projectName}
               className="p-3"
               onClick={async () => {
-                await project.loadProject(projectName);
+                await app.project.loadProject(projectName);
               }}
             >
               {projectName}

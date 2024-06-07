@@ -1,3 +1,9 @@
+export interface SubscribableType {
+  state: State;
+  isLoading: boolean;
+  isError: boolean;
+}
+
 export enum State {
   Init = "init",
   Loading = "loading",
@@ -12,41 +18,58 @@ export const LOADED_STATES = new Set([State.Loaded]);
 
 export const ERROR_STATES = new Set([State.ErrorLoading, State.ErrorSaving]);
 
-export abstract class Subscribable<DataType> {
-  public state: State = State.Init;
+export abstract class Subscribable<SubscribableType> {
+  protected _state: State = State.Init;
+  private _listeners: ((newValue: SubscribableType) => void)[] = [];
 
-  private listeners: ((newValue: DataType) => void)[] = [];
+  public abstract get readOnly(): SubscribableType;
 
-  public abstract get readOnly(): DataType;
+  public get state(): State {
+    return this._state;
+  }
 
   public setStateAndNotify(newState: State) {
-    if (this.state !== newState) {
-      this.state = newState;
+    if (this._state !== newState) {
+      this._state = newState;
       this.notifyListeners();
     }
   }
 
-  public get getState(): State {
-    return this.state;
-  }
-
   public get hasLoaded(): boolean {
-    return this.state === State.Loaded;
+    return LOADED_STATES.has(this._state);
   }
 
-  public subscribe(listener: (newValue: DataType) => void) {
-    this.listeners.push(listener);
+  public get isLoading(): boolean {
+    return LOADING_STATES.has(this._state);
+  }
+
+  public get isError(): boolean {
+    return ERROR_STATES.has(this._state);
+  }
+
+  public subscribe(listener: (newValue: SubscribableType) => void) {
+    this._listeners.push(listener);
     // Echo the latest copy of the data back immediately.
     listener(this.readOnly);
   }
 
-  public unsubscribe(listener: (newValue: DataType) => void) {
-    this.listeners = this.listeners.filter((l) => l !== listener);
+  public unsubscribe(listener: (newValue: SubscribableType) => void) {
+    this._listeners = this._listeners.filter((l) => l !== listener);
   }
 
-  public notifyListeners() {
-    for (const listener of this.listeners) {
+  public async notifyListeners() {
+    for (const listener of this._listeners) {
       listener(this.readOnly);
     }
+  }
+}
+
+export abstract class SubscribableChild extends Subscribable<SubscribableType> {
+  constructor(protected _parent: Subscribable<SubscribableType>) {
+    super();
+  }
+
+  public async notifyListeners() {
+    this._parent.notifyListeners();
   }
 }

@@ -3,22 +3,24 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 
 import { Tooltip } from "flowbite-react";
 import "react-circular-progressbar/dist/styles.css";
-import { useProjectValue } from "../../hooks/useProject";
+import { useAppValue } from "../../hooks/useApp";
 
 export function ProgressPieChart() {
+  const app = useAppValue("project.images", "project.selectedImage.filename");
+
+  const images = app.project.images;
+  const filename = app.project.selectedImage?.filename;
+
   let percentage = 0;
-
-  const project = useProjectValue();
-
-  if (project?.images.length === 0) {
+  if (images.length === 0) {
     return;
   }
 
-  const imageIndex = project.images.indexOf(project.selectedImage?.filename);
-  percentage = Math.round(((imageIndex + 1) / project.images.length) * 100);
+  const imageIndex = images.indexOf(filename);
+  percentage = Math.round(((imageIndex + 1) / images.length) * 100);
 
   return (
-    <Tooltip content={`${project.images.length}\u00A0images`}>
+    <Tooltip content={`${images.length}\u00A0images`}>
       <div className="h-12 w-12">
         <CircularProgressbar
           value={percentage}

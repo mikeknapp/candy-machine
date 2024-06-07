@@ -1,7 +1,7 @@
 import { Button, Modal } from "flowbite-react";
 import React, { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi2";
-import { useProject } from "../../hooks/useProject";
+import { useApp } from "../../hooks/useApp";
 
 type ClearTagsModalProps = {
   show: boolean;
@@ -9,7 +9,7 @@ type ClearTagsModalProps = {
 };
 
 export function ClearTagsModal(props: ClearTagsModalProps) {
-  const project = useProject();
+  const app = useApp();
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -35,7 +35,7 @@ export function ClearTagsModal(props: ClearTagsModalProps) {
               isProcessing={isProcessing}
               onClick={async () => {
                 setIsProcessing(true);
-                project.selectedImage?.clearTags();
+                app.project.selectedImage?.clearTags();
                 props.onClose();
                 setIsProcessing(false);
               }}

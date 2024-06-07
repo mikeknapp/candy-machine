@@ -1,14 +1,9 @@
 import React from "react";
-import { ProjectData } from "../../models/project";
+import { useAppValue } from "../../hooks/useApp";
 
-interface TxtFilePreviewProps {
-  projectValue: ProjectData;
-}
-
-export function TxtFilePreview(props: TxtFilePreviewProps) {
-  const projectValue = props.projectValue;
-  const isLoading = !projectValue.selectedImage?.isLoaded;
-  const txtPreview = projectValue.selectedImage?.txtFile;
+export function TxtFilePreview({ isLoading }: { isLoading: boolean }) {
+  const appValue = useAppValue("project.selectedImage.txtFile");
+  const txtPreview = appValue.project.selectedImage.txtFile;
 
   return (
     <>

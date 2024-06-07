@@ -1,31 +1,33 @@
 import { Button, Tooltip } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { memo, useContext, useEffect, useState } from "react";
 import {
   FaArrowLeft,
   FaArrowRight,
   FaCropSimple,
   FaRegTrashCan,
 } from "react-icons/fa6";
-import { useApp } from "../../hooks/useApp";
-import { useProject } from "../../hooks/useProject";
+import { AppContext } from "../../app";
 import { useShortcut } from "../../hooks/useShortcut";
-import { ProjectData } from "../../models/project";
 import { scrollToThumbnail } from "../project/Thumbnails";
 import { DeleteImageModal } from "./DeleteImageModal";
 import { EditImageModal } from "./EditImageModal";
 
-export function QuickActions({ projectValue }: { projectValue: ProjectData }) {
-  const app = useApp();
-  const project = useProject();
-  const hasSelectedImage = Boolean(projectValue.selectedImage?.filename);
+interface QuickActionsProps {
+  projectName: string;
+  filename: string;
+}
+
+export const QuickActions = memo((props: QuickActionsProps) => {
+  const app = useContext(AppContext);
+  const hasSelectedImage = Boolean(props.filename);
 
   const [showEditImageModal, setShowEditImageModal] = useState(false);
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
   const navigate = (direction: "next" | "prev") => {
-    let img = project.navigateImages(direction);
+    let img = app.project.navigateImages(direction);
     if (img) {
-      project.setSelectedImage(img);
+      app.project.setSelectedImage(img);
       scrollToThumbnail(img);
     }
   };
@@ -54,7 +56,7 @@ export function QuickActions({ projectValue }: { projectValue: ProjectData }) {
         <Tooltip content="Prev Image [⬆️,⬅️,j]">
           <Button
             size="xl"
-            disabled={!project.navigateImages("prev")}
+            disabled={!app.project.navigateImages("prev")}
             color="light"
             onClick={() => navigate("prev")}
             className="rounded-r-none border-r-0"
@@ -85,7 +87,7 @@ export function QuickActions({ projectValue }: { projectValue: ProjectData }) {
         <Tooltip content="Next Image [⬇️,➡️,k]">
           <Button
             size="xl"
-            disabled={!project.navigateImages("next")}
+            disabled={!app.project.navigateImages("next")}
             color="light"
             onClick={() => navigate("next")}
             className="rounded-l-none"
@@ -96,15 +98,17 @@ export function QuickActions({ projectValue }: { projectValue: ProjectData }) {
       </div>
 
       <EditImageModal
+        projectName={props.projectName}
+        filename={props.filename}
         show={showEditImageModal}
         onClose={() => setShowEditImageModal(false)}
       />
 
       <DeleteImageModal
-        selectedImg={projectValue.selectedImage?.filename}
+        filename={props.filename}
         show={showDeleteImageModal}
         onClose={() => setShowDeleteImageModal(false)}
       />
     </div>
   );
-}
+});

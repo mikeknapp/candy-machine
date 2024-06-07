@@ -1,13 +1,10 @@
 import { PixelCrop } from "react-image-crop";
 import { ApiResponse, apiRequest, eventRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
-import { ERROR_STATES, LOADING_STATES, State } from "./base";
+import { State, SubscribableChild, SubscribableType } from "./base";
 import { Image, SelectedImage } from "./image";
 
-export interface ProjectData {
-  state: State;
-  isLoading: boolean;
-  isError: boolean;
+export interface ProjectData extends SubscribableType {
   name: string;
   triggerWord: string;
   triggerSynonyms: string[];
@@ -45,9 +42,7 @@ export interface AutoTag {
   examples: string[];
 }
 
-export class Project {
-  private _onChange: () => void;
-  private _state = State.Init;
+export class Project extends SubscribableChild {
   private _name: string = "";
   private _triggerWord: string = "";
   private _triggerSynonyms: string[] = [];
@@ -56,21 +51,6 @@ export class Project {
   private _autoTags: AutoTag[] = [];
   private _tagLayout: CategoryData[] = [];
   private _requiresSetup: boolean = false;
-
-  constructor(onChange: () => void) {
-    this._onChange = onChange;
-  }
-
-  public onChange() {
-    this._onChange();
-  }
-
-  public setStateAndNotify(newState: State) {
-    if (this._state !== newState) {
-      this._state = newState;
-      this.onChange();
-    }
-  }
 
   private reset(newName: string = "") {
     this._state = State.Init;
@@ -81,7 +61,6 @@ export class Project {
     this._autoTags = [];
     this._tagLayout = [];
     this._requiresSetup = false;
-    this.onChange();
   }
 
   public get readOnly(): ProjectData {
@@ -100,18 +79,6 @@ export class Project {
     };
   }
 
-  public get state(): State {
-    return this._state;
-  }
-
-  public get isLoading(): boolean {
-    return LOADING_STATES.has(this._state);
-  }
-
-  public get isError(): boolean {
-    return ERROR_STATES.has(this._state);
-  }
-
   public get name(): string {
     return this._name;
   }
@@ -123,7 +90,7 @@ export class Project {
   public setTriggerWord(value: string) {
     this._triggerWord = value;
     this.selectedImage?.invalidateCaches();
-    this.onChange();
+    this.notifyListeners();
     this.save();
   }
 
@@ -133,7 +100,7 @@ export class Project {
 
   public setTriggerSynonyms(value: string[]) {
     this._triggerSynonyms = value;
-    this.onChange();
+    this.notifyListeners();
     this.save();
   }
 
@@ -164,7 +131,7 @@ export class Project {
   public setTagLayout(value: CategoryData[]) {
     this._tagLayout = value;
     this.selectedImage?.invalidateCaches();
-    this.onChange();
+    this.notifyListeners();
     this.save();
   }
 
@@ -201,7 +168,7 @@ export class Project {
 
   public setRequiresSetup(value: boolean) {
     this._requiresSetup = value;
-    this.onChange();
+    this.notifyListeners();
   }
 
   public async setSelectedImage(filename: string) {
@@ -209,7 +176,7 @@ export class Project {
       return;
     }
     this._selectedImage = new Image(this, filename, [], [], State.Loading);
-    this.onChange();
+    this.notifyListeners();
     await this.save();
   }
 
@@ -324,7 +291,7 @@ export class Project {
       this.setSelectedImage(bestImage);
     } else {
       this._selectedImage = null;
-      this.onChange();
+      this.notifyListeners();
     }
 
     // Perform the delete on the server.

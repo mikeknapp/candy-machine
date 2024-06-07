@@ -1,7 +1,8 @@
+import _ from "lodash";
 import React, { useContext, useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
 import { TagSearchContext } from "../../app";
-import { useProjectState } from "../../hooks/useProject";
+import { useAppState } from "../../hooks/useApp";
 import { findMatchingTags } from "../../models/image";
 import { AddTagPopup } from "./AddTagPopup";
 import { Tag } from "./Tag";
@@ -20,15 +21,20 @@ const DEFAULT_ADD_TAG_STATE = {
 };
 
 export function TagCategory({ category }: { category: CategoryData }) {
-  const [projectValue, project] = useProjectState();
+  const [appValue, app] = useAppState(
+    "project.selectedImage.isLoading",
+    "project.selectedImage.tags",
+    "project.tagLayout",
+  );
   const { query, updateTagSearch } = useContext(TagSearchContext);
   const [categoryTags, setCategoryTags] = useState(category.tags);
 
   // State for adding a tag.
   const [addTag, setAddTag] = useState(DEFAULT_ADD_TAG_STATE);
 
-  const isDisabled = !projectValue.selectedImage?.isLoaded;
-  let selectedTags = projectValue.selectedImage?.tags || [];
+  const selectedImage = appValue.project.selectedImage;
+  const isDisabled = selectedImage?.isLoading;
+  let selectedTags = selectedImage?.tags || [];
 
   useEffect(() => {
     // Ensure we have all of the relevant tags for this category, starting with the default layout.
@@ -54,9 +60,11 @@ export function TagCategory({ category }: { category: CategoryData }) {
       );
     }
 
-    // Sort + apply any active search filter.
+    if (!_.isEqual(results, categoryTags)) {
+      setCategoryTags(results);
+    }
     setCategoryTags(results);
-  }, [projectValue.tagLayout, category, query, selectedTags]);
+  }, [appValue.project.tagLayout, category, query, selectedTags]);
 
   if (categoryTags.length === 0) {
     return null;
@@ -100,7 +108,7 @@ export function TagCategory({ category }: { category: CategoryData }) {
                   tagTemplate: tag,
                 });
               } else {
-                project.selectedImage?.toggleTag(tag);
+                app.project.selectedImage?.toggleTag(tag);
                 updateTagSearch("", false, true);
               }
             }}

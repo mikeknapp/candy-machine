@@ -1,18 +1,22 @@
 import { Dropdown, Tooltip } from "flowbite-react";
 import React, { useMemo } from "react";
 import { HiInformationCircle, HiMiniPlus, HiXCircle } from "react-icons/hi2";
-import { useProject, useProjectValue } from "../../hooks/useProject";
+import { useAppState, useAppValue } from "../../hooks/useApp";
 import { Tag } from "./Tag";
 import { CategoryData } from "./TagCategory";
 
 const COVERED_BY_TRIGGER = "Covered By Trigger";
 
 export function SuggestedAutoTags() {
-  const projectValue = useProjectValue();
+  const appValue = useAppValue(
+    "project.autoTags",
+    "project.tagLayout",
+    "project.triggerSynonyms",
+  );
 
   return (
     <>
-      {projectValue.autoTags.map((tag) => (
+      {appValue.project.autoTags.map((tag) => (
         <div
           key={`setup-tag-${tag.tag}`}
           className="flex flex-row justify-between p-10"
@@ -31,7 +35,7 @@ export function SuggestedAutoTags() {
           </div>
 
           <ChooseCategoryTagDropdown
-            tagLayout={projectValue.tagLayout}
+            tagLayout={appValue.project.tagLayout}
             tag={tag.tag}
           />
         </div>
@@ -58,11 +62,15 @@ function ChooseCategoryTagDropdown({
   tagLayout: CategoryData[];
   tag: string;
 }) {
-  const project = useProject();
+  const [appValue, app] = useAppState(
+    "project.tagLayout",
+    "project.triggerSynonyms",
+    "project.triggerWord",
+  );
 
   // The category title, if selected, else "".
   const { title: categoryTitle, color: categoryColor } = useMemo(() => {
-    if (project.triggerSynonyms.includes(tag)) {
+    if (appValue.project.triggerSynonyms.includes(tag)) {
       return {
         title: COVERED_BY_TRIGGER,
         color: "#000",
@@ -79,7 +87,7 @@ function ChooseCategoryTagDropdown({
         }
       }) || { title: "", color: "" }
     );
-  }, [tag, tagLayout, project.triggerSynonyms]);
+  }, [tag, tagLayout, appValue.project.triggerSynonyms]);
 
   return (
     <Dropdown
@@ -98,9 +106,9 @@ function ChooseCategoryTagDropdown({
                 onClick={(e) => {
                   e.stopPropagation();
                   if (categoryTitle === COVERED_BY_TRIGGER) {
-                    project.toggleTriggerSynonym(tag);
+                    app.project.toggleTriggerSynonym(tag);
                   } else {
-                    project.removeTagFromLayout(tag);
+                    app.project.removeTagFromLayout(tag);
                   }
                 }}
               />
@@ -113,12 +121,12 @@ function ChooseCategoryTagDropdown({
         </div>
       }
     >
-      {project.triggerWord &&
+      {appValue.project.triggerWord &&
         (!categoryTitle || categoryTitle == COVERED_BY_TRIGGER) && (
           <Dropdown.Item
             key={`choose-category-${tag}-trigger-word-synonym`}
             onClick={() => {
-              project.toggleTriggerSynonym(tag);
+              app.project.toggleTriggerSynonym(tag);
             }}
             className="flex flex-row gap-2"
           >
@@ -131,7 +139,9 @@ function ChooseCategoryTagDropdown({
         tagLayout.map((category) => (
           <Dropdown.Item
             key={`choose-category-${tag}-${category.title}`}
-            onClick={() => project.moveTagtoLayoutCategory(category.title, tag)}
+            onClick={() =>
+              app.project.moveTagtoLayoutCategory(category.title, tag)
+            }
             className="flex flex-row gap-2"
           >
             <CategoryIcon color={category.color} />

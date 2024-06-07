@@ -1,18 +1,18 @@
 import React from "react";
-import { SelectedImage } from "../../models/image";
 
-export function AutoTagComparison({
-  selectedImage,
-  synonyms,
-}: {
-  selectedImage: SelectedImage;
+interface AutoTagComparisonProps {
+  filename: string;
+  tags: string[];
+  autoTags: string[];
   synonyms: string[];
-}) {
-  const selected = (selectedImage?.tags ?? []).concat(synonyms);
+}
+
+export function AutoTagComparison(props: AutoTagComparisonProps) {
+  const selected = (props.tags ?? []).concat(props.synonyms);
 
   return (
     <>
-      {selectedImage?.autoTags?.map((tag, i) => {
+      {props.autoTags?.map((tag, i) => {
         return (
           <span key={`auto-tag-${i}`}>
             {selected.includes(tag) ? (
@@ -20,7 +20,7 @@ export function AutoTagComparison({
             ) : (
               <span className="text-red-500">{tag}</span>
             )}
-            {i < selectedImage?.autoTags?.length - 1 ? ", " : ""}
+            {i < props.autoTags?.length - 1 ? ", " : ""}
           </span>
         );
       })}

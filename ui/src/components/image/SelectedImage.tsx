@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { useProjectValue } from "../../hooks/useProject";
-import { imgSize } from "../../models/image";
+import { useAppValue } from "../../hooks/useApp";
 import { AutoTagPreview } from "./AutoTagPreview";
 import { ImageInfo } from "./ImageInfo";
 import { ImagePreview } from "./ImagePreview";
@@ -9,10 +8,14 @@ import { TxtFilePreview } from "./TxtFilePreview";
 
 export function SelectedImage() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const projectValue = useProjectValue();
-  const selectedImage = projectValue?.selectedImage;
-  const filename = selectedImage?.filename;
-  const size = imgSize(filename);
+  const appValue = useAppValue(
+    "project.name",
+    "project.selectedImage.filename",
+    "project.selectedImage.isLoading",
+  );
+  const projectName = appValue.project.name;
+  const img = appValue.project.selectedImage;
+  const filename = img?.filename;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -27,11 +30,11 @@ export function SelectedImage() {
     >
       {filename && (
         <>
-          <QuickActions projectValue={projectValue} />
-          <ImagePreview projectValue={projectValue} size={size} />
-          <ImageInfo image={selectedImage} size={size} />
-          <TxtFilePreview projectValue={projectValue} />
-          <AutoTagPreview projectValue={projectValue} />
+          <QuickActions projectName={projectName} filename={filename} />
+          <ImagePreview projectName={projectName} filename={filename} />
+          <ImageInfo filename={filename} />
+          <TxtFilePreview isLoading={img.isLoading} />
+          <AutoTagPreview isLoading={img.isLoading} />
         </>
       )}
     </div>

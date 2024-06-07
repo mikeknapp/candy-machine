@@ -1,12 +1,15 @@
 import { apiRequest } from "../api";
 import { ShortcutInfo } from "../hooks/useShortcut";
-import { ERROR_STATES, LOADING_STATES, State, Subscribable } from "./base";
+import {
+  ERROR_STATES,
+  LOADING_STATES,
+  State,
+  Subscribable,
+  SubscribableType,
+} from "./base";
 import { DEFAULT_PROJECT_DATA, Project, ProjectData } from "./project";
 
-export interface AppData {
-  state: State;
-  isLoading: boolean;
-  isError: boolean;
+export interface AppData extends SubscribableType {
   project: ProjectData;
   projects: string[];
   showCreateProjectModal: boolean;
@@ -32,7 +35,7 @@ export class App extends Subscribable<AppData> {
 
   private constructor() {
     super();
-    this._project = new Project(() => this.notifyListeners());
+    this._project = new Project(this);
   }
 
   private static instance: App;
@@ -46,7 +49,7 @@ export class App extends Subscribable<AppData> {
 
   public get readOnly(): AppData {
     return {
-      state: this.state,
+      state: this._state,
       isLoading: this.isLoading,
       isError: this.isError,
       project: this._project.readOnly,
@@ -57,11 +60,11 @@ export class App extends Subscribable<AppData> {
   }
 
   public get isLoading() {
-    return LOADING_STATES.has(this.state);
+    return LOADING_STATES.has(this._state);
   }
 
   public get isError() {
-    return ERROR_STATES.has(this.state);
+    return ERROR_STATES.has(this._state);
   }
 
   public get project() {

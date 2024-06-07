@@ -2,20 +2,24 @@ import { Button, Tooltip } from "flowbite-react";
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaPencil, FaWandMagicSparkles } from "react-icons/fa6";
-import { useProjectState } from "../../hooks/useProject";
+import { useAppState } from "../../hooks/useApp";
 import { useShortcut } from "../../hooks/useShortcut";
 import { ClearTagsModal } from "./ClearTagsModal";
 import { TagSearch } from "./TagSearch";
 
 export function TagMenu() {
-  const [projectValue, project] = useProjectState();
-  const img = projectValue.selectedImage;
-  const imgTagsLoaded = img?.isLoaded ?? false;
+  const [appValue, app] = useAppState(
+    "project.isLoading",
+    "project.selectedImage",
+    "project.tagLayout",
+  );
+  const img = appValue.project.selectedImage;
+  const imgTagsLoaded = !img?.isLoading ?? false;
 
   const [showClearTagsModal, setShowClearTagsModal] = useState(false);
 
   const applyAutoTags = () => {
-    project.selectedImage?.applyAutoTags(projectValue.tagLayout);
+    app.project.selectedImage?.applyAutoTags(appValue.project.tagLayout);
   };
 
   const allowShortcuts = !showClearTagsModal || imgTagsLoaded;
@@ -24,14 +28,14 @@ export function TagMenu() {
     description: "Apply Auto Tags",
     keys: "a",
     onKeyDown: () => allowShortcuts && applyAutoTags(),
-    deps: [projectValue, showClearTagsModal, allowShortcuts],
+    deps: [appValue.project, showClearTagsModal, allowShortcuts],
   });
 
   useShortcut({
     description: "Clear Selected Tags",
     keys: "x",
     onKeyDown: () => allowShortcuts && setShowClearTagsModal(true),
-    deps: [projectValue, showClearTagsModal, allowShortcuts],
+    deps: [appValue.project, showClearTagsModal, allowShortcuts],
   });
 
   return (
@@ -67,7 +71,7 @@ export function TagMenu() {
               size="xl"
               color="light"
               className="rounded-l-none"
-              disabled={projectValue.isLoading}
+              disabled={appValue.project.isLoading}
             >
               <FaPencil />
             </Button>

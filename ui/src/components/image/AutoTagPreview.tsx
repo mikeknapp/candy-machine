@@ -1,16 +1,17 @@
 import React from "react";
-import { ProjectData } from "../../models/project";
+import { useAppValue } from "../../hooks/useApp";
 import { AutoTagComparison } from "./AutoTagComparison";
 
-interface AutoTagProps {
-  projectValue: ProjectData;
-}
+export function AutoTagPreview({ isLoading }: { isLoading: boolean }) {
+  const appValue = useAppValue(
+    "project.selectedImage.filename",
+    "project.selectedImage.tags",
+    "project.selectedImage.autoTags",
+    "project.triggerSynonyms",
+  );
 
-export function AutoTagPreview(props: AutoTagProps) {
-  const projectValue = props.projectValue;
-  const selectedImage = projectValue.selectedImage;
-  const hasTags = selectedImage?.autoTags.length > 0;
-  const isLoading = !selectedImage?.isLoaded;
+  const selectedImage = appValue.project.selectedImage;
+  const hasTags = selectedImage.autoTags?.length > 0;
 
   return (
     <>
@@ -25,8 +26,10 @@ export function AutoTagPreview(props: AutoTagProps) {
                   AUTO TAGS (FYI)
                 </h2>
                 <AutoTagComparison
-                  selectedImage={projectValue.selectedImage}
-                  synonyms={projectValue.triggerSynonyms}
+                  filename={selectedImage.filename}
+                  tags={selectedImage.tags}
+                  autoTags={selectedImage.autoTags}
+                  synonyms={appValue.project.triggerSynonyms}
                 />
               </>
             )}

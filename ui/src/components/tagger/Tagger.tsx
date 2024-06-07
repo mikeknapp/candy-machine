@@ -1,16 +1,20 @@
 import React, { useEffect, useRef } from "react";
 import { TagCategory } from "./TagCategory";
 
-import { useProjectValue } from "../../hooks/useProject";
+import { useAppValue } from "../../hooks/useApp";
 import { ProjectCategoriesModal } from "./ProjectCategoriesModal";
 import { TagMenu } from "./TagMenu";
 
 export function Tagger() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const projectValue = useProjectValue();
-  const selectedImage = projectValue.selectedImage;
+  const appValue = useAppValue(
+    "project.selectedImage",
+    "project.tagLayout",
+    "project.isLoading",
+  );
+  const selectedImage = appValue.project.selectedImage;
   const filename = selectedImage?.filename;
-  const isLoading = !selectedImage?.isLoaded;
+  const isLoading = selectedImage?.isLoading;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -18,7 +22,7 @@ export function Tagger() {
     }
   }, [filename]);
 
-  if (projectValue.isLoading || !selectedImage) {
+  if (appValue.project.isLoading || !selectedImage) {
     return null;
   }
 
@@ -30,16 +34,16 @@ export function Tagger() {
         ref={scrollRef}
         className={`flex h-full w-full flex-col ${isLoading ? "" : "!overflow-y-auto"}`}
       >
-        {projectValue.tagLayout.map((category) => (
+        {appValue.project.tagLayout.map((category) => (
           <TagCategory key={category.title} category={category} />
         ))}
 
-        {projectValue.selectedImage?.uncategorizedTags.length > 0 && (
+        {appValue.project.selectedImage?.uncategorizedTags.length > 0 && (
           <TagCategory
             key="non-standard"
             category={{
               title: "Uncategorized",
-              tags: projectValue.selectedImage?.uncategorizedTags,
+              tags: appValue.project.selectedImage?.uncategorizedTags,
               color: "#ccc",
               hideAddButton: true,
             }}

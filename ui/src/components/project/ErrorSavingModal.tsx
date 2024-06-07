@@ -1,26 +1,26 @@
 import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
-import { useProject } from "../../hooks/useProject";
+import { useApp } from "../../hooks/useApp";
 import { State } from "../../models/base";
 
 export function ErrorSavingModal() {
-  const project = useProject();
+  const app = useApp();
   const [show, setShow] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
 
   const clearError = () => {
-    project.setStateAndNotify(State.Loaded);
-    project.selectedImage?.setStateAndNotify(State.Loaded);
+    app.project.setStateAndNotify(State.Loaded);
+    app.project.selectedImage?.setStateAndNotify(State.Loaded);
     setShow(false);
   };
 
   useEffect(() => {
     setShow(
-      project.state === State.ErrorSaving ||
-        project.selectedImage?.state === State.ErrorSaving,
+      app.project.state === State.ErrorSaving ||
+        app.project.selectedImage?.state === State.ErrorSaving,
     );
-  }, [project.isError, project.selectedImage?.isError]);
+  }, [app.project.isError, app.project.selectedImage?.isError]);
 
   return (
     <Modal popup dismissible show={show} onClose={clearError} size="sm">
@@ -42,8 +42,8 @@ export function ErrorSavingModal() {
               onClick={async () => {
                 setIsRetrying(true);
                 const success =
-                  (await project?.selectedImage?.saveTags()) &&
-                  (await project?.save());
+                  (await app.project?.selectedImage?.saveTags()) &&
+                  (await app.project?.save());
                 if (success) {
                   setShow(false);
                 }

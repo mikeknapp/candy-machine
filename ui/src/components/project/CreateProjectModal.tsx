@@ -15,7 +15,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { GoAlertFill } from "react-icons/go";
 import { HiInformationCircle } from "react-icons/hi2";
 import { useAppState } from "../../hooks/useApp";
-import { useProject } from "../../hooks/useProject";
 import { useShortcut } from "../../hooks/useShortcut";
 import { NewProjectRequest } from "../../models/project";
 
@@ -29,8 +28,7 @@ export function CreateProjectModal() {
     watch,
     formState: { errors },
   } = useForm<NewProjectRequest>();
-  const [appValue, app] = useAppState();
-  const project = useProject();
+  const [appValue, app] = useAppState("showCreateProjectModal");
 
   const importDirPath = watch("importDirPath", "");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -51,7 +49,7 @@ export function CreateProjectModal() {
 
   const onSubmit: SubmitHandler<NewProjectRequest> = async (data) => {
     setIsProcessing(true);
-    const resp = await project.createProject(data);
+    const resp = await app.project.createProject(data);
     if (resp.errors) {
       for (const [field, message] of Object.entries(resp.errors)) {
         setError(field as keyof NewProjectRequest, {
@@ -66,7 +64,7 @@ export function CreateProjectModal() {
 
     // Import the images if a directory path was provided and show a progress bar.
     if (data.importDirPath) {
-      await project.importImages(data, async (jsonStr: string) => {
+      await app.project.importImages(data, async (jsonStr: string) => {
         const data = JSON.parse(jsonStr);
         setTotalImages(data.totalImages ?? 0);
         const pc = Math.max(1, data.percentComplete);
@@ -76,7 +74,7 @@ export function CreateProjectModal() {
 
     // Reload the project from the server to get a fresh copy.
     await app.addProject(data.name);
-    await project.loadProject(data.name);
+    await app.project.loadProject(data.name);
     setImportPercent(-1);
     setIsProcessing(false);
   };

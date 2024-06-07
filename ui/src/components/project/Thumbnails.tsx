@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { API_BASE_URL } from "../../api";
-import { useProjectState } from "../../hooks/useProject";
+import { useAppState } from "../../hooks/useApp";
 import { useShortcut } from "../../hooks/useShortcut";
 import { imgAspectRatio } from "../../models/image";
 import { ProgressPieChart } from "../layout/ProgressPieChart";
@@ -26,14 +26,22 @@ export const scrollToThumbnail = (img: string) => {
 export function Thumbnails() {
   const observer = useRef<IntersectionObserver | null>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
-  const [projectValue, project] = useProjectState();
+  const [appValue, app] = useAppState(
+    "project.name",
+    "project.images",
+    "project.selectedImage.filename",
+  );
+
+  const projectName = appValue.project.name;
+  const images = appValue.project.images;
+  const filename = appValue.project.selectedImage?.filename;
 
   const moveToImage = (mode: "next" | "prev" | "filename", img = "") => {
     if (mode === "next" || mode === "prev") {
-      img = project.navigateImages(mode);
+      img = app.project.navigateImages(mode);
     }
     if (img) {
-      project.setSelectedImage(img);
+      app.project.setSelectedImage(img);
       scrollToThumbnail(img);
     }
   };
@@ -82,7 +90,7 @@ export function Thumbnails() {
         observer.current.disconnect();
       }
     };
-  }, [projectValue]);
+  }, [projectName]);
 
   useEffect(() => {
     // Steal focus away from the project selector so keyboard shortcuts will work immediately.
@@ -91,9 +99,9 @@ export function Thumbnails() {
     focusStealer?.focus();
     setTimeout(() => {
       focusStealer?.blur();
-      scrollToThumbnail(projectValue.selectedImage?.filename);
+      scrollToThumbnail(filename);
     }, 100);
-  }, [projectValue]);
+  }, [projectName]);
 
   return (
     <>
@@ -105,7 +113,7 @@ export function Thumbnails() {
       <div
         className={`flex h-full w-[${CONTAINER_WIDTH}] min-w-[125px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
       >
-        {projectValue.images.map((img, index) => (
+        {images.map((img, index) => (
           <img
             ref={(el) => (imgRefs.current[index] = el)}
             key={img}
@@ -116,8 +124,8 @@ export function Thumbnails() {
               aspectRatio: imgAspectRatio(img),
               borderWidth: `${BORDER_WIDTH}px`,
             }}
-            className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${projectValue.selectedImage?.filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
-            data-src={`${API_BASE_URL}/project/${projectValue.name}/imgs/${img}?thumbnail=true`}
+            className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
+            data-src={`${API_BASE_URL}/project/${projectName}/imgs/${img}?thumbnail=true`}
             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             alt={img}
             onClick={() => moveToImage("filename", img)}
