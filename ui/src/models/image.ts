@@ -37,7 +37,7 @@ export class Image extends SubscribableChild {
     this._autoTags = autoTags;
     this._state = state;
     if (this.isLoading) {
-      setTimeout(() => this.load(), 1000);
+      setTimeout(() => this.load(), 0);
     }
   }
 
