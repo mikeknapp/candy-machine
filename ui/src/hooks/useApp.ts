@@ -14,7 +14,7 @@ export function useAppState<P extends Path<AppData>[]>(
 ): [ExtractProperties<AppData, P>, React.ContextType<typeof AppContext>] {
   const appContext = useContext(AppContext);
 
-  if (selectors.length >= 0) {
+  if (selectors && selectors.length > 0) {
     const [appValue, setAppValue] = useState<AppData>(DEFAULT_APP_DATA);
 
     useSubscribe(

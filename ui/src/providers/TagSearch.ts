@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-export interface UseTagSearch {
-  query: string;
+export interface TagSearchProvider {
+  tagQuery: string;
   hasFocus: boolean;
   updateTagSearch: (
     value: string,
@@ -10,8 +10,8 @@ export interface UseTagSearch {
   ) => void;
 }
 
-export function useTagSearch(): UseTagSearch {
-  const [query, setQuery] = useState("");
+export function TagSearch(): TagSearchProvider {
+  const [tagQuery, setTagQuery] = useState("");
   const [hasFocus, setHasFocus] = useState(false);
   const [willClearQuerySoon, setWillClearQuerySoon] =
     useState<NodeJS.Timeout | null>(null);
@@ -26,14 +26,14 @@ export function useTagSearch(): UseTagSearch {
       setWillClearQuerySoon(null);
     }
     if (hasFocus || exiting) {
-      setQuery(value);
-    } else if (query) {
+      setTagQuery(value);
+    } else if (tagQuery) {
       // The user has left the search box, but we clear the search after a reasonable time.
       // Otherwise it's easy to see only a partial list of tags.
-      setWillClearQuerySoon(setTimeout(() => setQuery(""), 5000));
+      setWillClearQuerySoon(setTimeout(() => setTagQuery(""), 5000));
     }
     setHasFocus(hasFocus);
   };
 
-  return { query, hasFocus, updateTagSearch };
+  return { tagQuery, hasFocus, updateTagSearch };
 }

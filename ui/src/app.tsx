@@ -4,8 +4,8 @@ import React, { createContext, useEffect } from "react";
 import { ErrorBoundary } from "./components/errors/ErrorBoundary";
 import { Editor } from "./components/layout/Editor";
 import { Header } from "./components/layout/Header";
-import { UseTagSearch, useTagSearch } from "./hooks/useTagSearch";
 import { App } from "./models/app";
+import { TagSearch, TagSearchProvider } from "./providers/TagSearch";
 
 const customTheme: CustomFlowbiteTheme = {
   button: {
@@ -18,14 +18,12 @@ const customTheme: CustomFlowbiteTheme = {
 export const appState = App.getInstance();
 export const AppContext = createContext<App>(appState);
 
-export const TagSearchContext = createContext<UseTagSearch>(null);
+export const TagSearchContext = createContext<TagSearchProvider>(null);
 
 export function RootNode() {
   useEffect(() => {
     appState.load();
   }, []);
-
-  const initialTagSearch = useTagSearch();
 
   return (
     <ErrorBoundary
@@ -33,7 +31,7 @@ export function RootNode() {
     >
       <Flowbite theme={{ theme: customTheme }}>
         <AppContext.Provider value={appState}>
-          <TagSearchContext.Provider value={initialTagSearch}>
+          <TagSearchContext.Provider value={TagSearch()}>
             <main className="flex h-screen w-full flex-col overflow-hidden dark:bg-gray-800">
               <Header />
               <Editor />

@@ -15,8 +15,6 @@ export function Editor() {
     "project.isLoading",
   );
 
-  console.log("re-rendering editor", appValue);
-
   if (appValue.isError) {
     return (
       <div className="center-full">

@@ -2,10 +2,17 @@ import _ from "lodash";
 import React, { useContext, useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
 import { TagSearchContext } from "../../app";
-import { useAppState } from "../../hooks/useApp";
 import { findMatchingTags } from "../../models/image";
 import { AddTagPopup } from "./AddTagPopup";
 import { Tag } from "./Tag";
+
+interface TagCategoryProps {
+  isLoading: boolean;
+  allSelectedTags: string[];
+  tagLayout: CategoryData[];
+  category: CategoryData;
+  onToggleTag: (tag: string) => void;
+}
 
 export type CategoryData = {
   title: string;
@@ -20,28 +27,19 @@ const DEFAULT_ADD_TAG_STATE = {
   tagTemplate: "",
 };
 
-export function TagCategory({ category }: { category: CategoryData }) {
-  const [appValue, app] = useAppState(
-    "project.selectedImage.isLoading",
-    "project.selectedImage.tags",
-    "project.tagLayout",
-  );
-  const { query, updateTagSearch } = useContext(TagSearchContext);
-  const [categoryTags, setCategoryTags] = useState(category.tags);
-
-  // State for adding a tag.
+export function TagCategory(props: TagCategoryProps) {
+  const [categoryTags, setCategoryTags] = useState(props.category.tags || []);
   const [addTag, setAddTag] = useState(DEFAULT_ADD_TAG_STATE);
-
-  const selectedImage = appValue.project.selectedImage;
-  const isDisabled = selectedImage?.isLoading;
-  let selectedTags = selectedImage?.tags || [];
+  const { tagQuery, updateTagSearch } = useContext(TagSearchContext);
 
   useEffect(() => {
+    let selectedTags = props.allSelectedTags || [];
+
     // Ensure we have all of the relevant tags for this category, starting with the default layout.
-    let relevantTags = new Set<string>(category.tags);
+    let relevantTags = new Set<string>(props.category.tags);
 
     // Create a new tag for any selected tags that match a broad match tag.
-    category.tags.forEach((tagTemplate) => {
+    props.category.tags.forEach((tagTemplate) => {
       findMatchingTags(tagTemplate, selectedTags).forEach((tag) => {
         relevantTags.add(tag);
       });
@@ -54,17 +52,16 @@ export function TagCategory({ category }: { category: CategoryData }) {
     let results = [...selected, ...unselected];
 
     // Apply any active search filter.
-    if (query) {
+    if (tagQuery) {
       results = results.filter((tag) =>
-        tag.toLowerCase().includes(query.toLowerCase()),
+        tag.toLowerCase().includes(tagQuery.toLowerCase()),
       );
     }
 
     if (!_.isEqual(results, categoryTags)) {
       setCategoryTags(results);
     }
-    setCategoryTags(results);
-  }, [appValue.project.tagLayout, category, query, selectedTags]);
+  }, [props.tagLayout, props.category, tagQuery, props.allSelectedTags]);
 
   if (categoryTags.length === 0) {
     return null;
@@ -72,22 +69,22 @@ export function TagCategory({ category }: { category: CategoryData }) {
 
   return (
     <div
-      key={category.title}
+      key={props.category.title}
       className="mb-4 flex w-full flex-col border-b-[1px] border-b-gray-300 pb-4 dark:border-b-slate-800"
     >
       <h2
         className="mb-3 flex flex-row items-center gap-2 border-l-4 pl-2 text-xs font-bold dark:text-white"
         style={{
-          borderColor: category.color,
+          borderColor: props.category.color,
         }}
       >
-        {category.title.toUpperCase()}
-        {!(category?.hideAddButton ?? false) && !isDisabled && (
+        {props.category.title.toUpperCase()}
+        {!(props.category?.hideAddButton ?? false) && !props.isLoading && (
           <HiPlusCircle
             onClick={() =>
               setAddTag({
                 show: true,
-                category: category.title,
+                category: props.category.title,
                 tagTemplate: "",
               })
             }
@@ -104,17 +101,17 @@ export function TagCategory({ category }: { category: CategoryData }) {
               if (tag.includes("{") && tag.includes("}")) {
                 setAddTag({
                   show: true,
-                  category: category.title,
+                  category: props.category.title,
                   tagTemplate: tag,
                 });
               } else {
-                app.project.selectedImage?.toggleTag(tag);
+                props.onToggleTag(tag);
                 updateTagSearch("", false, true);
               }
             }}
-            color={category.color}
-            isSelected={selectedTags.includes(tag)}
-            isDisabled={isDisabled}
+            color={props.category.color}
+            isSelected={props.allSelectedTags.includes(tag)}
+            isDisabled={props.isLoading}
           />
         ))}
       </div>
