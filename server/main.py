@@ -163,8 +163,32 @@ def edit_image(project_name):
     project = Project(project_name)
     new_filename = project.edit_image(filename, left_rotate, flip, crop)
     if not new_filename:
-        return {"errors": {"edit": "Error editing image"}}, 404
+        return {
+            "errors": {
+                "edit": "Error editing image",
+            }
+        }, 404
     return jsonify({"newFilename": new_filename})
+
+
+@app.route("/project/<string:project_name>/img/duplicate", methods=["POST"])
+def duplicate_image(project_name):
+    data = request.json if request.json else {}
+    filename = str(data.get("filename", "")).strip()
+    project = Project(project_name)
+    new_filename, has_txt_file = project.duplicate_image(filename)
+    if not new_filename:
+        return {
+            "errors": {
+                "duplicate": "Error duplicating image",
+            }
+        }, 404
+    return jsonify(
+        {
+            "newFilename": new_filename,
+            "hasTxtFile": has_txt_file,
+        }
+    )
 
 
 @app.route("/", defaults={"path": ""})

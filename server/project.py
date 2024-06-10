@@ -311,6 +311,36 @@ class Project:
         self.delete_image(fname)
         return new_fname
 
+    def duplicate_image(self, filename) -> Tuple[str, bool]:
+        img_path = self.img_path(filename)
+        if not os.path.exists(img_path):
+            return "", False
+
+        new_filename = choose_image_filename(
+            self._img_dir,
+            Path(filename).stem.rsplit("_", 1)[0],
+            remove_duplicates=False,
+        )
+        img = Image.open(img_path)
+        img.save(self.img_path(new_filename))
+
+        # Copy across the .txt file if it exists.
+        has_txt_file = False
+        txt_path = img_path.with_suffix(".txt")
+        if os.path.exists(txt_path):
+            has_txt_file = True
+            shutil.copy(txt_path, self.img_path(new_filename).with_suffix(".txt"))
+
+        # Copy across the auto tags, if any.
+        auto_txt_path = self.auto_tags_dir().joinpath(Path(filename).stem + ".txt")
+        if os.path.exists(auto_txt_path):
+            shutil.copy(
+                auto_txt_path,
+                self.auto_tags_dir().joinpath(new_filename).with_suffix(".txt"),
+            )
+
+        return new_filename, has_txt_file
+
     def import_images(self, from_path, remove_duplicates=False):
         candidates = {}
         files = valid_images_for_import(from_path)

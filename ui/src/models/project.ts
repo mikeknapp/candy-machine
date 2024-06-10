@@ -146,7 +146,11 @@ export class Project extends SubscribableChild {
 
   public get percentComplete(): number {
     return this._images.length
-      ? Math.round((this._completed.length / this._images.length) * 100)
+      ? Math.round(
+          (Math.min(this._completed.length, this._images.length) /
+            this._images.length) *
+            100,
+        )
       : 0;
   }
 
@@ -339,6 +343,11 @@ export class Project extends SubscribableChild {
     });
     if (!response.success) {
       this._images.splice(index, 0, filename);
+      // Remove from _completed if it was there.
+      const completedIndex = this._completed.indexOf(filename);
+      if (completedIndex !== -1) {
+        this._completed.splice(completedIndex, 1);
+      }
       this._selectedImage = new Image(this, filename, [], [], State.Loading);
       setTimeout(() => {
         alert(`Failed to delete image; check server logs`);
@@ -380,6 +389,37 @@ export class Project extends SubscribableChild {
 
     // Update the selected image.
     await this.setSelectedImage(newFilename);
+    return true;
+  }
+
+  public async duplicateImage(filename: string) {
+    const response = await apiRequest<{
+      newFilename: string;
+      hasTxtFile: boolean;
+    }>(`/project/${this._name}/img/duplicate`, {
+      body: JSON.stringify({
+        filename: filename,
+      }),
+    });
+
+    if (!response.success || !response.data || !response.data.newFilename) {
+      alert(`Failed to duplicate image; check server logs`);
+      return false;
+    }
+
+    // Add the new image to the list immediately after the source image.
+    const index = this._images.indexOf(filename);
+    if (index !== -1) {
+      this._images.splice(index + 1, 0, response.data.newFilename);
+    }
+
+    // Add to completed if response.hasTxtFile is true.
+    if (response.data.hasTxtFile) {
+      this._completed.push(response.data.newFilename);
+    }
+
+    // Update the selected image.
+    await this.setSelectedImage(response.data.newFilename);
     return true;
   }
 

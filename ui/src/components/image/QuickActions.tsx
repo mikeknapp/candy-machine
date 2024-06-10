@@ -4,6 +4,7 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaCropSimple,
+  FaRegCopy,
   FaRegTrashCan,
 } from "react-icons/fa6";
 import { AppContext } from "../../app";
@@ -22,6 +23,7 @@ export const QuickActions = memo((props: QuickActionsProps) => {
   const hasSelectedImage = Boolean(props.filename);
 
   const [showEditImageModal, setShowEditImageModal] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [showDeleteImageModal, setShowDeleteImageModal] = useState(false);
 
   const navigate = (direction: "next" | "prev") => {
@@ -32,11 +34,27 @@ export const QuickActions = memo((props: QuickActionsProps) => {
     }
   };
 
+  const duplicateImage = async () => {
+    if (!hasSelectedImage || isDuplicating) {
+      return;
+    }
+    setIsDuplicating(true);
+    await app.project.duplicateImage(props.filename);
+    setIsDuplicating(false);
+  };
+
   useShortcut({
     description: "Edit Image (Crop, Rotate etc)",
     keys: "e",
     onKeyDown: () => hasSelectedImage && setShowEditImageModal(true),
     deps: [hasSelectedImage],
+  });
+
+  useShortcut({
+    description: "Duplicate Image",
+    keys: "v",
+    onKeyDown: () => duplicateImage(),
+    deps: [hasSelectedImage, isDuplicating],
   });
 
   useShortcut({
@@ -70,8 +88,20 @@ export const QuickActions = memo((props: QuickActionsProps) => {
             color="light"
             onClick={() => hasSelectedImage && setShowEditImageModal(true)}
             className="rounded-none border-r-0"
+            disabled={!hasSelectedImage || isDuplicating}
           >
             <FaCropSimple />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Duplicate Image [v]">
+          <Button
+            size="xl"
+            color="light"
+            onClick={() => duplicateImage()}
+            className="rounded-none border-r-0"
+            disabled={!hasSelectedImage || isDuplicating}
+          >
+            <FaRegCopy />
           </Button>
         </Tooltip>
         <Tooltip content="Delete Image [d]">
@@ -80,6 +110,7 @@ export const QuickActions = memo((props: QuickActionsProps) => {
             color="light"
             onClick={() => hasSelectedImage && setShowDeleteImageModal(true)}
             className="rounded-none border-r-0"
+            disabled={!hasSelectedImage || isDuplicating}
           >
             <FaRegTrashCan />
           </Button>
