@@ -31,9 +31,7 @@ export function RootNode() {
   }, []);
 
   return (
-    <ErrorBoundary
-      fallback={<div>Oops! Something went wrong. Check the console.</div>}
-    >
+    <ErrorBoundary>
       <Flowbite theme={{ theme: customTheme }}>
         <AppContext.Provider value={appState}>
           <TagSearchContext.Provider value={TagSearch()}>

@@ -1,12 +1,14 @@
 import React from "react";
+import { ErrorPage } from "./ErrorPage";
 
 export interface ErrorBoundaryProps {
   children: React.ReactNode;
-  fallback: React.ReactNode;
 }
 
 interface ErrorBoundaryState {
   hasError: boolean;
+  error: string | null;
+  errorInfo: React.ErrorInfo | null;
 }
 
 export class ErrorBoundary extends React.Component<
@@ -15,7 +17,11 @@ export class ErrorBoundary extends React.Component<
 > {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    };
   }
 
   static getDerivedStateFromError(error: unknown) {
@@ -24,6 +30,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
+    this.setState({ error: `${error}`, errorInfo });
     console.log(
       "Uncaught error at ErrorBoundary: ",
       error,
@@ -34,7 +41,9 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
-      return this.props.fallback;
+      return (
+        <ErrorPage error={this.state.error ?? ""} info={this.state.errorInfo} />
+      );
     }
 
     return this.props.children;
