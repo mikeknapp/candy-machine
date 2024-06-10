@@ -27,11 +27,16 @@ export function AddTagPopup(props: AddTagPopupProps) {
       const match = props.tagTemplate.match(/({[^}]+})/);
       if (match) {
         setTimeout(() => {
+          if (!ref.current) {
+            return;
+          }
           ref.current.focus();
-          ref.current.setSelectionRange(
-            match.index,
-            match.index + match[1].length,
-          );
+          if (match.index) {
+            ref.current.setSelectionRange(
+              match.index,
+              match.index + match[1].length,
+            );
+          }
         }, 50);
       }
     } else {

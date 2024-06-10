@@ -20,8 +20,8 @@ export interface SelectedImage extends SubscribableType {
 export class Image extends SubscribableChild {
   private _filename: string;
   private _tags: string[] = [];
-  private _txtFileCache: string = null;
-  private _uncategorizedCache: string[] = null;
+  private _txtFileCache: string | null = null;
+  private _uncategorizedCache: string[] | null = null;
   private _autoTags: string[] = [];
 
   constructor(
@@ -142,7 +142,7 @@ export class Image extends SubscribableChild {
     }>(`/project/${this.project.name}/tags/load?image=${this._filename}`, {
       method: "GET",
     });
-    if (!response.success) {
+    if (!response.success || !response.data) {
       this._state = State.ErrorLoading;
       console.error("Failed to load image:", response.errors);
     } else {

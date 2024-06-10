@@ -5,7 +5,11 @@ import { ErrorBoundary } from "./components/errors/ErrorBoundary";
 import { Editor } from "./components/layout/Editor";
 import { Header } from "./components/layout/Header";
 import { App } from "./models/app";
-import { TagSearch, TagSearchProvider } from "./providers/TagSearch";
+import {
+  DEFAULT_TAG_SEARCH,
+  TagSearch,
+  TagSearchProvider,
+} from "./providers/TagSearch";
 
 const customTheme: CustomFlowbiteTheme = {
   button: {
@@ -18,7 +22,8 @@ const customTheme: CustomFlowbiteTheme = {
 export const appState = App.getInstance();
 export const AppContext = createContext<App>(appState);
 
-export const TagSearchContext = createContext<TagSearchProvider>(null);
+export const TagSearchContext =
+  createContext<TagSearchProvider>(DEFAULT_TAG_SEARCH);
 
 export function RootNode() {
   useEffect(() => {

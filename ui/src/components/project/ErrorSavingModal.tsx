@@ -1,11 +1,15 @@
 import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
-import { useApp } from "../../hooks/useApp";
+import { useAppState } from "../../hooks/useApp";
 import { State } from "../../models/base";
 
 export function ErrorSavingModal() {
-  const app = useApp();
+  const [appValue, app] = useAppState(
+    "project.selectedImage.isError",
+    "project.isError",
+  );
+
   const [show, setShow] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -16,11 +20,10 @@ export function ErrorSavingModal() {
   };
 
   useEffect(() => {
-    setShow(
-      app.project.state === State.ErrorSaving ||
-        app.project.selectedImage?.state === State.ErrorSaving,
-    );
-  }, [app.project.isError, app.project.selectedImage?.isError]);
+    const imageError = app.project.selectedImage?.state === State.ErrorSaving;
+    const projectError = app.project.state === State.ErrorSaving;
+    setShow(projectError || imageError);
+  }, [appValue.project.isError, appValue.project.selectedImage?.isError]);
 
   return (
     <Modal popup dismissible show={show} onClose={clearError} size="sm">

@@ -26,7 +26,7 @@ export function Editor() {
     );
   }
 
-  if (appValue.isLoading || appValue.project.isLoading) {
+  if (appValue.project.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" color="gray" />

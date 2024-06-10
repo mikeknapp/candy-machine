@@ -1,16 +1,18 @@
 export type Path<T> = T extends object
-  ? {
-      [K in keyof T]: K extends string
-        ? T[K] extends Array<infer U>
-          ? `${K}` | `${K}[${number}]` | `${K}[${number}].${Path<U>}`
-          : T[K] extends Map<infer KeyType, infer ValueType>
-            ?
-                | `${K}`
-                | `${K}.${string & KeyType}`
-                | `${K}.${string & KeyType}.${Path<ValueType>}`
-            : `${K}` | `${K}.${Path<T[K]>}`
-        : never;
-    }[keyof T]
+  ?
+      | {
+          [K in keyof T]: K extends string
+            ? T[K] extends Array<infer U>
+              ? `${K}` | `${K}[${number}]` | `${K}[${number}].${Path<U>}`
+              : T[K] extends Map<infer KeyType, infer ValueType>
+                ?
+                    | `${K}`
+                    | `${K}.${string & KeyType}`
+                    | `${K}.${string & KeyType}.${Path<ValueType>}`
+                : `${K}` | `${K}.${Path<T[K]>}`
+            : never;
+        }[keyof T]
+      | "*"
   : never;
 
 export type ExtractProperty<T, P extends string> = P extends keyof T
@@ -37,6 +39,7 @@ type MergeObject<T> = T extends any[]
       [K in keyof T]: T[K] extends object ? MergeObject<T[K]> : T[K];
     };
 
+// TODO: Deal with "*".
 export type ExtractProperties<T, P extends string[]> = P extends [
   infer Head,
   ...infer Tail,
@@ -49,6 +52,7 @@ export type ExtractProperties<T, P extends string[]> = P extends [
   : {};
 
 // TODO: Add tests.
+// TODO: Deal with "*".
 export function getNestedValue<T>(obj: T, path: string): any {
   const keys = path.split(".") as (keyof T)[];
   let value: any = obj;

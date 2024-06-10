@@ -46,10 +46,10 @@ enum AspectRatio {
   CUSTOM = "Custom",
 }
 
-function getAspectRatioValue(aspect: AspectRatio): number | undefined {
+function getAspectRatioValue(aspect: AspectRatio): number {
   switch (aspect) {
     case AspectRatio.CUSTOM:
-      return undefined;
+      return -1;
     case AspectRatio.SQUARE:
       return 1;
     case AspectRatio.FOUR_THREE:
@@ -259,7 +259,11 @@ export function EditImageModal(props: CropImageModalProps) {
                 minHeight={100}
                 minWidth={100}
                 keepSelection
-                aspect={getAspectRatioValue(aspect)}
+                aspect={
+                  getAspectRatioValue(aspect) === -1
+                    ? undefined
+                    : getAspectRatioValue(aspect)
+                }
                 className={`flex ${isRotating ? "hidden" : ""}`}
               >
                 <img

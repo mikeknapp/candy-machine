@@ -10,6 +10,12 @@ export interface TagSearchProvider {
   ) => void;
 }
 
+export const DEFAULT_TAG_SEARCH = {
+  tagQuery: "",
+  hasFocus: false,
+  updateTagSearch: () => {},
+};
+
 export function TagSearch(): TagSearchProvider {
   const [tagQuery, setTagQuery] = useState("");
   const [hasFocus, setHasFocus] = useState(false);

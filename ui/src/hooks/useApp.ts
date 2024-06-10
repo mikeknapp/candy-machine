@@ -1,42 +1,35 @@
 import { useContext, useState } from "react";
 import { AppContext } from "../app";
 import { AppData, DEFAULT_APP_DATA } from "../models/app";
-import {
-  ExtractProperties,
-  Path,
-  getNestedValue,
-  setNestedValue,
-} from "./types";
-import { useSubscribe } from "./useSubscribe";
+import { extractFromSelectors } from "../models/base";
+import { ExtractProperties, Path } from "./types";
+import { useSubscribeApp } from "./useSubscribeApp";
 
 export function useAppState<P extends Path<AppData>[]>(
   ...selectors: P
 ): [ExtractProperties<AppData, P>, React.ContextType<typeof AppContext>] {
   const appContext = useContext(AppContext);
 
-  if (selectors && selectors.length > 0) {
-    const [appValue, setAppValue] = useState<AppData>(DEFAULT_APP_DATA);
+  const [appValue, setAppValue] = useState<ExtractProperties<AppData, P>>(
+    extractFromSelectors(selectors, DEFAULT_APP_DATA) as ExtractProperties<
+      AppData,
+      P
+    >,
+  );
 
-    useSubscribe(
-      AppContext,
-      (newValue: AppData) => {
-        setAppValue(newValue);
-      },
-      selectors,
-    );
-
-    const selectedValues = selectors.reduce(
-      (acc, selector) => {
-        setNestedValue(acc, selector, getNestedValue(appValue, selector));
-        return acc;
-      },
-      {} as ExtractProperties<AppData, P>,
-    );
-
-    return [selectedValues, appContext];
+  if (!selectors || selectors.length === 0) {
+    throw new Error("At least one selector is required");
   }
 
-  return [null, appContext];
+  useSubscribeApp(
+    AppContext,
+    (newValue: ExtractProperties<AppData, P>) => {
+      setAppValue(newValue);
+    },
+    selectors,
+  );
+
+  return [appValue, appContext];
 }
 
 export function useAppValue<P extends Path<AppData>[]>(...selectors: P) {
@@ -44,5 +37,5 @@ export function useAppValue<P extends Path<AppData>[]>(...selectors: P) {
 }
 
 export function useApp() {
-  return useAppState()[1];
+  return useContext(AppContext);
 }

@@ -8,9 +8,11 @@
     "declaration": true,
     "noImplicitAny": true,
     "module": "commonjs",
-    "target": "es5",
+    "target": "es2020",
     "allowJs": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "strict": true
   },
   "include": ["src/**/*.ts*"],
   "exclude": ["node_modules", "dist", "lib"]

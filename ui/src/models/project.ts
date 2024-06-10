@@ -23,7 +23,7 @@ export const DEFAULT_PROJECT_DATA: ProjectData = {
   triggerWord: "",
   triggerSynonyms: [],
   images: [],
-  selectedImage: null,
+  selectedImage: {} as SelectedImage,
   tagLayout: [],
   autoTags: [],
   requiresSetup: false,
@@ -47,7 +47,7 @@ export class Project extends SubscribableChild {
   private _triggerWord: string = "";
   private _triggerSynonyms: string[] = [];
   private _images: string[] = [];
-  private _selectedImage: Image = null;
+  private _selectedImage: Image | null = null;
   private _autoTags: AutoTag[] = [];
   private _tagLayout: CategoryData[] = [];
   private _requiresSetup: boolean = false;
@@ -72,7 +72,7 @@ export class Project extends SubscribableChild {
       triggerWord: this.triggerWord,
       triggerSynonyms: this.triggerSynonyms,
       images: this.images,
-      selectedImage: this.selectedImage?.readOnly ?? null,
+      selectedImage: this.selectedImage?.readOnly ?? ({} as SelectedImage),
       tagLayout: this.tagLayout,
       autoTags: this.autoTags,
       requiresSetup: this.requiresSetup,
@@ -120,7 +120,7 @@ export class Project extends SubscribableChild {
     return this._images;
   }
 
-  public get selectedImage(): Image {
+  public get selectedImage(): Image | null {
     return this._selectedImage;
   }
 
@@ -137,7 +137,7 @@ export class Project extends SubscribableChild {
 
   public allLayoutTags(includeTrigger = true): string[] {
     let allTags = this.tagLayout.reduce(
-      (prev, cat) => [...prev, ...cat.tags],
+      (prev: string[], cat) => [...prev, ...cat.tags],
       [],
     );
     if (includeTrigger && this.triggerWord) {
@@ -252,11 +252,13 @@ export class Project extends SubscribableChild {
     );
   }
 
-  public navigateImages(direction: "next" | "prev"): string {
+  public navigateImages(direction: "next" | "prev"): string | null {
     // Returns the name of the next or previous image in the list. However, it does not set the selected image!
-    const currentIndex = this._images.indexOf(this._selectedImage?.filename);
+    const currentIndex = this._images.indexOf(
+      this._selectedImage?.filename || "",
+    );
     if (currentIndex === -1) {
-      return;
+      return null;
     }
     switch (direction) {
       case "next":
@@ -272,6 +274,7 @@ export class Project extends SubscribableChild {
         }
         break;
     }
+    return null;
   }
 
   public async deleteImage(filename: string): Promise<boolean> {
@@ -329,7 +332,7 @@ export class Project extends SubscribableChild {
       },
     );
 
-    if (!response.success) {
+    if (!response.success || !response.data) {
       alert(`Failed to edit image; check server logs`);
       return false;
     }

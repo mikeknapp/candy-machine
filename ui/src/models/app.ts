@@ -26,7 +26,7 @@ export const DEFAULT_APP_DATA: AppData = {
   disableKeyboardShortcuts: false,
 };
 
-export class App extends Subscribable<AppData> {
+export class App extends Subscribable<SubscribableType> {
   private _project: Project;
   private _projects: string[] = [];
   private _showCreateProjectModal = false;

@@ -49,7 +49,7 @@ export function TagMenu() {
               size="xl"
               color="light"
               className="border-r-none rounded-r-none"
-              disabled={!imgTagsLoaded || !img?.autoTags.length}
+              disabled={!imgTagsLoaded || !img?.autoTags?.length}
               onClick={applyAutoTags}
             >
               <FaWandMagicSparkles />
@@ -60,7 +60,7 @@ export function TagMenu() {
               size="xl"
               color="light"
               className="border-r-none rounded-none"
-              disabled={!imgTagsLoaded || !img?.tags.length}
+              disabled={!imgTagsLoaded || !img?.tags?.length}
               onClick={() => setShowClearTagsModal(true)}
             >
               <FaTimes />

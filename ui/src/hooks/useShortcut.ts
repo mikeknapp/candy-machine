@@ -46,16 +46,15 @@ export function useShortcut(
     };
     window.addEventListener("keydown", onKeyDownCallback);
 
-    const onKeyUpCallback = (event: KeyboardEvent) => {
-      if (args.onKeyUp) {
-        args.onKeyUp(event);
-      }
-    };
+    const onKeyUpCallback = (event: KeyboardEvent) =>
+      args.onKeyUp && args.onKeyUp(event);
     window.addEventListener("keyup", onKeyUpCallback);
 
     return () => {
       window.removeEventListener("keydown", onKeyDownCallback);
-      window.removeEventListener("keyup", args.onKeyUp);
+      if (args.onKeyUp) {
+        window.removeEventListener("keyup", onKeyUpCallback);
+      }
     };
   }, [appContext.disableKeyboardShortcuts, searchHasFocus, ...args.deps]);
 }

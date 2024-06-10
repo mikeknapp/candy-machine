@@ -1,13 +1,13 @@
 import { Button, DarkThemeToggle, Tooltip } from "flowbite-react";
 import React from "react";
 import { HiFolderPlus } from "react-icons/hi2";
-import { useApp } from "../../hooks/useApp";
+import { useAppState } from "../../hooks/useApp";
 import { CreateProjectModal } from "../project/CreateProjectModal";
 import { ProjectSelector } from "../project/ProjectSelector";
 import { ShortcutsModal } from "./ShortcutsModal";
 
 export function Header() {
-  const app = useApp();
+  const [appValue, app] = useAppState("isLoading", "isError");
 
   return (
     <div className="flex h-[80px] w-full flex-row items-center justify-between bg-accent p-3 dark:bg-slate-950">
@@ -21,7 +21,7 @@ export function Header() {
       <div className="flex h-full flex-row items-center gap-2">
         <ProjectSelector />
 
-        {!app.isLoading && !app.isError && (
+        {!appValue.isLoading && !appValue.isError && (
           <Tooltip content="New Project">
             <Button
               size="lg"
