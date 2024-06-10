@@ -15,7 +15,7 @@ from consts import (
     PROJECT_CONFIG_FILE,
     PROJECTS_DIR,
 )
-from image import Crop, choose_image_filename, valid_images_for_import
+from image import Crop, choose_image_filename, get_image_i, valid_images_for_import
 from PIL import Image
 from tags import common_suffixes
 from thirdparty.tagger.run import interrogate_directory
@@ -57,13 +57,13 @@ class Project:
         projects_dir = projects_dir if projects_dir else PROJECTS_DIR
 
         # Our base project directory.
-        self._base_dir = os.path.join(projects_dir, name)
+        self._base_dir = Path(os.path.join(projects_dir, name))
 
         # The images subdirectory.
-        self._img_dir = os.path.join(self._base_dir, IMGS_DIR)
+        self._img_dir = Path(os.path.join(self._base_dir, IMGS_DIR))
 
         # The auto tags subdirectory.
-        self._auto_tags_dir = os.path.join(self._base_dir, AUTO_TAGS)
+        self._auto_tags_dir = Path(os.path.join(self._base_dir, AUTO_TAGS))
 
         self._load()
 
@@ -86,17 +86,17 @@ class Project:
         os.makedirs(self._img_dir, exist_ok=True)
         os.makedirs(self._auto_tags_dir, exist_ok=True)
 
-    def base_dir(self) -> str:
+    def base_dir(self) -> Path:
         return self._base_dir
 
-    def img_dir(self) -> str:
+    def img_dir(self) -> Path:
         return self._img_dir
 
-    def auto_tags_dir(self) -> str:
+    def auto_tags_dir(self) -> Path:
         return self._auto_tags_dir
 
-    def img_path(self, fname: str) -> str:
-        return os.path.join(self._img_dir, fname)
+    def img_path(self, fname: str) -> Path:
+        return Path(os.path.join(self._img_dir, fname))
 
     def selected_image_path(self) -> Path:
         return Path(self.img_path(self.selected_image))
@@ -105,8 +105,8 @@ class Project:
         return self.selected_image_path().with_suffix(".txt")
 
     def selected_image_auto_txt_path(self) -> Path:
-        return Path(self.auto_tags_dir()).joinpath(
-            Path(self.selected_image).stem + ".txt"
+        return self.auto_tags_dir().joinpath(
+            Path(self.selected_image).with_suffix(".txt")
         )
 
     def set_selected_image(self, image_name: str):
@@ -265,9 +265,10 @@ class Project:
         Rotates, flips and crops an image and saves the result.
         Deletes the old file and returns the new filename.
         """
-        img_path = self.img_path(fname)
+        old_img_path = self.img_path(fname)
         old_image_hash = fname.split("_")[0]
-        img = Image.open(img_path)
+        old_i = get_image_i(fname)
+        img = Image.open(old_img_path)
 
         # Perform the edits.
         if left_rotate:
@@ -280,22 +281,32 @@ class Project:
             img = img.crop((crop.x, crop.y, crop.x + crop.width, crop.y + crop.height))
 
         # Choose a new filename. Keep the old image hash because it's still the same image (!) and
-        # we want to keep a consistent order in the thumbnails side panel.
+        # we want to keep a consistent order in the thumbnails side panel (even if the image is now
+        # quite different.)
         new_fname_prefix = f"{old_image_hash}_{img.width}x{img.height}"
         new_fname = choose_image_filename(
             self._img_dir,
             new_fname_prefix,
             remove_duplicates=False,
+            i=old_i + 1,
         )
 
         # Save new image and delete the old one.
-        img.save(self.img_path(new_fname))
+        new_img_path = self.img_path(new_fname)
+        img.save(new_img_path)
 
         # Copy over any .txt file associated with the image.
-        old_txt_path = img_path[: -len(IMG_EXT)] + "txt"
+        old_txt_path = old_img_path.with_suffix(".txt")
         if os.path.exists(old_txt_path):
-            new_txt_path = self.img_path(new_fname[: -len(IMG_EXT)] + "txt")
-            shutil.move(old_txt_path, new_txt_path)
+            shutil.move(old_txt_path, new_img_path.with_suffix(".txt"))
+
+        # Move any auto tags file.
+        old_auto_txt_path = self.auto_tags_dir().joinpath(old_img_path.stem + ".txt")
+        if os.path.exists(old_auto_txt_path):
+            new_auto_txt_path = self.auto_tags_dir().joinpath(
+                new_img_path.stem + ".txt"
+            )
+            shutil.move(old_auto_txt_path, new_auto_txt_path)
 
         self.delete_image(fname)
         return new_fname

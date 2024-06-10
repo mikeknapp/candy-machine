@@ -95,7 +95,7 @@ export function Thumbnails() {
         observer.current.disconnect();
       }
     };
-  }, [projectName]);
+  }, [projectName, images]);
 
   useEffect(() => {
     // Steal focus away from the project selector so keyboard shortcuts will work immediately.

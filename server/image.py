@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from consts import IMG_EXT, SUPPORTED_IMG_EXTS
 
@@ -39,7 +40,7 @@ def valid_import_directory(from_path: str) -> bool:
 
 
 def choose_image_filename(
-    img_dir_path: str, file_prefix: str, i=0, remove_duplicates=True
+    img_dir_path: Path, file_prefix: str, i=0, remove_duplicates=True
 ) -> str:
     def make_fname(file_prefix, i):
         return f"{file_prefix}_{i}.{IMG_EXT}"
@@ -53,3 +54,12 @@ def choose_image_filename(
         fname = make_fname(file_prefix, i)
 
     return fname
+
+
+def get_image_i(filename: str) -> int:
+    # Extract i from
+    # {hash}_{w}x{h}_{i}.{ext}
+    try:
+        return int(Path(filename).stem.split("_")[-1])
+    except ValueError:
+        return 0
