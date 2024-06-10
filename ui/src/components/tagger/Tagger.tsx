@@ -45,7 +45,6 @@ export function Tagger() {
           <TagCategory
             key={category.title}
             isLoading={appValue.project.selectedImage.isLoading}
-            tagLayout={appValue.project.tagLayout}
             allSelectedTags={appValue.project.selectedImage.tags}
             onToggleTag={onToggleTag}
             category={category}
@@ -55,13 +54,12 @@ export function Tagger() {
           <TagCategory
             key="non-standard"
             isLoading={appValue.project.selectedImage.isLoading}
-            tagLayout={appValue.project.tagLayout}
             allSelectedTags={appValue.project.selectedImage.tags}
             onToggleTag={onToggleTag}
             category={{
               title: "Uncategorized",
               tags: appValue.project.selectedImage?.uncategorizedTags,
-              color: "#ccc",
+              color: "#000",
               hideAddButton: true,
             }}
           />

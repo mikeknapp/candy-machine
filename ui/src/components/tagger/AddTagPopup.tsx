@@ -1,6 +1,8 @@
 import { Modal, ModalBody, TextInput } from "flowbite-react";
 import React, { useEffect, useRef, useState } from "react";
-import { useApp } from "../../hooks/useApp";
+import { useAppState } from "../../hooks/useApp";
+import { cleanTag } from "../../models/utils";
+import { Tag } from "./Tag";
 
 export interface AddTagPopupProps {
   show: boolean;
@@ -12,7 +14,10 @@ export interface AddTagPopupProps {
 export function AddTagPopup(props: AddTagPopupProps) {
   const ref = useRef<HTMLInputElement>(null);
 
-  const app = useApp();
+  const [appValue, app] = useAppState(
+    "project.triggerSynonyms",
+    "project.autoTags",
+  );
   const [value, setValue] = useState(props.tagTemplate);
 
   const closeAndCleanup = () => {
@@ -45,11 +50,25 @@ export function AddTagPopup(props: AddTagPopupProps) {
     }
   }, [props.show, props.tagTemplate, ref.current]);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    app.project.addTagToSelectedImage(props.category, value);
+  const maybeAddTag = (tag: string) => {
+    if (appValue.project.triggerSynonyms.includes(tag)) {
+      return;
+    }
+    app.project.addTagToSelectedImage(props.category, tag);
     closeAndCleanup();
   };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    maybeAddTag(value);
+  };
+
+  const relevantAutoTag = appValue.project.autoTags.find(
+    (autoTag) =>
+      autoTag.tag.includes("{") &&
+      autoTag.tag.includes("}") &&
+      autoTag.tag == value,
+  );
 
   return (
     <Modal popup dismissible show={props.show} onClose={closeAndCleanup}>
@@ -60,9 +79,21 @@ export function AddTagPopup(props: AddTagPopupProps) {
             sizing="lg"
             className="font-mono text-4xl"
             onChange={(e) => setValue(e.target.value)}
-            value={value}
+            value={cleanTag(value, false)}
           />
         </form>
+        {relevantAutoTag && (
+          <div className="flex max-h-[300px] w-full flex-row flex-wrap justify-center gap-2 p-3">
+            {relevantAutoTag.examples.sort().map((example, i) => (
+              <Tag
+                key={`quick-add-${i}`}
+                text={example}
+                onClick={() => maybeAddTag(cleanTag(example))}
+                isDisabled={false}
+              />
+            ))}
+          </div>
+        )}
       </ModalBody>
     </Modal>
   );

@@ -131,6 +131,9 @@ class Project:
             self.project_layout = self._default_tag_categories()
             self.auto_tags = self._get_filtered_auto_tags(self.project_layout)
             self.requires_setup = len(self.auto_tags) > 0
+        else:
+            # Don't filter, because we want all examples now the project is setup.
+            self.auto_tags = self._get_filtered_auto_tags([])
 
     def _load_config(self):
         file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
@@ -380,7 +383,9 @@ class Project:
                 tags = [tag.strip() for tag in file_contents.split(",")]
         return tags
 
-    def _get_filtered_auto_tags(self, project_layout) -> list[TagInfo]:
+    def _get_filtered_auto_tags(
+        self, project_layout: list[TagCategory]
+    ) -> list[TagInfo]:
         results = []
         auto_tag_candidates = [
             tag_info.to_dict() for tag_info in self._analyze_auto_tags()

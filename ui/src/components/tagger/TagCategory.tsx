@@ -9,7 +9,6 @@ import { Tag } from "./Tag";
 interface TagCategoryProps {
   isLoading: boolean;
   allSelectedTags: string[];
-  tagLayout: CategoryData[];
   category: CategoryData;
   onToggleTag: (tag: string) => void;
 }
@@ -61,7 +60,7 @@ export function TagCategory(props: TagCategoryProps) {
     if (!_.isEqual(results, categoryTags)) {
       setCategoryTags(results);
     }
-  }, [props.tagLayout, props.category, tagQuery, props.allSelectedTags]);
+  }, [props.category, tagQuery, props.allSelectedTags]);
 
   if (categoryTags.length === 0) {
     return null;

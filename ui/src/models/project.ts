@@ -3,6 +3,7 @@ import { ApiResponse, apiRequest, eventRequest } from "../api";
 import { CategoryData } from "../components/tagger/TagCategory";
 import { State, SubscribableChild, SubscribableType } from "./base";
 import { Image, SelectedImage } from "./image";
+import { cleanTag, removeSynoymsFromLayout } from "./utils";
 
 export interface ProjectData extends SubscribableType {
   name: string;
@@ -147,7 +148,7 @@ export class Project extends SubscribableChild {
   }
 
   public addTagToSelectedImage(category: string, tag: string) {
-    tag = tag.trim();
+    tag = cleanTag(tag);
     if (!this.selectedImage || !category || !tag) {
       return;
     }
@@ -223,7 +224,10 @@ export class Project extends SubscribableChild {
       this._triggerSynonyms = response.data.triggerSynonyms;
       this._images = response.data.images;
       this._autoTags = response.data.autoTags;
-      this._tagLayout = response.data.tagLayout;
+      this._tagLayout = removeSynoymsFromLayout(
+        this.triggerSynonyms,
+        response.data.tagLayout,
+      );
       this._requiresSetup = response.data.requiresSetup;
       if (response.data.selectedImage) {
         this._selectedImage = new Image(
