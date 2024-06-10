@@ -55,6 +55,18 @@ export function TagCategory(props: TagCategoryProps) {
       results = results.filter((tag) =>
         tag.toLowerCase().includes(tagQuery.toLowerCase()),
       );
+    } else {
+      // Remove any tags matching a broad match in the category (if not currently selected).
+      for (const t of results) {
+        if (t.includes("{") && t.includes("}")) {
+          const matching = findMatchingTags(t, results);
+          if (matching.length > 1) {
+            results = results.filter(
+              (tag) => !matching.includes(tag) || selectedTags.includes(tag),
+            );
+          }
+        }
+      }
     }
 
     if (!_.isEqual(results, categoryTags)) {

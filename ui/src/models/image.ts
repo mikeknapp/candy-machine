@@ -288,7 +288,7 @@ export const findMatchingTags = (tagTemplate: string, candidates: string[]) => {
   if (broadMatch) {
     const suffix = broadMatch[2];
     candidates.forEach((tag) => {
-      if (tag.endsWith(suffix)) {
+      if (tag.endsWith(suffix) && !tag.includes("{") && !tag.includes("}")) {
         results.push(tag);
       }
     });
