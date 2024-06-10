@@ -10,6 +10,8 @@ export interface ProjectData extends SubscribableType {
   triggerWord: string;
   triggerSynonyms: string[];
   images: string[];
+  completed: string[];
+  percentComplete: number;
   selectedImage: SelectedImage;
   autoTags: AutoTag[];
   tagLayout: CategoryData[];
@@ -24,6 +26,8 @@ export const DEFAULT_PROJECT_DATA: ProjectData = {
   triggerWord: "",
   triggerSynonyms: [],
   images: [],
+  completed: [],
+  percentComplete: 0,
   selectedImage: {} as SelectedImage,
   tagLayout: [],
   autoTags: [],
@@ -48,6 +52,7 @@ export class Project extends SubscribableChild {
   private _triggerWord: string = "";
   private _triggerSynonyms: string[] = [];
   private _images: string[] = [];
+  private _completed: string[] = [];
   private _selectedImage: Image | null = null;
   private _autoTags: AutoTag[] = [];
   private _tagLayout: CategoryData[] = [];
@@ -58,6 +63,7 @@ export class Project extends SubscribableChild {
     this._name = newName;
     this._triggerWord = "";
     this._images = [];
+    this._completed = [];
     this._selectedImage = null;
     this._autoTags = [];
     this._tagLayout = [];
@@ -73,6 +79,8 @@ export class Project extends SubscribableChild {
       triggerWord: this.triggerWord,
       triggerSynonyms: this.triggerSynonyms,
       images: this.images,
+      completed: this.completed,
+      percentComplete: this.percentComplete,
       selectedImage: this.selectedImage?.readOnly ?? ({} as SelectedImage),
       tagLayout: this.tagLayout,
       autoTags: this.autoTags,
@@ -119,6 +127,27 @@ export class Project extends SubscribableChild {
 
   public get images(): string[] {
     return this._images;
+  }
+
+  public get completed(): string[] {
+    return this._completed;
+  }
+
+  public markImageAsComplete(filename: string, isComplete: boolean) {
+    const index = this._completed.indexOf(filename);
+    if (isComplete && index === -1) {
+      this._completed.push(filename);
+    } else if (!isComplete && index !== -1) {
+      this._completed.splice(index, 1);
+    }
+    this.notifyListeners();
+    // No need to save. It's calculated automatically on the server.
+  }
+
+  public get percentComplete(): number {
+    return this._images.length
+      ? Math.round((this._completed.length / this._images.length) * 100)
+      : 0;
   }
 
   public get selectedImage(): Image | null {
@@ -223,6 +252,7 @@ export class Project extends SubscribableChild {
       this._triggerWord = response.data.triggerWord;
       this._triggerSynonyms = response.data.triggerSynonyms;
       this._images = response.data.images;
+      this._completed = response.data.completed;
       this._autoTags = response.data.autoTags;
       this._tagLayout = removeSynoymsFromLayout(
         this.triggerSynonyms,

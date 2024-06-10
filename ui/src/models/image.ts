@@ -84,9 +84,8 @@ export class Image extends SubscribableChild {
   }
 
   public setTags(newTags: string[]) {
-    // Remove any empty tags.
-    newTags = newTags.filter((tag) => tag.trim().length > 0);
-    this._tags = newTags;
+    this._tags = newTags.filter((tag) => tag.trim().length > 0);
+    this.project.markImageAsComplete(this.filename, this._tags.length > 0);
     this.invalidateCaches();
   }
 

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from "react";
+import { FaCheck } from "react-icons/fa6";
 import { API_BASE_URL } from "../../api";
 import { useAppState } from "../../hooks/useApp";
 import { useShortcut } from "../../hooks/useShortcut";
 import { imgAspectRatio } from "../../models/image";
-import { ProgressPieChart } from "../layout/ProgressPieChart";
+import { ProgressPieChart } from "./ProgressPieChart";
 
 const BORDER_WIDTH = 4;
 const CONTAINER_WIDTH = 300;
@@ -13,13 +14,16 @@ export const scrollToThumbnail = (img: string) => {
   if (img === "") return;
   const EXTRA_PADDING = 100;
   const imgElement = document.getElementById(`thumb-img-${img}`);
-  const parentNode = imgElement?.parentNode as HTMLElement;
   if (imgElement) {
     // Scroll to the image.
-    parentNode.scrollTop =
-      imgElement.offsetTop -
-      parentNode.getBoundingClientRect().height / 2 +
-      EXTRA_PADDING;
+    const parentElement = imgElement?.parentElement as HTMLElement;
+    const container = parentElement?.parentElement as HTMLElement;
+    if (parentElement && container) {
+      container.scrollTop =
+        parentElement.offsetTop -
+        container.getBoundingClientRect().height / 2 +
+        EXTRA_PADDING;
+    }
   }
 };
 
@@ -29,6 +33,7 @@ export function Thumbnails() {
   const [appValue, app] = useAppState(
     "project.name",
     "project.images",
+    "project.completed",
     "project.selectedImage.filename",
   );
 
@@ -38,7 +43,7 @@ export function Thumbnails() {
 
   const moveToImage = (mode: "next" | "prev" | "filename", img = "") => {
     if (mode === "next" || mode === "prev") {
-      img = app.project.navigateImages(mode);
+      img = app.project.navigateImages(mode) || "";
     }
     if (img) {
       app.project.setSelectedImage(img);
@@ -114,22 +119,28 @@ export function Thumbnails() {
         className={`flex h-full w-[${CONTAINER_WIDTH}] min-w-[125px] flex-col gap-4 overflow-y-auto bg-slate-800 p-4 pb-20 scrollbar-thin dark:bg-slate-900`}
       >
         {images.map((img, index) => (
-          <img
-            ref={(el) => (imgRefs.current[index] = el)}
-            key={img}
-            id={`thumb-img-${img}`}
-            style={{
-              width: `${THUMBNAIL_WIDTH + BORDER_WIDTH}px`,
-              height: "auto",
-              aspectRatio: imgAspectRatio(img),
-              borderWidth: `${BORDER_WIDTH}px`,
-            }}
-            className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
-            data-src={`${API_BASE_URL}/project/${projectName}/imgs/${img}?thumbnail=true`}
-            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-            alt={img}
-            onClick={() => moveToImage("filename", img)}
-          />
+          <div key={img} className="relative">
+            <img
+              ref={(el) => (imgRefs.current[index] = el)}
+              id={`thumb-img-${img}`}
+              style={{
+                width: `${THUMBNAIL_WIDTH + BORDER_WIDTH}px`,
+                height: "auto",
+                aspectRatio: imgAspectRatio(img),
+                borderWidth: `${BORDER_WIDTH}px`,
+              }}
+              className={`cursor-pointer rounded-md bg-gray-500 shadow-md ${filename != img ? "opacity-30 hover:border-white hover:opacity-70 " : "border-primary-600"}`}
+              data-src={`${API_BASE_URL}/project/${projectName}/imgs/${img}?thumbnail=true`}
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+              alt={img}
+              onClick={() => moveToImage("filename", img)}
+            />
+            {appValue.project.completed.includes(img) && (
+              <div className="absolute bottom-3 right-3 rounded-full bg-green-500">
+                <FaCheck className="h-5 w-5 p-1 text-white" />
+              </div>
+            )}
+          </div>
         ))}
         <div className="absolute bottom-3 left-3">
           <ProgressPieChart />

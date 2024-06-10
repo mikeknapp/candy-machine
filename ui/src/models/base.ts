@@ -61,8 +61,14 @@ export abstract class Subscribable<T extends SubscribableType> {
     callback: (newValue: any) => void,
     selectors: Path<T>[],
   ) {
-    const lastMsg = extractFromSelectors(selectors, this.readOnly);
-    this._listeners.set(id, new Listener<T>(callback, selectors, lastMsg));
+    this._listeners.set(
+      id,
+      new Listener<T>(
+        callback,
+        selectors,
+        extractFromSelectors(selectors, this.readOnly),
+      ),
+    );
   }
 
   public unsubscribe(id: string) {
@@ -148,8 +154,10 @@ export function extractFromSelectors<T, P>(
   ) {
     return data as ExtractProperties<T, Path<P>[]>;
   }
-  return selectors.reduce((acc, selector) => {
-    setNestedValue(acc, selector, getNestedValue(data, selector));
-    return acc;
-  }, init);
+  return _.cloneDeep(
+    selectors.reduce((acc, selector) => {
+      setNestedValue(acc, selector, getNestedValue(data, selector));
+      return acc;
+    }, init),
+  );
 }

@@ -116,7 +116,7 @@ class Project:
 
     def _load(self):
         self.project_layout = self._project_tag_categories()
-        self.imgs = self._list_all_imgs()
+        self.imgs, self.completed = self._list_all_imgs()
         self.trigger_word = ""
         self.trigger_synonyms = []
         self.selected_image = ""
@@ -187,7 +187,11 @@ class Project:
                 fp,
             )
 
-    def save_txt_file(self, txtFileContents):
+    def save_txt_file(self, txtFileContents: str):
+        if txtFileContents.strip() == "":
+            if os.path.exists(self.selected_image_txt_path()):
+                os.remove(self.selected_image_txt_path())
+            return
         with open(self.selected_image_txt_path(), "w") as fp:
             fp.write(txtFileContents)
 
@@ -207,6 +211,7 @@ class Project:
             "triggerWord": self.trigger_word,
             "triggerSynonyms": self.trigger_synonyms,
             "images": self.imgs,
+            "completed": self.completed,
             "autoTags": self.auto_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],
             "requiresSetup": self.requires_setup,
@@ -368,10 +373,23 @@ class Project:
 
         self._load()
 
-    def _list_all_imgs(self) -> list[str]:
+    def _list_all_imgs(self) -> Tuple[list[str], list[str]]:
+        # Return a tuple of (images, completed).
+
+        imgs = []
+        completed = []
+
         if not os.path.exists(self._img_dir):
-            return []
-        return sorted([f for f in os.listdir(self._img_dir) if f.endswith(IMG_EXT)])
+            return [], []
+        for f in os.listdir(self._img_dir):
+            if f.endswith(IMG_EXT):
+                imgs.append(f)
+            elif (
+                f.endswith(".txt")
+                and os.path.getsize(os.path.join(self._img_dir, f)) > 0
+            ):
+                completed.append(f"{Path(f).stem}.{IMG_EXT}")
+        return sorted(imgs), sorted(completed)
 
     def _load_tags_from_file(self, path: Path) -> list[str]:
         tags = []

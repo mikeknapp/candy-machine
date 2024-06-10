@@ -6,21 +6,15 @@ import "react-circular-progressbar/dist/styles.css";
 import { useAppValue } from "../../hooks/useApp";
 
 export function ProgressPieChart() {
-  const app = useAppValue("project.images", "project.selectedImage.filename");
+  const app = useAppValue("project.percentComplete");
 
-  const images = app.project.images;
-  const filename = app.project.selectedImage?.filename;
-
-  let percentage = 0;
-  if (images.length === 0) {
+  let percentage = app.project.percentComplete;
+  if (percentage === 0) {
     return;
   }
 
-  const imageIndex = images.indexOf(filename);
-  percentage = Math.round(((imageIndex + 1) / images.length) * 100);
-
   return (
-    <Tooltip content={`${images.length}\u00A0images`}>
+    <Tooltip content={`Images with tags`}>
       <div className="h-12 w-12">
         <CircularProgressbar
           value={percentage}
@@ -28,7 +22,7 @@ export function ProgressPieChart() {
           background
           backgroundPadding={6}
           styles={buildStyles({
-            backgroundColor: "#065f46",
+            backgroundColor: "#15803d",
             textColor: "#fff",
             pathColor: "#fff",
             trailColor: "transparent",
