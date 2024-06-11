@@ -6,6 +6,7 @@ A better image tagger for creating LORAs.
 
 ## Requirements:
 
+- Git
 - Python 3
 
 ## Free for Personal, Non-Commercial Use.
@@ -14,18 +15,10 @@ Free for personal, non-commercial use. If you're using it in a business context 
 for commercial use (i.e. to make money from it), please contact me to arrange a license.
 This helps support my development costs.
 
-## Running Image Tagger on GPU
-
-Requires CUDA 12.2 and cuDNN8.x.
-
-```
-[activate venv]
-pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-```
-
 ## How to Run on Windows
 
 ```powershell
+git clone git@github.com:mikeknapp/candy-machine.git
 cd candy-machine
 run
 ```
@@ -35,9 +28,21 @@ run
 Note, I haven't tested this yet, there may be bugs.
 
 ```sh
+git clone git@github.com:mikeknapp/candy-machine.git
 cd candy-machine
 chmod +x run.sh
 ./run.sh
+```
+
+## Running Image Tagger on GPU
+
+Requires CUDA 12.2 and cuDNN8.x.
+
+After you've activated your venv:
+
+```sh
+pip install onnxruntime-gpu --extra-index-url \
+    https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 ```
 
 ## Known Issues
