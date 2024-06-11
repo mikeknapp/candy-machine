@@ -15,8 +15,6 @@ call .\venv\Scripts\activate
 :: Step 3: Install dependencies
 pip install -r requirements.txt
 
-:: Step 4: Set environment variable
-set FLASK_ENV=production
 
 :: Define a label to handle cleanup
 :cleanup
@@ -29,7 +27,7 @@ if defined CLEANUP (
 
 :: Step 5: Run the server
 set CLEANUP=1
-python server\main.py
+python server\main.py --prod
 
 :: Step 6: Deactivate the virtual environment
 set CLEANUP=

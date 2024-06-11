@@ -1,14 +1,18 @@
-### Candy Machine.
+# Candy Machine - Image Dataset Tagger.
 
-<div style="max-width: 200px;">
-  <img src="assets/logo.png" alt="Logo" style="width: 100%; height: auto;">
-</div>
+![Candy Machine Logo](assets/logo-small.png)
 
 A better image tagger for creating LORAs.
 
 ## Requirements:
 
 - Python 3
+
+## Free for Personal, Non-Commercial Use.
+
+Free for personal, non-commercial use. If you're using it in a business context or
+for commercial use (i.e. to make money from it), please contact me to arrange a license.
+This helps support my development costs.
 
 ## Running Image Tagger on GPU
 
@@ -19,44 +23,75 @@ Requires CUDA 12.2 and cuDNN8.x.
 pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 ```
 
-## Run Locally (Windows)
+## How to Run on Windows
 
-```sh
+```powershell
 cd candy-machine
 run
 ```
 
-## Run Locally (MacOS/Unix)
+## How to Run on MacOS/Unix
+
+Note, I haven't tested this yet, there may be bugs.
 
 ```sh
 cd candy-machine
-chmod +x dev.sh
-./dev.sh
+chmod +x run.sh
+./run.sh
 ```
 
-## Feature List (Target Initial Release):
+## Known Issues
 
-- Import directory: convert files to .png and copy files to projects directory, rename to 0001.jpg etc.
-- Global: Pre-built categories but you can modify them youself, including re-arranging the order, etc.
-- Project: Select which categories to include, and which tags to add by default (i.e. photography).
-- Project: Set min and max tags per category.
-- Only show tags with > N uses, otherwise hide under a ... tag.
-- Sort tags by frequency.
-- Quick tag add box.
-- Keyboard shortcuts.
-- Crop image.
-- Warning if image too small.
-- % done
-- Export wizard with .json of suggested settings for LORA.
+- Can't add more images to a project. (Workaround: create a new project.)
+- Can't edit the trigger word / synonyms. (Workaround: edit the project's `config.json` and
+  the caption files.)
+- Can't edit a project's tag layout or the default tag layout (Workaround: edit `default_categories.json`
+  in the server directory, or a project's `categories.json`. For the latter, be sure not to remove tags
+  that are being actively used.)
 
-Roadmap:
+## Feature Pipeline
 
-- Have saved presets (i.e. photography, anime, style LORAs etc)
-- Watermark removal (inpainting via A1111?)
+- Delete tags
+- Sort tags by usage, hide uncommon tags
+- Edit trigger word / synonyms
+- Add more images
+- Image zoom / color name help
+- Rename tags (across the project)
+- Export wizard to prepare the data and generate the best settings for [Kohya SS](https://github.com/bmaltais/kohya_ss)
+- Customize tag layout from import analysis
+- Saved presets for tag layouts (i.e. photography, anime, style LORAs etc)
+- Watermark removal (inpainting?)
+- Detection and removal of [Nightshade-poisoned images](https://nightshade.cs.uchicago.edu/whatis.html#)
 
-Technical Notes:
+## Want to Contribute?
 
-- Python server to do things like moving image, resizing etc - using virtual env.
+Here's the stack:
+
+- Python server to do things like moving images, resizing etc - using virtual env.
 - Parcel
 - Flowbite React
 - Tailwind CSS
+
+Before spending time writing code, please open an issue with your proposal so we can discuss. Thanks!
+
+### Setup:
+
+```powershell
+python -m venv venv
+call .\venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Run the UI:
+
+Prerequisites: Node and Yarn.
+
+```powershell
+yarn start
+```
+
+### Run Server:
+
+```powershell
+python server\main.py
+```

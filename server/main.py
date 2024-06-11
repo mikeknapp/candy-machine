@@ -1,6 +1,8 @@
 import io
 import os
+import sys
 import threading
+from turtle import listen
 import webbrowser
 from urllib.parse import unquote
 
@@ -18,13 +20,20 @@ from flask_cors import CORS
 from image import Crop, valid_import_directory
 from PIL import Image
 from project import Project
+from waitress import create_server
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--prod", action="store_true")
+args = parser.parse_args()
+
+
+PORT = 5000
+IS_PROD = args.prod
+
 
 app = Flask(__name__, static_folder="dist")
 CORS(app)
-
-FLASK_ENV = os.environ.get("FLASK_ENV")
-PORT = 5000
-IS_PROD = FLASK_ENV == "production"
 
 
 @app.route("/project/create", methods=["POST"])
@@ -202,15 +211,13 @@ def serve(path):
     return "Not found", 404
 
 
-def open_browser():
-    if IS_PROD:
-        webbrowser.open_new(f"http://127.0.0.1:{PORT}")
-
-
 if __name__ == "__main__":
     if not os.path.exists(PROJECTS_DIR):
         os.makedirs(PROJECTS_DIR, exist_ok=True)
 
-    threading.Timer(1.25, open_browser).start()
-
-    app.run(debug=not IS_PROD, port=PORT)
+    if IS_PROD:
+        threading.Timer(1.25, lambda: webbrowser.open_new(f"http://127.0.0.1:{PORT}")).start()
+        server = create_server(app, listen=f"*:{PORT}")
+        server.run()
+    else:
+        app.run(debug=not IS_PROD, port=PORT)

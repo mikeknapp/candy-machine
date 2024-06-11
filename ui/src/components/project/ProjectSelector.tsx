@@ -50,7 +50,7 @@ export function ProjectSelector() {
 
   return (
     <>
-      {!appValue.isLoading && !appValue.isError && (
+      {!appValue.isError && appValue.projects.length > 0 && (
         <Dropdown
           size="lg"
           className="min-w-[200px]"

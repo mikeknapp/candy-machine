@@ -26,7 +26,7 @@ export function Editor() {
     );
   }
 
-  if (appValue.project.isLoading) {
+  if (appValue.isLoading) {
     return (
       <div className="center-full">
         <Spinner size="xl" color="gray" />
@@ -34,7 +34,7 @@ export function Editor() {
     );
   }
 
-  if (!appValue.project) {
+  if (!appValue.project.name) {
     return <NoSelectedProject />;
   }
 
