@@ -17,9 +17,6 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Set environment variable
-export FLASK_ENV=production
-
 # Define a function to deactivate the virtual environment on script exit
 function cleanup {
   echo "Cleaning up..."
@@ -28,4 +25,4 @@ function cleanup {
 trap cleanup EXIT
 
 # Run the server
-python server/main.py
+python server/main.py --prod

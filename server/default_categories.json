@@ -6,60 +6,37 @@
   },
   {
     "title": "Image Type",
-    "tags": ["photo", "portrait", "drawing", "illustration", "painting", "render", "cartoon", "anime", "pixel art"],
+    "tags": ["photo", "drawing", "illustration", "painting", "render", "cartoon", "anime", "pixel art"],
     "color": "#fd5b78"
   },
   {
     "title": "Main Subject",
-    "tags": ["man", "woman", "fantasy scene", "cityscape"],
+    "tags": ["man", "woman"],
     "color": "#ff6037"
   },
   {
     "title": "Camera Shot",
-    "tags": ["full body", "upper body", "lower body", "medium shot", "close-up", "extreme close-up", "macro shot"],
+    "tags": ["full body", "upper body", "lower body", "medium shot", "close-up"],
     "color": "#ff9966"
   },
   {
     "title": "Perspective",
-    "tags": [
-      "selfie",
-      "from front",
-      "from above",
-      "from below",
-      "from behind",
-      "from side",
-      "three-quarters view",
-      "rear three-quarters view",
-      "overhead",
-      "forced perspective",
-      "upside down"
-    ],
+    "tags": ["selfie", "from front", "from above", "from below", "from behind", "from side"],
     "color": "#ff9933"
   },
   {
     "title": "Pose",
-    "tags": ["standing", "sitting", "leaning", "walking", "running", "lying", "bent over", "squatting"],
+    "tags": ["standing", "sitting", "leaning", "running", "lying", "bent over", "squatting"],
     "color": "#ffcc33"
   },
   {
     "title": "Action",
-    "tags": [
-      "posing",
-      "reading",
-      "writing",
-      "chatting",
-      "singing",
-      "dancing",
-      "playing",
-      "exercising",
-      "sleeping",
-      "working"
-    ],
+    "tags": ["posing", "walking", "reading", "writing"],
     "color": "#ffff66"
   },
   {
     "title": "Location",
-    "tags": ["indoors", "outdoors", "street", "office", "cafe", "forest", "mountains", "beach", "park", "car interior"],
+    "tags": ["indoors", "outdoors", "car interior"],
     "color": "#ccff00"
   },
   {
@@ -77,7 +54,7 @@
   },
   {
     "title": "Mouth",
-    "tags": ["{type} mouth", "smirk", "slight smile", "smile", "grinning", "laughing", "teeth", "lips"],
+    "tags": ["{type} mouth", "smirk", "slight smile", "smile", "grinning", "laughing"],
     "color": "#aaf0d1"
   },
   {
@@ -86,20 +63,8 @@
     "color": "#16d0cb"
   },
   {
-    "title": "Body",
-    "tags": [
-      "pointing",
-      "bent knee",
-      "crossed legs",
-      "{limb} above head",
-      "{limb} on forehead",
-      "{limb} on belly",
-      "feet",
-      "hands",
-      "fingers",
-      "toes",
-      "forehead"
-    ],
+    "title": "Body / Limbs",
+    "tags": ["pointing", "crossed legs", "crossed arms", "hands in pockets", "arms behind back"],
     "color": "#50bfe6"
   },
   {
@@ -110,67 +75,26 @@
       "{type} socks",
       "{type} footwear",
       "hat",
-      "shirt",
-      "{type} sleeves",
-      "sleeveless",
-      "necklace",
       "sunglasses",
       "glasses",
-      "shoes",
-      "dress",
-      "pants",
-      "sandals",
-      "bracelet",
-      "earrings",
-      "handbag",
-      "smartphone",
-      "barefoot",
-      "sneakers",
-      "wristwatch",
-      "watch",
       "jewelry",
-      "ring",
-      "loafers",
-      "denim",
-      "jeans",
-      "t-shirt"
+      "smartphone"
     ],
     "color": "#9c27b0"
   },
   {
     "title": "Scene Description",
-    "tags": [
-      "sky",
-      "food",
-      "drink",
-      "flower",
-      "chair",
-      "table",
-      "desk",
-      "lamp",
-      "beach",
-      "sand",
-      "water",
-      "shore",
-      "grass",
-      "stairs",
-      "backpack",
-      "cup",
-      "bag",
-      "window",
-      "{type} vehicle",
-      "{type} background"
-    ],
+    "tags": ["{type} background", "{type} vehicle", "sky", "clouds"],
     "color": "#ee34d2"
   },
   {
     "title": "Light Conditions",
-    "tags": ["flash", "day", "golden hour", "sunset", "strong shadows", "night", "raining", "snowing"],
+    "tags": ["day", "golden hour", "sunset", "strong shadows", "low light", "night", "flash", "raining", "snowing"],
     "color": "#ff00cc"
   },
   {
     "title": "Misc",
-    "tags": ["solo", "1girl", "1boy", "depth of field", "bokeh", "motion blur", "head out of frame"],
+    "tags": ["solo", "depth of field", "bokeh", "motion blur"],
     "color": "#000000"
   }
 ]
