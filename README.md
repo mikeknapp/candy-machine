@@ -1,10 +1,10 @@
 # Candy Machine - Image Dataset Tagger
 
-For Stable Diffusion / Lora Training
+For Stable Diffusion / Lora / DreamBooth Training
 
 ![Screenshot](assets/screenshot.png)
 
-Candy Machine is a nascent image tagger for creating Models/LORAs for the Stable Diffusion ecosystem:
+Candy Machine is a nascent image tagger for creating Dreambooth models or LORAs for the Stable Diffusion ecosystem:
 
 - Automatic file conversion to .png from .jpg, .gif, .webp and more
 - Automatic tag analysis using wd14-convnextv2.v1
@@ -12,7 +12,7 @@ Candy Machine is a nascent image tagger for creating Models/LORAs for the Stable
 - Basic image editing (crop, rotate and flip horizontal)
 - More features coming soon!
 
-Candy Machine respects your privacy. Everything runs locally, and no information is transmitted to a third party server.
+Candy Machine runs locally on your machine, and no information is transmitted to a third party server.
 
 ## Built-In Image Editor
 
@@ -20,7 +20,7 @@ Candy Machine respects your privacy. Everything runs locally, and no information
 
 ## Why?
 
-I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/comments/118spz6/captioning_datasets_for_training_purposes/) about how to best tag image datasets. (H/T also to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag). I liked their prototype, but wanted to create my own take.)
+I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/comments/118spz6/captioning_datasets_for_training_purposes/) about how to best tag image datasets. (H/T also to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag). I liked your prototype, but wanted to create my own take.)
 
 I also have never loved the "fiddly" parts of building a dataset - converting images, renaming them, etc. I want to make building datasets quick and easy, maybe even fun!
 
@@ -42,6 +42,8 @@ cd candy-machine
 run
 ```
 
+A browser window should automatically open: `http://127.0.0.1:5000/`
+
 ## How to Run on MacOS/Unix
 
 (Note, I haven't tested this yet, there may be bugs!)
@@ -52,6 +54,8 @@ cd candy-machine
 chmod +x run.sh
 ./run.sh
 ```
+
+A browser window should automatically open: `http://127.0.0.1:5000/`
 
 ## Running Image Tagger on GPU
 
