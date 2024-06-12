@@ -1,4 +1,4 @@
-MODEL = "wd14-convnextv2.v1"
+MODEL = "wd-v1-4-convnext-tagger.v3"
 THRESHOLD = 0.35
 EXTENSION = ".txt"
 USE_CPU = False

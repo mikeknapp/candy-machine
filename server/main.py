@@ -1,9 +1,10 @@
+import argparse
 import io
 import os
 import sys
 import threading
-from turtle import listen
 import webbrowser
+from turtle import listen
 from urllib.parse import unquote
 
 from consts import LOWERCASE_IS_TRUE, PROJECTS_DIR
@@ -20,8 +21,7 @@ from flask_cors import CORS
 from image import Crop, valid_import_directory
 from PIL import Image
 from project import Project
-from waitress import create_server
-import argparse
+from waitress.server import create_server
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prod", action="store_true")
@@ -216,7 +216,9 @@ if __name__ == "__main__":
         os.makedirs(PROJECTS_DIR, exist_ok=True)
 
     if IS_PROD:
-        threading.Timer(1.25, lambda: webbrowser.open_new(f"http://127.0.0.1:{PORT}")).start()
+        threading.Timer(
+            1.25, lambda: webbrowser.open_new(f"http://127.0.0.1:{PORT}")
+        ).start()
         server = create_server(app, listen=f"*:{PORT}")
         server.run()
     else:

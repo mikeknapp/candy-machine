@@ -214,14 +214,70 @@ class TestEditImage(unittest.TestCase):
         output_img_name = self.project.edit_image(
             self.fname, 0, False, Crop(0, 0, 50, 50)
         )
-        self.assertEqual(output_img_name, f"{expected_prefix}_0.png")
+        self.assertEqual(output_img_name, f"{expected_prefix}_1.png")
 
         # Check that the image size is as expected.
         output_img = Image.open(self.project.img_path(output_img_name))
         self.assertEqual(output_img.size, (50, 50))
         output_img.close()
 
-        self.new_kw_fname = self.project.img_path(f"{self.hash}_50x50_0.txt")
+        self.new_kw_fname = self.project.img_path(f"{self.hash}_50x50_1.txt")
+
+
+class TestAnalyzeAutoTags(unittest.TestCase):
+
+    def make_auto_tag_file(self, filename, tags):
+        auto_tags_file = os.path.join(self.temp_project_dir_path, "auto_tags", filename)
+        os.makedirs(os.path.dirname(auto_tags_file), exist_ok=True)
+        with open(auto_tags_file, "w") as f:
+            f.write(tags)
+
+    def setUp(self):
+        # Temp project directory.
+        self.temp_project_dir = tempfile.TemporaryDirectory()
+        self.temp_project_dir_path = self.temp_project_dir.name
+
+        # Temp auto tags.
+        self.make_auto_tag_file("image01.txt", "test, big image, scarf")
+        self.make_auto_tag_file("image02.txt", "test, really big image, red")
+        self.make_auto_tag_file(
+            "image03.txt", "test, very-really big image, red, scarf"
+        )
+
+        self.maxDiff = None
+
+    def tearDown(self):
+        self.temp_project_dir.cleanup()
+
+    def test_analyze_auto_tags(self):
+
+        p = Project(self.temp_project_dir_path)
+        auto_tags = p._analyze_auto_tags()
+
+        results = [atag.to_dict() for atag in auto_tags]
+
+        self.assertEqual(
+            results,
+            [
+                {"tag": "test", "count": 3, "examples": []},
+                {
+                    "tag": "{type} image",
+                    "count": 3,
+                    "examples": [
+                        "big image",
+                        "really big image",
+                        "very-really big image",
+                    ],
+                },
+                {"tag": "scarf", "count": 2, "examples": []},
+                {"tag": "red", "count": 2, "examples": []},
+                {
+                    "tag": "{type} big image",
+                    "count": 2,
+                    "examples": ["really big image", "very-really big image"],
+                },
+            ],
+        )
 
 
 if __name__ == "__main__":

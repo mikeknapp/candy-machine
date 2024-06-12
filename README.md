@@ -8,8 +8,10 @@ Candy Machine is a nascent image tagger for creating Dreambooth models or LORAs 
 
 - Automatic file conversion to .png from .jpg, .gif, .webp and more
 - Automatic tag analysis using wd14-convnextv2.v1
+- Placeholder tag templates, i.e. `{type} clothes`, where `{type}` can be specified when adding a tag
 - Customizable tag layout, for consistent tagging
 - Basic image editing (crop, rotate and flip horizontal)
+- Keyboard shortcuts (press '?' for a list)
 - More features coming soon!
 
 Candy Machine runs locally on your machine, and no information is transmitted to a third party server.

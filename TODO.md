@@ -1,5 +1,6 @@
 My immediate TODOS:
 
+- Double "orange shirt" 2303181c8fdfcf81_1024x1360_0.png
 - Add new tags to the front of the list
 - Placeholder isn't highlighted properly when adding a tag
 - Show suggestions when adding a tag to a category

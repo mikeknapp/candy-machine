@@ -494,9 +494,10 @@ class Project:
                     fill_in_examples[fill_in] = fill_in_examples.get(fill_in, []) + [
                         tag
                     ]
-                    del tags[tag]
+                    if tag in tags:
+                        del tags[tag]
                 # Remove the extact match too, because it's covered by the fill in.
-                if tag == ngram:
+                if tag == ngram and tag in tags:
                     del tags[tag]
 
         # Remove any with 1 count.

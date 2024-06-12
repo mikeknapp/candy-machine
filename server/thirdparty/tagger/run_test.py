@@ -4,8 +4,8 @@ import unittest
 from .run import interrogate_directory
 
 EXPECTED_TAGS = {
-    "apple.txt": "fruit, food, apple, food focus, no humans, realistic, still life, blurry, simple background, close-up",
-    "teeth.txt": "solo, open mouth, teeth, close-up, tongue, realistic, lips, nose, male focus",
+    "apple.txt": "fruit, food, no humans, apple, food focus, realistic, still life, black background, cherry, photorealistic, blurry",
+    "teeth.txt": "realistic, solo, open mouth, teeth, close-up, smile, 1boy, lips, horror \\(theme\\), photorealistic, male focus",
 }
 
 
