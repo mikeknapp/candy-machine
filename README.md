@@ -20,7 +20,7 @@ Candy Machine runs locally on your machine, and no information is transmitted to
 
 ## Why?
 
-I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/comments/118spz6/captioning_datasets_for_training_purposes/) about how to best tag image datasets. (H/T also to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag). I liked your prototype, but wanted to create my own take.)
+I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/comments/118spz6/captioning_datasets_for_training_purposes/) about how to best tag image datasets. (H/T to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag) also for their prototype.)
 
 I also have never loved the "fiddly" parts of building a dataset - converting images, renaming them, etc. I want to make building datasets quick and easy, maybe even fun!
 
