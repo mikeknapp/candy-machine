@@ -1,30 +1,48 @@
-# Candy Machine - Image Dataset Tagger
+# Candy Machine - Manual Image Tagger
 
-For Stable Diffusion / Lora / DreamBooth Training
+_Web-Based Manual Image Tagger for Training Custom Stable Diffusion LORAs & DreamBooth Models_
 
-![Screenshot](assets/screenshot.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/candy-machine-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/candy-machine.png">
+  <img alt="Screenshot of Candy Machine" src="assets/candy-machine.png">
+</picture>
 
-Candy Machine is a nascent image tagger for creating Dreambooth models or LORAs for the Stable Diffusion ecosystem:
+Candy Machine is a nascent image tagger for _manually tagging_ small datasets (< 1k images) with `.txt` caption files:
 
-- Automatic file conversion to .png from .jpg, .gif, .webp and more
-- Automatic tag analysis using wd14-convnextv2.v1
-- Placeholder tag templates, i.e. `{type} clothes`, where `{type}` can be specified when adding a tag
-- Customizable tag layout, for consistent tagging
-- Basic image editing (crop, rotate and flip horizontal)
-- Keyboard shortcuts (press '?' for a list)
+- **Customizable tag layout**, for consistent tagging
+
+- **Placeholder tag templates**, i.e. `{type} clothes`, where `{type}` can be specified when adding a tag
+
+- **In-built image editing** (crop, rotate and flip horizontal)
+
+- **Tag suggestions** using `wd-v1-4-convnext-tagger.v3` when setting up a project
+
+- **Automatic file conversion** to .png from .webp, .gif and more
+
+- **Progress % pie chart** (for those times when you wonder _'am I done yet?!'_)
+
+- **Keyboard shortcuts** (press '?' for a list)
+
 - More features coming soon!
 
-Candy Machine runs locally on your machine, and no information is transmitted to a third party server.
+Candy Machine runs entirely locally on your machine. No information is transmitted to any third party system.
 
 ## Built-In Image Editor
 
-![Edit Image Screenshot](assets/edit-image.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/image-editor-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/image-editor.png">
+  <img alt="Edit Image Screenshot" src="assets/image-editor.png">
+</picture>
 
 ## Why?
 
-I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/comments/118spz6/captioning_datasets_for_training_purposes/) about how to best tag image datasets. (H/T to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag) also for their prototype.)
+I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/comments/118spz6/captioning_datasets_for_training_purposes/) about how to best tag small image datasets, focusing mainly on consistency.
 
-I also have never loved the "fiddly" parts of building a dataset - converting images, renaming them, etc. I want to make building datasets quick and easy, maybe even fun!
+I've also never loved the "fiddly" parts of building a dataset - converting images, renaming them, cropping etc. I want to make building datasets quick, easy and, who knows, maybe even fun!
+
+(Also, H/T to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag) also for their prototype.)
 
 ## Requirements:
 
@@ -33,8 +51,8 @@ I also have never loved the "fiddly" parts of building a dataset - converting im
 
 ## Free for Personal, Non-Commercial Use.
 
-This software is entirely free for personal, non-commercial use. If you're using it in a
-business context or for commercial use (i.e. to make money from it), please contact me to arrange a license. This will help support my development costs.
+This software is entirely free for personal, non-commercial use. If you're using it in a business context or for commercial use
+(i.e. to make money from it), please contact me to arrange a paid license. This will help support my development costs.
 
 ## How to Run on Windows
 
@@ -59,13 +77,13 @@ chmod +x run.sh
 
 A browser window should automatically open: `http://127.0.0.1:5000/`
 
-## Running Image Tagger on GPU
+## Using the GPU for Image Tagging
 
 Requires CUDA 12.2 and cuDNN8.x.
 
-Step 1: Activated the Python venv. (Look inside run.bat for clues on how to do that.)
+1. Activate the Python venv. (Look inside run.bat for clues on how to do that.)
 
-Step 2: Install `onnxruntime-gpu`
+2. Install `onnxruntime-gpu`
 
 ```sh
 pip install onnxruntime-gpu --extra-index-url \
@@ -74,13 +92,13 @@ pip install onnxruntime-gpu --extra-index-url \
 
 ## Known Issues
 
-- It's currently quite **annoying to search for tags**, and **tags quickly get messy**. (I'll fix it soon!)
-- **Can't edit a project's tag layout** or the default tag layout (Workaround: edit `default_categories.json`
-  in the server directory, or a project's `categories.json`. For the latter, be sure not to remove tags
-  that are being actively used, otherwise they will be orphaned at the end of the tag list if you save that image in the future.)
-- **Can't add more images to a project!** (Workaround: create a new project. Not ideal, I know.)
-- **Can't edit the trigger word / synonyms**. (Workaround: edit the project's `config.json` and
-  all existing .txt caption files.)
+- It's currently not as easy as it should be to add tags, and tags quickly get messy. (I'll fix it soon!)
+
+- Can't edit a project's tag layout or the default tag layout (Workaround: edit `default_categories.json` in the server directory, or a project's `categories.json`. For the latter, be sure not to remove tags that are being actively used, otherwise they will be orphaned at the end of the tag list if you save that image in the future.)
+
+- Can't add more images to a project! (Workaround: create a new project. I know, not ideal.)
+
+- Can't edit the trigger word / synonyms. (Workaround: edit the project's `config.json` and all existing .txt caption files.)
 
 ## Feature Pipeline
 
@@ -95,21 +113,22 @@ pip install onnxruntime-gpu --extra-index-url \
 - Customize tag layout from import analysis
 - Saved presets for tag layouts (i.e. photography, anime, style LORAs etc)
 - Watermark removal (inpainting?)
-- Detection and removal of [Nightshade-poisoned images](https://nightshade.cs.uchicago.edu/whatis.html#) from the dataset (to respect the copyright holder).
+- Detection and removal of [Nightshade-poisoned images](https://nightshade.cs.uchicago.edu/whatis.html#) etc from the dataset (to respect the wishes of copyright holders and protect your dataset).
 - Maybe in the future: Automated image search to find more images?
 
 ## Want to Contribute?
 
-Here's the stack:
+Tech stack:
 
-- Python server to do things like moving images, resizing etc - using virtual env.
-- Parcel
-- Flowbite React
-- Tailwind CSS
+- Basic Python HTTP server - using virtual env
+- Parcel for building the JS and CSS bundles
+- TypeScript
+- Flowbite React for the UI components
+- Tailwind CSS for styling
 
 Before spending any time writing code, please open an issue with your proposal so we can discuss. Thanks!
 
-### Local Development Setup:
+### Virtual Env Setup (Windows):
 
 ```powershell
 python -m venv venv
@@ -121,14 +140,16 @@ pip install -r requirements.txt
 
 Prerequisites: Node and Yarn.
 
-```powershell
+```sh
+cd ui
 yarn start
 ```
 
-### Run Server:
+### Run the Server:
 
-```powershell
-python server\main.py
+```sh
+cd server
+python main.py
 ```
 
 ## Questions, Comments, Feedback?
