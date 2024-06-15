@@ -118,10 +118,14 @@ export class Image extends SubscribableChild {
     }
     if (this.tags?.length > 0) {
       this.project.tagLayout.map((category) => {
+        let categoryTags = new Set<string>();
         category.tags.forEach((tagTemplate) => {
           findMatchingTags(tagTemplate, this.tags).forEach((matchingTag) =>
-            result.push(matchingTag),
+            categoryTags.add(matchingTag),
           );
+        });
+        categoryTags.forEach((tag) => {
+          result.push(tag);
         });
       });
     }

@@ -36,8 +36,8 @@ export function AddTagPopup(props: AddTagPopupProps) {
             return;
           }
           ref.current.focus();
-          if (match.index) {
-            ref.current.setSelectionRange(
+          if (match.index !== undefined) {
+            ref.current?.setSelectionRange(
               match.index,
               match.index + match[1].length,
             );
@@ -50,17 +50,14 @@ export function AddTagPopup(props: AddTagPopupProps) {
     }
   }, [props.show, props.tagTemplate, ref.current]);
 
-  const maybeAddTag = (tag: string) => {
-    if (appValue.project.triggerSynonyms.includes(tag)) {
-      return;
-    }
+  const addTag = (tag: string) => {
     app.project.addTagToSelectedImage(props.category, tag);
     closeAndCleanup();
   };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    maybeAddTag(value);
+    addTag(value);
   };
 
   const relevantAutoTag = appValue.project.autoTags.find(
@@ -88,7 +85,7 @@ export function AddTagPopup(props: AddTagPopupProps) {
               <Tag
                 key={`quick-add-${i}`}
                 text={example}
-                onClick={() => maybeAddTag(cleanTag(example))}
+                onClick={() => addTag(cleanTag(example))}
                 isDisabled={false}
               />
             ))}

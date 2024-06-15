@@ -171,7 +171,7 @@ export class Project extends SubscribableChild {
 
   public allLayoutTags(includeTrigger = true): string[] {
     let allTags = this.tagLayout.reduce(
-      (prev: string[], cat) => [...prev, ...cat.tags],
+      (prev: string[], cat) => [...prev, ...cat.tags.map((t) => cleanTag(t))],
       [],
     );
     if (includeTrigger && this.triggerWord) {
@@ -182,7 +182,12 @@ export class Project extends SubscribableChild {
 
   public addTagToSelectedImage(category: string, tag: string) {
     tag = cleanTag(tag);
-    if (!this.selectedImage || !category || !tag) {
+    if (
+      !this.selectedImage ||
+      !category ||
+      !tag ||
+      this.triggerSynonyms.includes(tag)
+    ) {
       return;
     }
     if (!this.allLayoutTags(false).includes(tag)) {

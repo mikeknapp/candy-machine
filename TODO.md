@@ -1,8 +1,6 @@
 My immediate TODOS:
 
-- Double `orange shirt` in `2303181c8fdfcf81_1024x1360_0.png`
 - Add new tags to the front of the list
-- Placeholder isn't highlighted properly when adding a tag
 - Show suggestions when adding a tag to a category
 - Delete tags!
 - Scroll down to category again after adding a tag
