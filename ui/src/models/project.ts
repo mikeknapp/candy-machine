@@ -13,6 +13,7 @@ export interface ProjectData extends SubscribableType {
   completed: string[];
   percentComplete: number;
   selectedImage: SelectedImage;
+  hiddenTags: string[];
   autoTags: AutoTag[];
   tagLayout: CategoryData[];
   requiresSetup: boolean;
@@ -29,6 +30,7 @@ export const DEFAULT_PROJECT_DATA: ProjectData = {
   completed: [],
   percentComplete: 0,
   selectedImage: {} as SelectedImage,
+  hiddenTags: [],
   tagLayout: [],
   autoTags: [],
   requiresSetup: false,
@@ -55,6 +57,7 @@ export class Project extends SubscribableChild {
   private _completed: string[] = [];
   private _selectedImage: Image | null = null;
   private _autoTags: AutoTag[] = [];
+  private _hiddenTags: string[] = [];
   private _tagLayout: CategoryData[] = [];
   private _requiresSetup: boolean = false;
 
@@ -66,6 +69,7 @@ export class Project extends SubscribableChild {
     this._completed = [];
     this._selectedImage = null;
     this._autoTags = [];
+    this._hiddenTags = [];
     this._tagLayout = [];
     this._requiresSetup = false;
   }
@@ -82,8 +86,9 @@ export class Project extends SubscribableChild {
       completed: this.completed,
       percentComplete: this.percentComplete,
       selectedImage: this.selectedImage?.readOnly ?? ({} as SelectedImage),
-      tagLayout: this.tagLayout,
       autoTags: this.autoTags,
+      hiddenTags: this.hiddenTags,
+      tagLayout: this.tagLayout,
       requiresSetup: this.requiresSetup,
     };
   }
@@ -191,7 +196,7 @@ export class Project extends SubscribableChild {
     return Array.from(new Set(allLayoutTags));
   }
 
-  public addTagToSelectedImage(category: string, tag: string) {
+  public addTagToSelectedImage(category: string, tag: string, hide: boolean) {
     tag = cleanTag(tag);
     if (
       !this.selectedImage ||
@@ -203,13 +208,27 @@ export class Project extends SubscribableChild {
     }
     if (!this.allLayoutTags(false).includes(tag)) {
       // This is a new tag that isn't in the layout. Add it.
-      this.moveTagtoLayoutCategory(category, tag);
+      this.moveTagToLayoutCategory(category, tag, hide);
     }
     this.selectedImage?.addTag(tag);
   }
 
   public get autoTags(): AutoTag[] {
     return this._autoTags;
+  }
+
+  public get hiddenTags() {
+    return this._hiddenTags;
+  }
+
+  public toggleHiddenTag(value: string, hide: boolean) {
+    if (hide) {
+      this._hiddenTags = Array.from(new Set([...this._hiddenTags, value]));
+    } else {
+      this._hiddenTags = this._hiddenTags.filter((tag) => tag !== value);
+    }
+    this.notifyListeners();
+    this.save();
   }
 
   public get requiresSetup(): boolean {
@@ -277,6 +296,7 @@ export class Project extends SubscribableChild {
       this._images = response.data.images;
       this._completed = response.data.completed;
       this._autoTags = response.data.autoTags;
+      this._hiddenTags = response.data.hiddenTags;
       this._tagLayout = removeSynoymsFromLayout(
         this.triggerSynonyms,
         response.data.tagLayout,
@@ -442,7 +462,11 @@ export class Project extends SubscribableChild {
     return true;
   }
 
-  public async moveTagtoLayoutCategory(category: string, tag: string) {
+  public async moveTagToLayoutCategory(
+    category: string,
+    tag: string,
+    hide: boolean,
+  ) {
     // Also removes the tag from any other categories. The category must exist.
     this.setTagLayout(
       this.tagLayout.map((cat) => {
@@ -454,6 +478,7 @@ export class Project extends SubscribableChild {
         return cat;
       }),
     );
+    this.toggleHiddenTag(tag, hide);
   }
 
   public async removeTagFromLayout(tag: string) {

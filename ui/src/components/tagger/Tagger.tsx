@@ -13,6 +13,7 @@ export function Tagger() {
     "project.selectedImage.tags",
     "project.selectedImage.uncategorizedTags",
     "project.tagLayout",
+    "project.hiddenTags",
     "project.isLoading",
   );
   const selectedImage = appValue.project.selectedImage;
@@ -46,6 +47,7 @@ export function Tagger() {
             key={category.title}
             isLoading={appValue.project.selectedImage.isLoading}
             allSelectedTags={appValue.project.selectedImage.tags}
+            hiddenTags={appValue.project.hiddenTags}
             onToggleTag={onToggleTag}
             category={category}
           />
@@ -55,6 +57,7 @@ export function Tagger() {
             key="non-standard"
             isLoading={appValue.project.selectedImage.isLoading}
             allSelectedTags={appValue.project.selectedImage.tags}
+            hiddenTags={appValue.project.hiddenTags}
             onToggleTag={onToggleTag}
             category={{
               title: "Uncategorized",

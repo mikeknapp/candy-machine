@@ -92,8 +92,6 @@ pip install onnxruntime-gpu --extra-index-url \
 
 ## Known Issues
 
-- When adding a lot of unique tags, the tag layout quickly get messy. (Will be fixed soon.)
-
 - Can't edit a project's tag layout or the default tag layout inside the app. (Workaround: edit `default_categories.json` in the server directory, or a project's `categories.json`. For the latter, be sure not to remove tags that are being actively used, otherwise they will be orphaned at the end of the tag list if you save that image in the future.)
 
 - Can't add more images to a project! (Workaround: create a new project. I know, not ideal.)
@@ -103,7 +101,7 @@ pip install onnxruntime-gpu --extra-index-url \
 ## Feature Pipeline
 
 - Delete tags
-- Sort tags by usage, hide uncommon tags
+- Sort tags by usage
 - Add more images!
 - Edit trigger word / synonyms
 - Image zoom

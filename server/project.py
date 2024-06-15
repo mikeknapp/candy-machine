@@ -121,6 +121,7 @@ class Project:
         self.trigger_synonyms = []
         self.selected_image = ""
         self.auto_tags = []
+        self.hidden_tags = []
         self.requires_setup = False
 
         # Load config file.
@@ -152,6 +153,8 @@ class Project:
                         self.trigger_word = data["triggerWord"]
                     if "triggerSynonyms" in data:
                         self.trigger_synonyms = data["triggerSynonyms"]
+                    if "hiddenTags" in data:
+                        self.hidden_tags = data["hiddenTags"]
                 break
             except IOError:
                 if i < retries - 1:
@@ -176,6 +179,9 @@ class Project:
         if "triggerSynonyms" in data:
             self.trigger_synonyms = data["triggerSynonyms"]
 
+        if "hiddenTags" in data:
+            self.hidden_tags = data["hiddenTags"]
+
         file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
         with open(file_path, "w") as fp:
             json.dump(
@@ -183,6 +189,7 @@ class Project:
                     "selectedImage": self.selected_image,
                     "triggerWord": self.trigger_word,
                     "triggerSynonyms": self.trigger_synonyms,
+                    "hiddenTags": self.hidden_tags,
                 },
                 fp,
             )
@@ -213,6 +220,7 @@ class Project:
             "images": self.imgs,
             "completed": self.completed,
             "autoTags": self.auto_tags,
+            "hiddenTags": self.hidden_tags,
             "tagLayout": [c.to_dict() for c in self.project_layout],
             "requiresSetup": self.requires_setup,
             "selectedImage": self.selected_image_to_dict(),

@@ -140,7 +140,7 @@ function ChooseCategoryTagDropdown({
           <Dropdown.Item
             key={`choose-category-${tag}-${category.title}`}
             onClick={() =>
-              app.project.moveTagtoLayoutCategory(category.title, tag)
+              app.project.moveTagToLayoutCategory(category.title, tag, false)
             }
             className="flex flex-row gap-2"
           >

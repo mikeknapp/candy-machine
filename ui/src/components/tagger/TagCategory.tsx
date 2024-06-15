@@ -9,6 +9,7 @@ import { Tag } from "./Tag";
 interface TagCategoryProps {
   isLoading: boolean;
   allSelectedTags: string[];
+  hiddenTags: string[];
   category: CategoryData;
   onToggleTag: (tag: string) => void;
 }
@@ -33,6 +34,7 @@ export function TagCategory(props: TagCategoryProps) {
 
   useEffect(() => {
     let selectedTags = props.allSelectedTags || [];
+    let hiddenTags = props.hiddenTags || [];
 
     // Ensure we have all of the relevant tags for this category, starting with the default layout.
     let relevantTags = new Set<string>(props.category.tags);
@@ -47,7 +49,12 @@ export function TagCategory(props: TagCategoryProps) {
     // Move selected tags to the front of the list.
     const tags = Array.from(relevantTags);
     const selected = tags.filter((t) => selectedTags.includes(t)) || [];
-    const unselected = tags.filter((t) => !selectedTags.includes(t)) || [];
+    // Hide hidden tags, unless we're searching.
+    const unselected =
+      tags.filter(
+        (t) =>
+          !selectedTags.includes(t) && (!hiddenTags.includes(t) || tagQuery),
+      ) || [];
     let results = [...selected, ...unselected];
 
     // Apply any active search filter.

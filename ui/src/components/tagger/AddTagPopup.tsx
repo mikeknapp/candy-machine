@@ -1,4 +1,4 @@
-import { Modal, ModalBody, TextInput } from "flowbite-react";
+import { Modal, ModalBody, TextInput, ToggleSwitch } from "flowbite-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useApp } from "../../hooks/useApp";
 import { cleanTag } from "../../models/utils";
@@ -16,6 +16,7 @@ export function AddTagPopup(props: AddTagPopupProps) {
 
   const app = useApp();
   const [value, setValue] = useState(props.tagTemplate);
+  const [hide, setHide] = useState(true);
 
   const closeAndCleanup = () => {
     app.disableKeyboardShortcuts = false;
@@ -45,7 +46,7 @@ export function AddTagPopup(props: AddTagPopupProps) {
   }, [props.show, props.tagTemplate]);
 
   const addTag = (tag: string) => {
-    app.project.addTagToSelectedImage(props.category, tag);
+    app.project.addTagToSelectedImage(props.category, tag, hide);
     closeAndCleanup();
   };
 
@@ -56,31 +57,48 @@ export function AddTagPopup(props: AddTagPopupProps) {
 
   const suggestedTags = app.project.suggestTags(cleanTag(value));
 
+  const isAlreadyShownInLayout = app.project
+    .allLayoutTags()
+    .includes(cleanTag(value));
+
   return (
     <Modal popup dismissible show={props.show} onClose={closeAndCleanup}>
-      <ModalBody className="p-4">
-        <form onSubmit={onSubmit} className="h-[400px]">
-          <TextInput
-            id="add-tag-input"
-            ref={ref}
-            sizing="lg"
-            placeholder="Add tag..."
-            className="font-mono text-4xl"
-            onChange={(e) => setValue(e.target.value)}
-            value={cleanTag(value, false)}
-          />
-          {suggestedTags && (
-            <div className="flex max-h-[300px] w-full flex-row flex-wrap justify-center gap-2 p-3">
-              {suggestedTags.sort().map((example, i) => (
-                <Tag
-                  key={`quick-add-${i}`}
-                  text={example}
-                  onClick={() => addTag(cleanTag(example))}
-                  isDisabled={false}
-                />
-              ))}
+      <ModalBody className="h-[400px] p-4">
+        <div className="mx-1 my-2 font-bold text-gray-800 dark:text-gray-200">
+          Add Tag to {props.category.toUpperCase()}
+        </div>
+        <form onSubmit={onSubmit}>
+          <div className="mb-10 h-[350px] flex-col justify-between">
+            <div className="mb-3 flex flex-col items-end gap-2">
+              <TextInput
+                id="add-tag-input"
+                ref={ref}
+                sizing="lg"
+                placeholder="Add tag..."
+                className="w-full font-mono text-4xl"
+                onChange={(e) => setValue(e.target.value)}
+                value={cleanTag(value, false)}
+              />
+              <ToggleSwitch
+                label="Show in Tag Screen"
+                disabled={cleanTag(value) === "" || isAlreadyShownInLayout}
+                checked={!hide || isAlreadyShownInLayout}
+                onChange={() => setHide(!hide)}
+              />
             </div>
-          )}
+            {suggestedTags && (
+              <div className="flex max-h-[300px] w-full flex-row flex-wrap justify-center gap-2 p-3">
+                {suggestedTags.sort().map((example, i) => (
+                  <Tag
+                    key={`quick-add-${i}`}
+                    text={example}
+                    onClick={() => addTag(cleanTag(example))}
+                    isDisabled={false}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </form>
       </ModalBody>
     </Modal>

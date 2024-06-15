@@ -17,6 +17,17 @@ const customTheme: CustomFlowbiteTheme = {
       default: "bg-green-500",
     },
   },
+  // Below: Fix for ToggleSwitch: https://github.com/themesberg/flowbite-react/issues/1321
+  // TODO: remove once the issue is fixed.
+  toggleSwitch: {
+    toggle: {
+      base: "after:rounded-full rounded-full border group-focus:ring-4 group-focus:ring-cyan-500/25",
+      checked: {
+        on: "after:bg-white after:translate-x-full",
+        off: "after:bg-gray-400 dark:after:bg-gray-500 border-gray-200 bg-gray-200 dark:border-gray-600 dark:bg-gray-700",
+      },
+    },
+  },
 };
 
 export const appState = App.getInstance();
