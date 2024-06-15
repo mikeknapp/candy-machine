@@ -1,10 +1,9 @@
 My immediate TODOS:
 
+- Don't add all new tags to the layout, but allow them to autocomplete
 - Add new tags to the front of the list
-- Show suggestions when adding a tag to a category
 - Delete tags!
 - Scroll down to category again after adding a tag
-- Don't add all new tags to the layout, but allow them to autocomplete
 - 404 when editing an image (only occasionally) -- add a retry button?
 
 After that:

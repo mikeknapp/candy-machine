@@ -180,6 +180,17 @@ export class Project extends SubscribableChild {
     return allTags;
   }
 
+  public allLayoutTagsPlusExamples(): string[] {
+    let allLayoutTags = this.allLayoutTags(false);
+    this.autoTags.forEach((autoTag) => {
+      allLayoutTags.push(autoTag.tag);
+      autoTag.examples.forEach((example) => {
+        allLayoutTags.push(example);
+      });
+    });
+    return Array.from(new Set(allLayoutTags));
+  }
+
   public addTagToSelectedImage(category: string, tag: string) {
     tag = cleanTag(tag);
     if (
@@ -452,5 +463,25 @@ export class Project extends SubscribableChild {
         return cat;
       }),
     );
+  }
+
+  public suggestTags(q: string): string[] {
+    q = cleanTag(q);
+    if (!q) {
+      return [];
+    }
+    let results: string[] = [];
+    if (q.length <= 2) {
+      // If it's a short query, just match the start of the tag.
+      results = this.allLayoutTagsPlusExamples().filter(
+        (tag) => tag.startsWith(q) && !tag.includes("{"),
+      );
+    } else {
+      // Otherwise, match anywhere in the tag.
+      results = this.allLayoutTagsPlusExamples().filter(
+        (tag) => tag.includes(q) && !tag.includes("{"),
+      );
+    }
+    return Array.from(new Set(results)).slice(0, 20);
   }
 }
