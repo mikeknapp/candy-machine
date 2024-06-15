@@ -1,6 +1,5 @@
 My immediate TODOS:
 
-- Does `categories.json` get saved if you don't select any tags?
 - Double `orange shirt` in `2303181c8fdfcf81_1024x1360_0.png`
 - Add new tags to the front of the list
 - Placeholder isn't highlighted properly when adding a tag

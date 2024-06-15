@@ -203,6 +203,9 @@ export class Project extends SubscribableChild {
   public setRequiresSetup(value: boolean) {
     this._requiresSetup = value;
     this.notifyListeners();
+    if (!value) {
+      this.save(); // Solidify whatever layout we have now, even just the default.
+    }
   }
 
   public async setSelectedImage(filename: string) {
