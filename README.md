@@ -10,23 +10,23 @@ _Web-Based Manual Image Tagger for Training Custom Stable Diffusion LORAs & Drea
 
 Candy Machine is a nascent image tagger for _manually tagging_ small datasets (< 1k images) with `.txt` caption files:
 
-- **Customizable tag layout**, for consistent tagging
+- **Customizable tag layout** for consistent tagging
 
-- **Placeholder tag templates**, i.e. `{type} clothes`, where `{type}` can be specified when adding a tag
+- **Placeholder tag templates**: i.e. `{type} clothes`, where `{type}` can be specified when adding a tag
 
 - **In-built image editing** (crop, rotate and flip horizontal)
 
-- **Tag suggestions** using `wd-v1-4-convnext-tagger.v3` when setting up a project
+- **Tag suggestions** using `wd-v1-4-convnext-tagger.v3` when creating a new project
 
-- **Automatic file conversion** to .png from .webp, .gif and more
+- **Automatic file conversion** to .png from .webp, .avif, .gif, etc
 
-- **Progress % pie chart** (for those times when you wonder _'am I done yet?!'_)
+- **Progress % pie chart** - for those times when you wonder _'am I done yet?!'_
 
-- **Keyboard shortcuts** (press '?' for a list)
+- **Keyboard shortcuts** - press '?' for a list
 
-- More features coming soon!
+- and more coming soon!
 
-Candy Machine runs entirely locally on your machine. No information is transmitted to any third party system.
+Candy Machine runs entirely on your local machine. No information is transmitted to any 3rd party system.
 
 ## Built-In Image Editor
 
@@ -42,7 +42,7 @@ I was inspired by [this Reddit post](https://www.reddit.com/r/StableDiffusion/co
 
 I've also never loved the "fiddly" parts of building a dataset - converting images, renaming them, cropping etc. I want to make building datasets quick, easy and, who knows, maybe even fun!
 
-(Also, H/T to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag) also for their prototype.)
+H/T to [BinaryAlley](https://github.com/BinaryAlley/DatasetTag) also for their prototype.
 
 ## Requirements:
 
@@ -56,7 +56,7 @@ This software is entirely free for personal, non-commercial use. If you're using
 
 ## How to Run on Windows
 
-```powershell
+```console
 git clone git@github.com:mikeknapp/candy-machine.git
 cd candy-machine
 run
@@ -68,7 +68,7 @@ A browser window should automatically open: `http://127.0.0.1:5000/`
 
 (Note, I haven't tested this yet, there may be bugs!)
 
-```sh
+```console
 git clone git@github.com:mikeknapp/candy-machine.git
 cd candy-machine
 chmod +x run.sh
@@ -85,7 +85,7 @@ Requires CUDA 12.2 and cuDNN8.x.
 
 2. Install `onnxruntime-gpu`
 
-```sh
+```console
 pip install onnxruntime-gpu --extra-index-url \
     https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 ```
@@ -130,7 +130,7 @@ Before spending any time writing code, please open an issue with your proposal s
 
 ### Virtual Env Setup (Windows):
 
-```powershell
+```console
 python -m venv venv
 call .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -140,14 +140,14 @@ pip install -r requirements.txt
 
 Prerequisites: Node and Yarn.
 
-```sh
+```console
 cd ui
 yarn start
 ```
 
 ### Run the Server:
 
-```sh
+```console
 cd server
 python main.py
 ```

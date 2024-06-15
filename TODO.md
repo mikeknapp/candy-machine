@@ -1,11 +1,13 @@
 My immediate TODOS:
 
-- Double "orange shirt" 2303181c8fdfcf81_1024x1360_0.png
+- Does `categories.json` get saved if you don't select any tags?
+- Double `orange shirt` in `2303181c8fdfcf81_1024x1360_0.png`
 - Add new tags to the front of the list
 - Placeholder isn't highlighted properly when adding a tag
 - Show suggestions when adding a tag to a category
 - Delete tags!
 - Scroll down to category again after adding a tag
+- Don't add all new tags to the layout, but allow them to autocomplete
 - 404 when editing an image (only occasionally) -- add a retry button?
 
 After that:

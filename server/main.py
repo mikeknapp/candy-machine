@@ -1,12 +1,11 @@
 import argparse
 import io
 import os
-import sys
 import threading
 import webbrowser
-from turtle import listen
 from urllib.parse import unquote
 
+import pillow_avif  # type: ignore
 from consts import LOWERCASE_IS_TRUE, PROJECTS_DIR
 from flask import (
     Flask,
