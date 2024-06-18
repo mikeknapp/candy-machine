@@ -67,9 +67,12 @@ export function AddTagPopup(props: AddTagPopupProps) {
         <div className="mx-1 my-2 font-bold text-gray-800 dark:text-gray-200">
           Add Tag to {props.category.toUpperCase()}
         </div>
-        <form onSubmit={onSubmit}>
-          <div className="mb-10 h-[350px] flex-col justify-between">
-            <div className="mb-3 flex flex-col items-end gap-2">
+        <div className="h-[350px]">
+          <div className="mb-10 flex flex-col justify-between">
+            <form
+              onSubmit={onSubmit}
+              className="mb-3 flex w-full flex-col items-end gap-2"
+            >
               <TextInput
                 id="add-tag-input"
                 ref={ref}
@@ -85,9 +88,10 @@ export function AddTagPopup(props: AddTagPopupProps) {
                 checked={!hide || isAlreadyShownInLayout}
                 onChange={() => setHide(!hide)}
               />
-            </div>
+            </form>
+
             {suggestedTags && (
-              <div className="flex max-h-[300px] w-full flex-row flex-wrap justify-center gap-2 p-3">
+              <div className="flex max-h-[300px] w-full flex-row flex-wrap items-start justify-center gap-2 p-3">
                 {suggestedTags.sort().map((example, i) => (
                   <Tag
                     key={`quick-add-${i}`}
@@ -99,7 +103,7 @@ export function AddTagPopup(props: AddTagPopupProps) {
               </div>
             )}
           </div>
-        </form>
+        </div>
       </ModalBody>
     </Modal>
   );

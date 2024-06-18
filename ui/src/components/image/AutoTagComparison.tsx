@@ -12,6 +12,7 @@ export function AutoTagComparison(props: AutoTagComparisonProps) {
   return (
     <>
       {props.autoTags?.map((tag, i) => {
+        tag = tag.toLowerCase().replace("\\(", "(").replace("\\)", ")");
         return (
           <span key={`auto-tag-${i}`}>
             {(props.tags ?? []).includes(tag) ? (

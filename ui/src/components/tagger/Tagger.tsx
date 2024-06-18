@@ -21,10 +21,14 @@ export function Tagger() {
   const isLoading = selectedImage?.isLoading;
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
+    if (!isLoading) {
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = 0;
+        }
+      }, 100);
     }
-  }, [filename]);
+  }, [filename, isLoading]);
 
   if (appValue.project.isLoading || !selectedImage?.filename) {
     return null;

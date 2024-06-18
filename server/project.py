@@ -1,9 +1,12 @@
 import json
 import os
 import shutil
+import threading
 import time
 from pathlib import Path
 from typing import Tuple
+
+project_save_lock = threading.Lock()
 
 import imagehash
 from consts import (
@@ -183,16 +186,17 @@ class Project:
             self.hidden_tags = data["hiddenTags"]
 
         file_path = os.path.join(self._base_dir, PROJECT_CONFIG_FILE)
-        with open(file_path, "w") as fp:
-            json.dump(
-                {
-                    "selectedImage": self.selected_image,
-                    "triggerWord": self.trigger_word,
-                    "triggerSynonyms": self.trigger_synonyms,
-                    "hiddenTags": self.hidden_tags,
-                },
-                fp,
-            )
+        with project_save_lock:
+            with open(file_path, "w") as fp:
+                json.dump(
+                    {
+                        "selectedImage": self.selected_image,
+                        "triggerWord": self.trigger_word,
+                        "triggerSynonyms": self.trigger_synonyms,
+                        "hiddenTags": self.hidden_tags,
+                    },
+                    fp,
+                )
 
     def save_txt_file(self, txtFileContents: str):
         if txtFileContents.strip() == "":

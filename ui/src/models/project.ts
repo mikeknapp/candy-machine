@@ -151,10 +151,13 @@ export class Project extends SubscribableChild {
 
   public get percentComplete(): number {
     return this._images.length
-      ? Math.round(
-          (Math.min(this._completed.length, this._images.length) /
-            this._images.length) *
-            100,
+      ? Math.max(
+          1,
+          Math.round(
+            (Math.min(this._completed.length, this._images.length) /
+              this._images.length) *
+              100,
+          ),
         )
       : 0;
   }
