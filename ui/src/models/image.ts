@@ -268,6 +268,21 @@ export const resizeImage = ({
     return s;
   }
 
+  // If no max size is specified, don't resize.
+  if (!maxWidth && !maxHeight) {
+    return s;
+  }
+
+  // If the image is already smaller than the max size, don't resize.
+  if (
+    maxWidth &&
+    s.width <= maxWidth &&
+    (!maxHeight || s.height <= maxHeight)
+  ) {
+    return s;
+  }
+
+  // Resize the image.
   let ratio = 1;
   if (maxWidth && maxHeight) {
     ratio = Math.min(maxWidth / s.width, maxHeight / s.height);

@@ -6,6 +6,8 @@ import { API_BASE_URL } from "../../api";
 import { imgSize, resizeImage } from "../../models/image";
 
 const MAX_IMG_SIZE = 550;
+const TRANSPARENT_GIF =
+  "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
 interface ImagePreviewProps {
   projectName: string;
@@ -15,7 +17,7 @@ interface ImagePreviewProps {
 export const ImagePreview = memo((props: ImagePreviewProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
-  const [src, setSrc] = useState("");
+  const [src, setSrc] = useState<string | null>(null);
   const [colorName, setColorName] = useState("");
   const [clearColorName, setClearColorName] = useState<NodeJS.Timeout | null>(
     null,
@@ -37,7 +39,7 @@ export const ImagePreview = memo((props: ImagePreviewProps) => {
     setImgError(false);
 
     // Momentarily set to a transparent gif to hide the old image.
-    setSrc("data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=");
+    setSrc(TRANSPARENT_GIF);
 
     // Try loading the image.
     const img = new Image();
@@ -84,7 +86,7 @@ export const ImagePreview = memo((props: ImagePreviewProps) => {
 
   return (
     <div
-      className="flex rounded-md bg-slate-200 shadow-md"
+      className="flex overflow-hidden rounded-md bg-slate-200 shadow-md"
       style={{
         width: `${resized.width}px`,
         height: `${resized.height}px`,
@@ -101,7 +103,7 @@ export const ImagePreview = memo((props: ImagePreviewProps) => {
 
       <div
         ref={ref}
-        className={`relative flex flex-col rounded-md ${imgError ? "hidden" : ""}`}
+        className={`relative flex flex-col ${imgError ? "hidden" : ""}`}
       >
         {src && (
           <div className="relative">
@@ -126,7 +128,7 @@ export const ImagePreview = memo((props: ImagePreviewProps) => {
                     );
                   }}
                   imgSrc={src}
-                  zoom={1}
+                  zoom={1.5}
                 />
               </div>
             )}
