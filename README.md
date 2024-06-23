@@ -26,7 +26,8 @@ Candy Machine is a nascent image tagger for _manually tagging_ small datasets (<
 
 - and more coming soon!
 
-Candy Machine runs entirely on your local machine. No information is transmitted to any 3rd party system.
+Candy Machine runs entirely on your local machine in "single player" mode. No information is transmitted to any
+3rd party system.
 
 ## Built-In Image Editor
 
