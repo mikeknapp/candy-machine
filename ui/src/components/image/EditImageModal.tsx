@@ -115,6 +115,9 @@ export function EditImageModal(props: CropImageModalProps) {
   const onImageLoad = () => {
     setTimeout(() => {
       const imgEl = imgRef.current as HTMLImageElement;
+      if (!imgEl) {
+        return;
+      }
       const {
         naturalWidth: w,
         naturalHeight: h,

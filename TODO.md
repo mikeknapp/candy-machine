@@ -1,5 +1,7 @@
 My immediate TODOS:
 
+- No suggestions are appearing?
+- Space skips to the end of a template
 - Be able to toggle "show in list" on existing keywords
 - Hover over new keywords in auto-tags and add them to a category
 - Delete tags!
