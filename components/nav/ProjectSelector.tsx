@@ -3,7 +3,10 @@
 import { getProjects } from "@/app/actions/projects"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { selectedProjectAtom } from "@/lib/atoms"
 import { Project } from "@prisma/client"
+import { useAtom } from "jotai"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -14,6 +17,7 @@ export function ProjectSelector() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedProject, setSelectedProject] = useAtom(selectedProjectAtom)
   const router = useRouter()
 
   useEffect(() => {
@@ -37,13 +41,20 @@ export function ProjectSelector() {
   }, [])
 
   const handleProjectChange = (value: string) => {
-    if (!value) return
-    router.push(`/#${value}`)
+    if (!value) {
+      setSelectedProject(null)
+      return
+    }
+    const project = projects.find((p) => p.slug === value)
+    if (project) {
+      setSelectedProject(project)
+      router.push(`/#${value}`)
+    }
   }
 
   return (
     <div className="flex flex-row items-center space-x-2">
-      <Select disabled={loading} onValueChange={handleProjectChange}>
+      <Select disabled={loading} onValueChange={handleProjectChange} value={selectedProject?.slug || ""}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select Project" />
         </SelectTrigger>
@@ -55,9 +66,18 @@ export function ProjectSelector() {
           ))}
         </SelectContent>
       </Select>
-      <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)} aria-label="Create new project">
-        <Plus className="h-5 w-5" />
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)} aria-label="Create new project">
+              <Plus className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Create a new project</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <CreateProjectDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
