@@ -2,12 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { useState } from "react"
+import { CreateProjectDialog } from "./CreateProjectDialog"
 
 export function ProjectSelector() {
-  const handleCreateProject = () => {
-    // TODO: Implement project creation
-    console.log("Create project clicked")
-  }
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <div className="flex flex-row items-center space-x-2">
@@ -15,9 +14,10 @@ export function ProjectSelector() {
         <option value="">Select Project</option>
         {/* Project options will be populated here */}
       </select>
-      <Button variant="ghost" size="icon" onClick={handleCreateProject} aria-label="Create new project">
+      <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)} aria-label="Create new project">
         <Plus className="h-5 w-5" />
       </Button>
+      <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )
 }
