@@ -1,12 +1,13 @@
 "use client"
 
 import { selectedProjectAtom } from "@/lib/atoms"
-import { useAtom, useAtomValue } from "jotai"
+import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { Upload } from "lucide-react"
 import { useCallback, useRef, useState } from "react"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
 import { processingQueueAtom, QueuedFile } from "./ProcessingQueue"
+import { projectImagesAtom, refreshProjectImages } from "@/lib/atoms"
 
 interface DragAndDropProps {
   children: React.ReactNode
@@ -16,6 +17,7 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
   const selectedProject = useAtomValue(selectedProjectAtom)
   const [isDragging, setIsDragging] = useState(false)
   const [queue, setQueue] = useAtom(processingQueueAtom)
+  const setImages = useSetAtom(projectImagesAtom)
   const dragCounter = useRef(0)
 
   const handleDragEnter = useCallback(
@@ -87,6 +89,10 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
 
         // Update status to completed
         setQueue((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "completed" } : f)))
+
+        // Refresh images list
+        const newImages = await refreshProjectImages(selectedProject!.id)
+        setImages(newImages)
       } catch (error) {
         // Update status to error
         setQueue((prev) =>
@@ -98,7 +104,7 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
         )
       }
     },
-    [selectedProject, setQueue]
+    [selectedProject, setQueue, setImages]
   )
 
   const handleDrop = useCallback(
