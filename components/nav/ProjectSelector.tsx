@@ -28,6 +28,25 @@ export function ProjectSelector() {
           throw new Error(result.error)
         }
         setProjects(result.data)
+
+        // Handle initial hash-based project selection
+        const hash = window.location.hash.slice(1)
+        if (hash) {
+          const projectFromHash = result.data.find((p) => p.slug === hash)
+          if (projectFromHash) {
+            setSelectedProject(projectFromHash)
+          } else {
+            // Remove invalid project hash
+            window.location.hash = ""
+          }
+        } else if (result.data.length > 0) {
+          // If no hash and projects exist, select the most recently updated project
+          const mostRecentProject = [...result.data].sort(
+            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          )[0]
+          setSelectedProject(mostRecentProject)
+          router.push(`/#${mostRecentProject.slug}`)
+        }
       } catch (error) {
         toast.error("Error", {
           description: error instanceof Error ? error.message : "Failed to fetch projects",
@@ -38,7 +57,7 @@ export function ProjectSelector() {
     }
 
     fetchProjects()
-  }, [])
+  }, [setSelectedProject, router])
 
   const handleProjectChange = (value: string) => {
     if (!value) {
