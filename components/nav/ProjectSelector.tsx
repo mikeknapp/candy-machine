@@ -4,9 +4,9 @@ import { getProjects } from "@/app/actions/projects"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { selectedProjectAtom } from "@/lib/atoms"
+import { selectedProjectAtom, projectImagesAtom } from "@/lib/atoms"
 import { Project } from "@prisma/client"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -18,6 +18,7 @@ export function ProjectSelector() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProject, setSelectedProject] = useAtom(selectedProjectAtom)
+  const setProjectImages = useSetAtom(projectImagesAtom)
   const router = useRouter()
 
   useEffect(() => {
@@ -62,11 +63,13 @@ export function ProjectSelector() {
   const handleProjectChange = (value: string) => {
     if (!value) {
       setSelectedProject(null)
+      setProjectImages([])
       return
     }
     const project = projects.find((p) => p.slug === value)
     if (project) {
       setSelectedProject(project)
+      setProjectImages([])
       router.push(`/#${value}`)
     }
   }
@@ -104,6 +107,8 @@ export function ProjectSelector() {
         onOpenChange={setDialogOpen}
         onSuccess={(project) => {
           setProjects((prev) => [...prev, project].sort((a, b) => a.name.localeCompare(b.name)))
+          setSelectedProject(project)
+          router.push(`/#${project.slug}`)
         }}
       />
     </div>
