@@ -1,6 +1,6 @@
 "use client"
 
-import { projectImagesAtom, refreshProjectImages, selectedProjectAtom } from "@/lib/atoms"
+import { projectImagesAtom, refreshProjectImages, selectedImageIndexAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
 import { useEffect, useState } from "react"
 import Image from "next/image"
@@ -9,7 +9,8 @@ import { toast } from "sonner"
 export const ImagePanel = () => {
   const selectedProject = useAtomValue(selectedProjectAtom)
   const [images, setImages] = useAtom(projectImagesAtom)
-  const [loading, setLoading] = useState(true)
+  const [selectedImageIndex, setSelectedImageIndex] = useAtom(selectedImageIndexAtom)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -31,6 +32,23 @@ export const ImagePanel = () => {
     fetchImages()
   }, [selectedProject, setImages])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedImageIndex === null) return
+      if (e.key === "ArrowLeft") {
+        if (selectedImageIndex === null || !images.length) return
+        setSelectedImageIndex((selectedImageIndex - 1 + images.length) % images.length)
+      }
+      if (e.key === "ArrowRight") {
+        if (selectedImageIndex === null || !images.length) return
+        setSelectedImageIndex((selectedImageIndex + 1) % images.length)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [selectedImageIndex, images.length, setSelectedImageIndex])
+
   if (!selectedProject) {
     return null
   }
@@ -49,10 +67,11 @@ export const ImagePanel = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">No images</p>
             </div>
           ) : (
-            images.map((image) => (
-              <div
+            images.map((image, index) => (
+              <button
                 key={image.id}
-                className="aspect-square relative bg-gray-200 dark:bg-gray-700 rounded overflow-hidden"
+                onClick={() => setSelectedImageIndex(index)}
+                className="aspect-square relative bg-gray-200 dark:bg-gray-700 rounded overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <Image
                   src={`/data/${selectedProject.slug}/${image.id}-original.${image.extension}`}
@@ -62,7 +81,7 @@ export const ImagePanel = () => {
                   sizes="(max-width: 768px) 50vw, 33vw"
                   draggable={false}
                 />
-              </div>
+              </button>
             ))
           )}
         </div>

@@ -4,7 +4,7 @@ import { getProjects } from "@/app/actions/projects"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { selectedProjectAtom, projectImagesAtom } from "@/lib/atoms"
+import { selectedProjectAtom, projectStateResetAtom } from "@/lib/atoms"
 import { Project } from "@prisma/client"
 import { useAtom, useSetAtom } from "jotai"
 import { Plus } from "lucide-react"
@@ -17,8 +17,7 @@ export function ProjectSelector() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedProject, setSelectedProject] = useAtom(selectedProjectAtom)
-  const setProjectImages = useSetAtom(projectImagesAtom)
+  const [selectedProject, setSelectedProject] = useAtom(projectStateResetAtom)
   const router = useRouter()
 
   useEffect(() => {
@@ -63,13 +62,11 @@ export function ProjectSelector() {
   const handleProjectChange = (value: string) => {
     if (!value) {
       setSelectedProject(null)
-      setProjectImages([])
       return
     }
     const project = projects.find((p) => p.slug === value)
     if (project) {
       setSelectedProject(project)
-      setProjectImages([])
       router.push(`/#${value}`)
     }
   }
