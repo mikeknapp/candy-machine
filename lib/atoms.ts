@@ -1,7 +1,7 @@
+import { getProjectImages } from "@/app/actions/images"
 import { Image, Project } from "@prisma/client"
 import { atom } from "jotai"
-import { atomWithStorage } from "jotai/utils"
-import { getProjectImages } from "@/app/actions/images"
+import debounce from "lodash/debounce"
 
 export const selectedProjectAtom = atom<Project | null>(null)
 export const selectedImageIdAtom = atom<number | null>(null)
@@ -17,7 +17,7 @@ export const projectStateResetAtom = atom(
   }
 )
 
-export const refreshProjectImages = async (projectId: number) => {
+const refreshProjectImagesBase = async (projectId: number) => {
   try {
     const result = await getProjectImages(projectId)
 
@@ -31,3 +31,9 @@ export const refreshProjectImages = async (projectId: number) => {
     throw error
   }
 }
+
+export const refreshProjectImages = debounce(refreshProjectImagesBase, 3000, {
+  leading: true, // Execute on the leading edge of the timeout
+  trailing: true, // Also execute on the trailing edge
+  maxWait: 3000, // Maximum time to wait before forcing execution
+})

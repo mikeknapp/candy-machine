@@ -1,5 +1,6 @@
 "use server"
 
+import { getEmbedding } from "@/lib/embedding"
 import { prisma } from "@/lib/prisma"
 import { writeFile } from "fs"
 import { mkdir } from "fs/promises"
@@ -76,12 +77,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save image file" }, { status: 500 })
     }
 
+    // Get perceptual hash
     const hash = await phash(filePath)
+
+    // Get embedding
+    const embedding = await getEmbedding({ filePath })
 
     // Update image record with hash
     await prisma.image.update({
       where: { id: image.id },
-      data: { hash },
+      data: { hash, embedding: Buffer.from(embedding) },
     })
 
     return NextResponse.json({ data: image })

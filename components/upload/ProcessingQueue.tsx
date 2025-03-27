@@ -1,7 +1,8 @@
 "use client"
 
+import { projectImagesAtom, refreshProjectImages } from "@/lib/atoms"
 import { cn } from "@/lib/utils"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 import { X } from "lucide-react"
 import { useCallback, useEffect } from "react"
@@ -14,6 +15,8 @@ export interface QueuedFile {
   status: "pending" | "processing" | "completed" | "error"
   error?: string
   progress?: number
+  originalFile?: File // Store the original File object for retries
+  projectId?: number // Store the project ID for retries
 }
 
 export const processingQueueAtom = atomWithStorage<QueuedFile[]>("processingQueue", [])
@@ -22,10 +25,60 @@ export const isQueueMinimizedAtom = atomWithStorage("isQueueMinimized", false)
 export const ProcessingQueue = () => {
   const [queue, setQueue] = useAtom(processingQueueAtom)
   const [isMinimized, setIsMinimized] = useAtom(isQueueMinimizedAtom)
+  const setImages = useSetAtom(projectImagesAtom)
 
   const handleMinimize = useCallback(() => {
     setIsMinimized(!isMinimized)
   }, [isMinimized, setIsMinimized])
+
+  const handleRetry = useCallback(
+    async (fileId: string) => {
+      // Find the original file in the queue
+      const queuedFile = queue.find((f) => f.id === fileId)
+      if (!queuedFile?.originalFile || !queuedFile.projectId) return
+
+      try {
+        // Update status to processing
+        setQueue((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, status: "processing", progress: 0, error: undefined } : f))
+        )
+
+        // Create form data
+        const formData = new FormData()
+        formData.append("projectId", queuedFile.projectId.toString())
+        formData.append("file", queuedFile.originalFile)
+
+        // Upload image
+        const response = await fetch("/api/images", {
+          method: "POST",
+          body: formData,
+        })
+
+        const result = await response.json()
+
+        if (!response.ok || "error" in result) {
+          throw new Error(typeof result.error === "string" ? result.error : "Failed to upload image")
+        }
+
+        // Update status to completed
+        setQueue((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "completed" } : f)))
+
+        // Refresh images list
+        const newImages = await refreshProjectImages(queuedFile.projectId)
+        setImages(newImages)
+      } catch (error) {
+        // Update status to error
+        setQueue((prev) =>
+          prev.map((f) =>
+            f.id === fileId
+              ? { ...f, status: "error", error: error instanceof Error ? error.message : "Upload failed" }
+              : f
+          )
+        )
+      }
+    },
+    [queue, setQueue, setImages]
+  )
 
   useEffect(() => {
     const timeouts: NodeJS.Timeout[] = []
@@ -112,7 +165,19 @@ export const ProcessingQueue = () => {
                     </>
                   )}
                   {file.status === "completed" && <span className="text-xs text-green-500">Completed</span>}
-                  {file.status === "error" && <span className="text-xs text-red-500">{file.error || "Failed"}</span>}
+                  {file.status === "error" && (
+                    <div className="flex items-center space-x-2 flex-1">
+                      <span className="text-xs text-red-500 flex-1">{file.error || "Failed"}</span>
+                      {file.originalFile && file.projectId && (
+                        <button
+                          onClick={() => handleRetry(file.id)}
+                          className="text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

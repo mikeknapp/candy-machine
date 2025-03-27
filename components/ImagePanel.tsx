@@ -74,7 +74,7 @@ export const ImagePanel = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">No images</p>
             </div>
           ) : (
-            images.map((image) => (
+            images.map((image, index) => (
               <button
                 key={image.id}
                 ref={(el) => {
@@ -90,6 +90,7 @@ export const ImagePanel = () => {
                   className="object-cover"
                   sizes="(max-width: 768px) 50vw, 33vw"
                   draggable={false}
+                  priority={index === 0}
                 />
               </button>
             ))

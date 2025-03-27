@@ -63,7 +63,6 @@ export const MainPanel = () => {
             height={2000}
             priority
             draggable={false}
-            onLoadingComplete={() => setIsLoading(false)}
             onLoad={() => setIsLoading(false)}
           />
           {isLoading && (

@@ -1,13 +1,12 @@
 "use client"
 
-import { selectedProjectAtom } from "@/lib/atoms"
-import { useAtom, useSetAtom, useAtomValue } from "jotai"
+import { projectImagesAtom, refreshProjectImages, selectedProjectAtom } from "@/lib/atoms"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Upload } from "lucide-react"
 import { useCallback, useRef, useState } from "react"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
 import { processingQueueAtom, QueuedFile } from "./ProcessingQueue"
-import { projectImagesAtom, refreshProjectImages } from "@/lib/atoms"
 
 interface DragAndDropProps {
   children: React.ReactNode
@@ -62,6 +61,8 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
         size: file.size,
         type: file.type,
         status: "pending",
+        originalFile: file,
+        projectId: selectedProject!.id,
       }
 
       setQueue((prev) => [...prev, queuedFile])
