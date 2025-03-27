@@ -22,13 +22,15 @@ enum ProjectType {
 }
 
 model Project {
-  id        Int            @id @default(autoincrement())
-  name      String         @unique
-  slug      String         @unique
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  slug      String      @unique
   type      ProjectType
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  images    ProjectImage[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relations
+  images Image[]
 }
 
 enum ImageStatus {
@@ -42,6 +44,7 @@ enum ImageStatus {
 
 model Image {
   id                  Int         @id @default(autoincrement())
+  projectId           Int
   width               Int
   height              Int
   fileSize            Int
@@ -58,15 +61,5 @@ model Image {
   status              ImageStatus @default(PENDING_INDEXING)
 
   // Relations
-  projects ProjectImage[]
-}
-
-model ProjectImage {
-  project   Project  @relation(fields: [projectId], references: [id])
-  projectId Int
-  image     Image    @relation(fields: [imageId], references: [id])
-  imageId   Int
-  createdAt DateTime @default(now())
-
-  @@id([projectId, imageId])
+  project Project @relation(fields: [projectId], references: [id])
 }

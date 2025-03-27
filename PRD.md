@@ -9,7 +9,8 @@ Candy Machine v2 is a comprehensive, next-generation web-based application built
 #### Project Creation
 
 - Users can create new, named projects to organize images.
-- Each project stores its images and metadata separately in a structured SQLite database and corresponding filesystem directory (`/data/<project_name>/`).
+- Each project stores its images and metadata separately in a structured SQLite database and corresponding filesystem directory (`/data/<project_slug>/`).
+- Users should be able to copy images between projects easily.
 
 #### Image Upload & Processing
 
@@ -66,6 +67,7 @@ Candy Machine v2 is a comprehensive, next-generation web-based application built
 - **Image Processing:** `sharp` for image processing
 - **ML Integration:** OpenAI-compatible VLLM (local or remote)
 - **File Management:** Local filesystem storage structured for efficiency
+- **State Management:** Jotai for state management
 
 ### User Interface Considerations
 
