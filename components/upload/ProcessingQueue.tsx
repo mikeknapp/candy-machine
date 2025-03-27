@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { useAtom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 import { X } from "lucide-react"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 
 export interface QueuedFile {
   id: string
@@ -26,6 +26,28 @@ export const ProcessingQueue = () => {
   const handleMinimize = useCallback(() => {
     setIsMinimized(!isMinimized)
   }, [isMinimized, setIsMinimized])
+
+  useEffect(() => {
+    const timeouts: NodeJS.Timeout[] = []
+
+    queue.forEach((file) => {
+      if (file.status === "completed") {
+        const timeout = setTimeout(() => {
+          setQueue((currentQueue) => currentQueue.filter((f) => f.id !== file.id))
+        }, 5000) // 5 seconds
+        timeouts.push(timeout)
+      } else if (file.status === "error") {
+        const timeout = setTimeout(() => {
+          setQueue((currentQueue) => currentQueue.filter((f) => f.id !== file.id))
+        }, 120000) // 2 minutes
+        timeouts.push(timeout)
+      }
+    })
+
+    return () => {
+      timeouts.forEach(clearTimeout)
+    }
+  }, [queue, setQueue])
 
   if (queue.length === 0) {
     return null
