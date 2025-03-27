@@ -1,9 +1,8 @@
 "use server"
 
-import { PrismaClient, ProjectType } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
+import { ProjectType } from "@prisma/client"
 import { z } from "zod"
-
-const prisma = new PrismaClient()
 
 const createProjectSchema = z.object({
   name: z.string().min(1),
@@ -15,18 +14,25 @@ const createProjectSchema = z.object({
     ProjectType.CONCEPT,
     ProjectType.OTHER,
   ]),
-  slug: z.string().min(1),
 })
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
 
 type CreateProjectInput = z.infer<typeof createProjectSchema>
 
 export async function createProject(input: CreateProjectInput) {
   try {
     const body = createProjectSchema.parse(input)
+    const slug = generateSlug(body.name)
 
     const existingProject = await prisma.project.findFirst({
       where: {
-        OR: [{ name: body.name }, { slug: body.slug }],
+        OR: [{ name: body.name }, { slug }],
       },
     })
 
@@ -41,7 +47,7 @@ export async function createProject(input: CreateProjectInput) {
       data: {
         name: body.name,
         type: body.type,
-        slug: body.slug,
+        slug,
       },
     })
 
@@ -75,4 +81,19 @@ export async function getProjects() {
       status: 500,
     }
   }
+}
+
+export async function checkProjectNameAvailability(name: string) {
+  if (!name) {
+    return { available: false }
+  }
+
+  const slug = generateSlug(name)
+
+  const existingProject = await prisma.project.findUnique({
+    where: { slug },
+    select: { id: true },
+  })
+
+  return { available: !existingProject }
 }

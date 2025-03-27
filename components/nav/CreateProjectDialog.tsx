@@ -2,13 +2,16 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Project } from "@prisma/client"
-import { HelpCircle, Lightbulb, Package, Palette, Shirt, User } from "lucide-react"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import debounce from "lodash/debounce"
+import { Check, HelpCircle, Lightbulb, Package, Palette, Shirt, User, X } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
-import { createProject } from "@/app/actions/projects"
+import { checkProjectNameAvailability, createProject } from "@/app/actions/projects"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -58,6 +61,10 @@ interface CreateProjectDialogProps {
 
 export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreateProjectDialogProps) {
   const router = useRouter()
+  const [nameAvailability, setNameAvailability] = useState<{ isAvailable?: boolean; isChecking: boolean }>({
+    isChecking: false,
+  })
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,16 +73,34 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
     },
   })
 
+  const checkNameAvailability = debounce(async (name: string) => {
+    if (!name) {
+      setNameAvailability({ isChecking: false })
+      return
+    }
+
+    setNameAvailability({ isChecking: true })
+    try {
+      const { available } = await checkProjectNameAvailability(name)
+      setNameAvailability({ isAvailable: available, isChecking: false })
+    } catch (error) {
+      setNameAvailability({ isChecking: false })
+    }
+  }, 300)
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "name") {
+        checkNameAvailability(value.name || "")
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [form.watch])
+
   const onSubmit = async (data: FormData) => {
     try {
-      const slug = data.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-
       const result = await createProject({
         ...data,
-        slug,
       })
 
       if ("error" in result) {
@@ -107,11 +132,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
-          <DialogDescription>Create a new project to organize your images and training data.</DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[600px]">
+        <VisuallyHidden>
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>Create a new project to organize your images and training data.</DialogDescription>
+          </DialogHeader>
+        </VisuallyHidden>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -121,7 +148,28 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
                 <FormItem>
                   <FormLabel>Project Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="My awesome project" {...field} />
+                    <div className="relative">
+                      <Input
+                        placeholder="My awesome project"
+                        {...field}
+                        autoComplete="off"
+                        spellCheck="false"
+                        data-form-type="other"
+                        data-lpignore="true"
+                        name="project-name"
+                      />
+                      {field.value && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {nameAvailability.isChecking ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          ) : nameAvailability.isAvailable ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-red-500" />
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

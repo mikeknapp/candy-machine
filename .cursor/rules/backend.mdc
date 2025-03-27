@@ -1,0 +1,6 @@
+---
+description: When create API endpoints
+globs: 
+alwaysApply: false
+---
+- Try to always use Nextjs Server Actions where possible, rather than API endpoints.
