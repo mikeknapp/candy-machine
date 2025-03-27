@@ -1,28 +1,36 @@
 "use client"
 
-import { projectImagesAtom, selectedImageIndexAtom, selectedProjectAtom } from "@/lib/atoms"
+import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { ProcessingQueue } from "./upload/ProcessingQueue"
+import { useState } from "react"
 
 export const MainPanel = () => {
+  const [isLoading, setIsLoading] = useState(true)
   const selectedProject = useAtomValue(selectedProjectAtom)
   const images = useAtomValue(projectImagesAtom)
-  const [selectedImageIndex, setSelectedImageIndex] = useAtom(selectedImageIndexAtom)
+  const [selectedImageId, setSelectedImageId] = useAtom(selectedImageIdAtom)
 
   const handlePrevImage = () => {
-    if (selectedImageIndex === null || !images.length) return
-    setSelectedImageIndex((selectedImageIndex - 1 + images.length) % images.length)
+    if (!images.length || selectedImageId === null) return
+    const currentIndex = images.findIndex((img) => img.id === selectedImageId)
+    if (currentIndex === -1) return
+    const newIndex = (currentIndex - 1 + images.length) % images.length
+    setSelectedImageId(images[newIndex].id)
   }
 
   const handleNextImage = () => {
-    if (selectedImageIndex === null || !images.length) return
-    setSelectedImageIndex((selectedImageIndex + 1) % images.length)
+    if (!images.length || selectedImageId === null) return
+    const currentIndex = images.findIndex((img) => img.id === selectedImageId)
+    if (currentIndex === -1) return
+    const newIndex = (currentIndex + 1) % images.length
+    setSelectedImageId(images[newIndex].id)
   }
 
   // Show welcome message if no project is selected or no image is selected
-  if (!selectedProject || selectedImageIndex === null) {
+  if (!selectedProject || selectedImageId === null) {
     return (
       <div className="relative flex-1 h-full bg-white dark:bg-gray-900 p-8">
         <div className="flex items-center justify-center h-full">
@@ -40,18 +48,30 @@ export const MainPanel = () => {
     )
   }
 
+  const selectedImage = images.find((img) => img.id === selectedImageId)
+  if (!selectedImage) return null
+
   return (
     <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
       <div className="absolute inset-0 flex items-center justify-center">
-        <Image
-          src={`/data/${selectedProject.slug}/${images[selectedImageIndex].id}-original.${images[selectedImageIndex].extension}`}
-          alt={`Image ${images[selectedImageIndex].id}`}
-          fill
-          className="object-contain"
-          sizes="100vw"
-          priority
-          draggable={false}
-        />
+        <div className="relative w-full h-full flex items-center justify-center">
+          <Image
+            src={`/data/${selectedProject.slug}/${selectedImage.id}-original.${selectedImage.extension}`}
+            alt={`Image ${selectedImage.id}`}
+            className="max-h-full max-w-full w-auto h-auto object-contain"
+            width={2000}
+            height={2000}
+            priority
+            draggable={false}
+            onLoadingComplete={() => setIsLoading(false)}
+            onLoad={() => setIsLoading(false)}
+          />
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-gray-900/80 text-white px-4 py-2 rounded-full">
@@ -63,7 +83,7 @@ export const MainPanel = () => {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <span className="text-sm">
-          {selectedImageIndex + 1} / {images.length}
+          {images.findIndex((img) => img.id === selectedImageId) + 1} / {images.length}
         </span>
         <button
           onClick={handleNextImage}

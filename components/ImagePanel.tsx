@@ -1,16 +1,17 @@
 "use client"
 
-import { projectImagesAtom, refreshProjectImages, selectedImageIndexAtom, selectedProjectAtom } from "@/lib/atoms"
+import { projectImagesAtom, refreshProjectImages, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import { toast } from "sonner"
 
 export const ImagePanel = () => {
   const selectedProject = useAtomValue(selectedProjectAtom)
   const [images, setImages] = useAtom(projectImagesAtom)
-  const [selectedImageIndex, setSelectedImageIndex] = useAtom(selectedImageIndexAtom)
+  const [selectedImageId, setSelectedImageId] = useAtom(selectedImageIdAtom)
   const [loading, setLoading] = useState(false)
+  const buttonRefs = useRef<Record<string, HTMLButtonElement>>({})
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -34,20 +35,26 @@ export const ImagePanel = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedImageIndex === null) return
+      if (!images.length || selectedImageId === null) return
+
+      const currentIndex = images.findIndex((img) => img.id === selectedImageId)
+      if (currentIndex === -1) return
+
       if (e.key === "ArrowLeft") {
-        if (selectedImageIndex === null || !images.length) return
-        setSelectedImageIndex((selectedImageIndex - 1 + images.length) % images.length)
+        const newIndex = (currentIndex - 1 + images.length) % images.length
+        setSelectedImageId(images[newIndex].id)
+        buttonRefs.current[images[newIndex].id]?.focus()
       }
       if (e.key === "ArrowRight") {
-        if (selectedImageIndex === null || !images.length) return
-        setSelectedImageIndex((selectedImageIndex + 1) % images.length)
+        const newIndex = (currentIndex + 1) % images.length
+        setSelectedImageId(images[newIndex].id)
+        buttonRefs.current[images[newIndex].id]?.focus()
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedImageIndex, images.length, setSelectedImageIndex])
+  }, [selectedImageId, images, setSelectedImageId])
 
   if (!selectedProject) {
     return null
@@ -67,10 +74,13 @@ export const ImagePanel = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">No images</p>
             </div>
           ) : (
-            images.map((image, index) => (
+            images.map((image) => (
               <button
                 key={image.id}
-                onClick={() => setSelectedImageIndex(index)}
+                ref={(el) => {
+                  if (el) buttonRefs.current[image.id] = el
+                }}
+                onClick={() => setSelectedImageId(image.id)}
                 className="aspect-square relative bg-gray-200 dark:bg-gray-700 rounded overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <Image
