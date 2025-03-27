@@ -60,8 +60,8 @@ Candy Machine v2 is a comprehensive, next-generation web-based application built
 
 ### Technical Stack
 
-- **Frontend:** Next.js (latest), TypeScript, Tailwind CSS, shadcn UI components
-- **Backend:** Next.js API routes, SQLite
+- **Frontend:** Next.js (latest), TypeScript, Tailwind CSS (v14, note there is no config file for v14), shadcn UI components
+- **Backend:** Next.js server functions, SQLite (via `prisma`)
 - **Task Queue:** `node-persistent-queue` for persistent task management
 - **Image Processing:** `sharp` for image processing
 - **ML Integration:** OpenAI-compatible VLLM (local or remote)
