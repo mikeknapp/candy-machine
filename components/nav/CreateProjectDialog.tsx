@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
+import { createProject } from "@/app/actions/projects"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -70,30 +71,23 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")
 
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          slug,
-        }),
+      const result = await createProject({
+        ...data,
+        slug,
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        if (response.status === 409) {
+      if ("error" in result) {
+        if (result.status === 409) {
           form.setError("name", {
             type: "manual",
             message: "A project with this name already exists",
           })
           return
         }
-        throw new Error(error.error || "Failed to create project")
+        throw new Error(typeof result.error === "string" ? result.error : "Failed to create project")
       }
 
-      const project = await response.json()
+      const project = result.data
       toast.success("Project created", {
         description: `Project "${project.name}" created successfully`,
       })
