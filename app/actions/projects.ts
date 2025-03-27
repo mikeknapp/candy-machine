@@ -60,3 +60,19 @@ export async function createProject(input: CreateProjectInput) {
     }
   }
 }
+
+export async function getProjects() {
+  try {
+    const projects = await prisma.project.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    })
+    return { data: projects }
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to fetch projects",
+      status: 500,
+    }
+  }
+}

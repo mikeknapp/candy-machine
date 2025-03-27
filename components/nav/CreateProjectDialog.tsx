@@ -1,6 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Project } from "@prisma/client"
 import { HelpCircle, Lightbulb, Package, Palette, Shirt, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
@@ -52,9 +53,10 @@ type FormData = z.infer<typeof formSchema>
 interface CreateProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: (project: Project) => void
 }
 
-export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreateProjectDialogProps) {
   const router = useRouter()
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -95,6 +97,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       onOpenChange(false)
       form.reset()
       router.push(`/#${project.slug}`)
+      onSuccess?.(project)
     } catch (error) {
       toast.error("Error", {
         description: error instanceof Error ? error.message : "Failed to create project",
