@@ -1,0 +1,72 @@
+// Docs: https://pris.ly/d/prisma-schema
+// Generate client: npx prisma generate
+// Update db w/ migrations: npx prisma migrate dev --name <name>
+// Push scheme w/o migrations: npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectType {
+  CHARACTER
+  CLOTHING
+  OBJECT
+  IMAGE_STYLE
+  CONCEPT
+  OTHER
+}
+
+model Project {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique
+  slug      String         @unique
+  type      ProjectType
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  images    ProjectImage[]
+}
+
+enum ImageStatus {
+  PENDING_INDEXING
+  INDEXING
+  INDEXED
+  INDEXING_FAILED
+  DELETED_DUPLICATE
+  DELETED_OTHER
+}
+
+model Image {
+  id                  Int         @id @default(autoincrement())
+  width               Int
+  height              Int
+  fileSize            Int
+  originalAspectRatio Float
+  aspectRatio         Float
+  hash                String // for duplicate detection
+  embedding           Bytes // vector embedding data (if available)
+  cropData            Json? // e.g. { x, y, width, height }
+  rotation            Int? // in degrees
+  rating              Int?
+  eloRating           Int         @default(1000)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  status              ImageStatus @default(PENDING_INDEXING)
+
+  // Relations
+  projects ProjectImage[]
+}
+
+model ProjectImage {
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId Int
+  image     Image    @relation(fields: [imageId], references: [id])
+  imageId   Int
+  createdAt DateTime @default(now())
+
+  @@id([projectId, imageId])
+}
