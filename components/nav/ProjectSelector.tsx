@@ -73,18 +73,20 @@ export function ProjectSelector() {
 
   return (
     <div className="flex flex-row items-center space-x-2">
-      <Select disabled={loading} onValueChange={handleProjectChange} value={selectedProject?.slug || ""}>
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Project" />
-        </SelectTrigger>
-        <SelectContent>
-          {projects.map((project) => (
-            <SelectItem key={project.id} value={project.slug}>
-              {project.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {projects.length > 0 && (
+        <Select disabled={loading} onValueChange={handleProjectChange} value={selectedProject?.slug || ""}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Project" />
+          </SelectTrigger>
+          <SelectContent>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.slug}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

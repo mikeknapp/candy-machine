@@ -45,6 +45,7 @@ enum ImageStatus {
 model Image {
   id                  Int         @id @default(autoincrement())
   projectId           Int
+  extension           String
   width               Int
   height              Int
   fileSize            Int

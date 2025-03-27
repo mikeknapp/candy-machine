@@ -3,6 +3,9 @@
 # Prisma
 prisma/database.db
 
+# Local images
+public/data/*
+
 # dependencies
 /node_modules/
 /.pnp

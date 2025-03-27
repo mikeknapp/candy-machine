@@ -1,6 +1,12 @@
+"use server"
+
 import { prisma } from "@/lib/prisma"
+import { writeFile } from "fs"
+import { mkdir } from "fs/promises"
 import { NextRequest, NextResponse } from "next/server"
+import { join } from "path"
 import sharp from "sharp"
+import phash from "sharp-phash"
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +18,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    const project = await prisma.project.findUnique({
+      where: { id: parseInt(projectId) },
+    })
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 })
+    }
+
+    const projectSlug = project.slug
     const buffer = await file.arrayBuffer()
     const metadata = await sharp(Buffer.from(buffer)).metadata()
 
@@ -20,23 +35,53 @@ export async function POST(request: NextRequest) {
     }
 
     const aspectRatio = metadata.width / metadata.height
+    const extension = file.type.split("/")[1]
 
     // Create image record
     const image = await prisma.image.create({
       data: {
+        extension: extension,
         width: metadata.width,
         height: metadata.height,
         fileSize: file.size,
         originalAspectRatio: aspectRatio,
         aspectRatio,
-        hash: "", // TODO: Implement image hashing
+        hash: "", // Will calculate hash after writing to file system
         embedding: Buffer.from([]), // Empty buffer for now, will be populated later
-        projects: {
-          create: {
-            projectId: parseInt(projectId),
+        project: {
+          connect: {
+            id: parseInt(projectId),
           },
         },
       },
+    })
+
+    // Write to file system
+    const dirPath = join(process.cwd(), "public", "data", projectSlug)
+    const filePath = join(dirPath, `${image.id}-original.${file.type.split("/")[1]}`)
+
+    try {
+      // Ensure directory exists
+      await mkdir(dirPath, { recursive: true })
+
+      // Write file to disk
+      await new Promise<void>((resolve, reject) => {
+        writeFile(filePath, Buffer.from(buffer), (err) => {
+          if (err) reject(err)
+          else resolve()
+        })
+      })
+    } catch (error) {
+      console.error("Error writing file:", error)
+      return NextResponse.json({ error: "Failed to save image file" }, { status: 500 })
+    }
+
+    const hash = await phash(filePath)
+
+    // Update image record with hash
+    await prisma.image.update({
+      where: { id: image.id },
+      data: { hash },
     })
 
     return NextResponse.json({ data: image })
