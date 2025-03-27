@@ -1,7 +1,7 @@
-import { DragAndDrop } from "@/components/DragAndDrop"
 import { ImagePanel } from "@/components/ImagePanel"
 import { MainPanel } from "@/components/MainPanel"
 import { Navbar } from "@/components/nav/Navbar"
+import { DragAndDrop } from "@/components/upload/DragAndDrop"
 
 export default function Home() {
   return (

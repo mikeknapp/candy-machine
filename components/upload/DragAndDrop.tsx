@@ -3,10 +3,10 @@
 import { selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
 import { Upload } from "lucide-react"
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
-import { processingQueueAtom, QueuedFile } from "./upload/ProcessingQueue"
+import { processingQueueAtom, QueuedFile } from "./ProcessingQueue"
 
 interface DragAndDropProps {
   children: React.ReactNode
@@ -16,17 +16,39 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
   const selectedProject = useAtomValue(selectedProjectAtom)
   const [isDragging, setIsDragging] = useState(false)
   const [queue, setQueue] = useAtom(processingQueueAtom)
+  const dragCounter = useRef(0)
+
+  const handleDragEnter = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (!selectedProject) return
+
+      dragCounter.current += 1
+      if (dragCounter.current === 1) {
+        setIsDragging(true)
+      }
+    },
+    [selectedProject]
+  )
+
+  const handleDragLeave = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (!selectedProject) return
+
+      dragCounter.current -= 1
+      if (dragCounter.current === 0) {
+        setIsDragging(false)
+      }
+    },
+    [selectedProject]
+  )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsDragging(true)
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(false)
   }, [])
 
   const processFile = useCallback(
@@ -116,6 +138,7 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
   return (
     <div
       className="relative h-full w-full"
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
