@@ -123,9 +123,7 @@ export const DragAndDrop = ({ children }: DragAndDropProps) => {
       const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("image/"))
 
       if (files.length === 0) {
-        toast.error("No images found", {
-          description: "Please drop image files only",
-        })
+        setIsDragging(false)
         return
       }
 
