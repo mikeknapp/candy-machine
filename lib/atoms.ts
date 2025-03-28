@@ -10,10 +10,19 @@ export const projectImagesAtom = atom<Image[]>([])
 // Create a derived atom that resets related atoms when selectedProject changes
 export const projectStateResetAtom = atom(
   (get) => get(selectedProjectAtom),
-  (get, set, newProject: Project | null) => {
+  async (get, set, newProject: Project | null) => {
     set(selectedProjectAtom, newProject)
     set(selectedImageIdAtom, null)
     set(projectImagesAtom, [])
+
+    if (newProject) {
+      try {
+        const images = await refreshProjectImagesBase(newProject.id)
+        set(projectImagesAtom, images)
+      } catch (error) {
+        console.error("Failed to fetch project images:", error)
+      }
+    }
   }
 )
 

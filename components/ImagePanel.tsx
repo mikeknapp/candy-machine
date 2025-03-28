@@ -1,15 +1,40 @@
 "use client"
 
+import { searchImages } from "@/app/actions/search"
 import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
+import { useDebounce } from "@/lib/hooks"
+import { Image as ImageType } from "@prisma/client"
 import { useAtom, useAtomValue } from "jotai"
 import Image from "next/image"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export const ImagePanel = () => {
   const selectedProject = useAtomValue(selectedProjectAtom)
-  const [images, setImages] = useAtom(projectImagesAtom)
+  const images = useAtomValue(projectImagesAtom)
   const [selectedImageId, setSelectedImageId] = useAtom(selectedImageIdAtom)
   const buttonRefs = useRef<Record<string, HTMLButtonElement>>({})
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResult, setSearchResult] = useState<ImageType[] | []>([])
+  const debouncedSearch = useDebounce(searchQuery, 500)
+
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!selectedProject || debouncedSearch.trim() === "") {
+        setSearchResult([])
+        return
+      }
+
+      try {
+        const results = await searchImages(selectedProject.id, debouncedSearch)
+        setSearchResult(results)
+      } catch (error) {
+        console.error("Search failed:", error)
+        setSearchResult([])
+      }
+    }
+
+    performSearch()
+  }, [debouncedSearch, selectedProject])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,17 +63,28 @@ export const ImagePanel = () => {
     return null
   }
 
+  const displayedImages = searchQuery ? searchResult : images
+
   return (
     <div className="w-64 h-full bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       <h2 className="text-lg font-semibold p-4 pb-2">{selectedProject.name} Images</h2>
+      <div className="px-4 pb-2">
+        <input
+          type="text"
+          placeholder="Search images..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
       <div className="flex-1 overflow-y-auto p-4 pt-2">
         <div className="grid grid-cols-2 gap-4 auto-rows-max">
-          {images.length === 0 ? (
+          {displayedImages.length === 0 ? (
             <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">No images</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{searchQuery ? "No results" : "No images"}</p>
             </div>
           ) : (
-            images.map((image, index) => (
+            displayedImages.map((image, index) => (
               <button
                 key={image.id}
                 ref={(el) => {

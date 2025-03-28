@@ -3,6 +3,7 @@
 import { findAndRecordDuplicates } from "@/lib/duplicates"
 import { getEmbedding } from "@/lib/embedding"
 import { prisma } from "@/lib/prisma"
+import { arrayToBuffer } from "@/lib/utils"
 import { writeFile } from "fs"
 import { mkdir } from "fs/promises"
 import { NextRequest, NextResponse } from "next/server"
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     // Update image record with hash
     await prisma.image.update({
       where: { id: image.id },
-      data: { hash, embedding: Buffer.from(embedding) },
+      data: { hash, embedding: arrayToBuffer(embedding) },
     })
 
     // Find and record duplicates
