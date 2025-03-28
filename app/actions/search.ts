@@ -35,5 +35,12 @@ export async function searchImages(projectId: number, query: string): Promise<Im
     },
   })
 
-  return imageResults
+  // Order them by the score
+  const orderedResults = imageResults.sort((a, b) => {
+    const aScore = scores.find((score) => score.id === a.id)?.score
+    const bScore = scores.find((score) => score.id === b.id)?.score
+    return (bScore ?? 0) - (aScore ?? 0)
+  })
+
+  return orderedResults
 }

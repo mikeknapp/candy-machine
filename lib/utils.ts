@@ -6,7 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function dot(a: number[], b: number[]): number {
-  console.log(a.length, b.length)
   return a.reduce((sum, val, i) => sum + val * b[i], 0)
 }
 
