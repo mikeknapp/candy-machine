@@ -2,16 +2,20 @@
 
 import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
-import Image from "next/image"
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useState } from "react"
 import { ProcessingQueue } from "./upload/ProcessingQueue"
-import { useState } from "react"
 
 export const MainPanel = () => {
   const [isLoading, setIsLoading] = useState(true)
   const selectedProject = useAtomValue(selectedProjectAtom)
   const images = useAtomValue(projectImagesAtom)
   const [selectedImageId, setSelectedImageId] = useAtom(selectedImageIdAtom)
+
+  useEffect(() => {
+    setIsLoading(true)
+  }, [selectedImageId])
 
   const handlePrevImage = () => {
     if (!images.length || selectedImageId === null) return
@@ -67,7 +71,7 @@ export const MainPanel = () => {
           />
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
             </div>
           )}
         </div>
