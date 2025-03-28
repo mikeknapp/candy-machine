@@ -1,37 +1,15 @@
 "use client"
 
-import { projectImagesAtom, refreshProjectImages, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
+import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
-import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
-import { toast } from "sonner"
+import { useEffect, useRef } from "react"
 
 export const ImagePanel = () => {
   const selectedProject = useAtomValue(selectedProjectAtom)
   const [images, setImages] = useAtom(projectImagesAtom)
   const [selectedImageId, setSelectedImageId] = useAtom(selectedImageIdAtom)
-  const [loading, setLoading] = useState(false)
   const buttonRefs = useRef<Record<string, HTMLButtonElement>>({})
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      if (!selectedProject) return
-
-      try {
-        setLoading(true)
-        const newImages = await refreshProjectImages(selectedProject.id)
-        setImages(newImages)
-      } catch (error) {
-        toast.error("Error", {
-          description: error instanceof Error ? error.message : "Failed to fetch images",
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchImages()
-  }, [selectedProject, setImages])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,11 +43,7 @@ export const ImagePanel = () => {
       <h2 className="text-lg font-semibold p-4 pb-2">{selectedProject.name} Images</h2>
       <div className="flex-1 overflow-y-auto p-4 pt-2">
         <div className="grid grid-cols-2 gap-4 auto-rows-max">
-          {loading ? (
-            <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          ) : images.length === 0 ? (
+          {images.length === 0 ? (
             <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">No images</p>
             </div>

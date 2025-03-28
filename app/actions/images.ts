@@ -18,7 +18,7 @@ export async function getProjectImages(projectId: number) {
       },
     })
 
-    return { data: images }
+    return { data: images ?? [] }
   } catch (error) {
     console.error("Error fetching images:", error)
     return {

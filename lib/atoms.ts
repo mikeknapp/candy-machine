@@ -35,5 +35,5 @@ const refreshProjectImagesBase = async (projectId: number) => {
 export const refreshProjectImages = debounce(refreshProjectImagesBase, 3000, {
   leading: true, // Execute on the leading edge of the timeout
   trailing: true, // Also execute on the trailing edge
-  maxWait: 3000, // Maximum time to wait before forcing execution
+  maxWait: 1500, // Maximum time to wait before forcing execution
 })

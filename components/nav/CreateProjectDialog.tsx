@@ -48,7 +48,9 @@ const formSchema = z.object({
     .string()
     .min(1, "Project name is required")
     .transform((val) => val.trim().replace(/\s+/g, " ")),
-  type: z.nativeEnum(ProjectType),
+  type: z.nativeEnum(ProjectType, {
+    required_error: "Please select a project type",
+  }),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -69,7 +71,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      type: ProjectType.CHARACTER,
     },
   })
 
@@ -132,7 +133,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] p-6">
         <VisuallyHidden>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -185,7 +186,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="grid grid-cols-2 gap-4"
+                      className="grid grid-cols-3 gap-4"
                     >
                       {Object.entries(ProjectType).map(([key, value]) => {
                         const Icon = projectTypeIcons[value as ProjectType]
@@ -196,10 +197,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
                             </FormControl>
                             <FormLabel
                               htmlFor={`type-${value}`}
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                              className="flex aspect-square w-full max-w-[150px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-muted bg-transparent p-4 text-sm transition-colors hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary"
                             >
                               <Icon className="mb-2 h-6 w-6" />
-                              {key}
+                              <span className="text-xs font-medium">{key}</span>
                             </FormLabel>
                           </FormItem>
                         )

@@ -62,5 +62,39 @@ model Image {
   status              ImageStatus @default(PENDING_INDEXING)
 
   // Relations
-  project Project @relation(fields: [projectId], references: [id])
+  project        Project          @relation(fields: [projectId], references: [id])
+  DuplicateImage DuplicateImage[]
+}
+
+enum DuplicateStatus {
+  PENDING_REVIEW // Waiting for user decision
+  IGNORED // User marked as "not duplicate"
+  RESOLVED // User took action (deleted some images)
+}
+
+model DuplicateGroup {
+  id        Int             @id @default(autoincrement())
+  projectId Int
+  hash      String // The hash that matched between images
+  status    DuplicateStatus @default(PENDING_REVIEW)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  // Relations
+  images DuplicateImage[]
+}
+
+model DuplicateImage {
+  id               Int      @id @default(autoincrement())
+  duplicateGroupId Int
+  imageId          Int
+  wasDeleted       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  duplicateGroup DuplicateGroup @relation(fields: [duplicateGroupId], references: [id])
+  image          Image          @relation(fields: [imageId], references: [id])
+
+  @@unique([duplicateGroupId, imageId])
 }

@@ -1,5 +1,6 @@
 "use server"
 
+import { findAndRecordDuplicates } from "@/lib/duplicates"
 import { getEmbedding } from "@/lib/embedding"
 import { prisma } from "@/lib/prisma"
 import { writeFile } from "fs"
@@ -88,6 +89,9 @@ export async function POST(request: NextRequest) {
       where: { id: image.id },
       data: { hash, embedding: Buffer.from(embedding) },
     })
+
+    // Find and record duplicates
+    await findAndRecordDuplicates(image, hash)
 
     return NextResponse.json({ data: image })
   } catch (error) {
