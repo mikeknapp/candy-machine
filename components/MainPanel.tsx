@@ -91,13 +91,13 @@ export const MainPanel = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex h-full pt-14">
+      <div className="flex h-full pt-12">
         {/* Image Display */}
-        <div className="flex-1 relative flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+        <div className="flex-1 relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(to_right,#e5e7eb_1px,transparent_1px)] dark:[background-image:linear-gradient(#374151_1px,transparent_1px),linear-gradient(to_right,#374151_1px,transparent_1px)] [background-size:20px_20px]">
           <Image
             src={`/data/${selectedProject.slug}/${selectedImage.id}-original.${selectedImage.extension}`}
             alt={`Image ${selectedImage.id}`}
-            className="max-h-[calc(100vh-120px)] max-w-full w-auto h-auto object-contain"
+            className="max-h-[70%] max-w-full w-auto h-auto object-contain"
             width={2000}
             height={2000}
             priority
