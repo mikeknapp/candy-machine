@@ -205,34 +205,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       onTouchEnd={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {/* Frame that represents the final image dimensions */}
-      <div
-        ref={frameRef}
-        className="relative border-2 border-black z-20 overflow-hidden"
-        style={{
-          width: frameSize.width,
-          height: frameSize.height,
-          boxShadow: "0 0 0 9999px rgba(23, 23, 23, 0.4)",
-        }}
-      >
-        {/* Transparent center of the frame */}
-        <div className="absolute inset-0 bg-transparent"></div>
-
-        {/* Grid lines for better visualization */}
-        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
-          <div className="border-r border-b border-white border-opacity-30"></div>
-          <div className="border-r border-b border-white border-opacity-30"></div>
-          <div className="border-b border-white border-opacity-30"></div>
-          <div className="border-r border-b border-white border-opacity-30"></div>
-          <div className="border-r border-b border-white border-opacity-30"></div>
-          <div className="border-b border-white border-opacity-30"></div>
-          <div className="border-r border-white border-opacity-30"></div>
-          <div className="border-r border-white border-opacity-30"></div>
-          <div className="border-white border-opacity-30"></div>
-        </div>
-      </div>
-
-      {/* Actual image that can be manipulated */}
+      {/* Actual image that can be manipulated - Moved BEFORE the frame to ensure it's accessible */}
       <div
         ref={imageRef}
         className="absolute z-10 select-none"
@@ -296,8 +269,35 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
         )}
       </div>
 
+      {/* Frame that represents the final image dimensions - moved AFTER the image */}
+      <div
+        ref={frameRef}
+        className="relative border-2 border-black z-20 overflow-hidden pointer-events-none"
+        style={{
+          width: frameSize.width,
+          height: frameSize.height,
+          boxShadow: "0 0 0 9999px rgba(23, 23, 23, 0.4)",
+        }}
+      >
+        {/* Transparent center of the frame */}
+        <div className="absolute inset-0 bg-transparent"></div>
+
+        {/* Grid lines for better visualization */}
+        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
+          <div className="border-r border-b border-white border-opacity-30"></div>
+          <div className="border-r border-b border-white border-opacity-30"></div>
+          <div className="border-b border-white border-opacity-30"></div>
+          <div className="border-r border-b border-white border-opacity-30"></div>
+          <div className="border-r border-b border-white border-opacity-30"></div>
+          <div className="border-b border-white border-opacity-30"></div>
+          <div className="border-r border-white border-opacity-30"></div>
+          <div className="border-r border-white border-opacity-30"></div>
+          <div className="border-white border-opacity-30"></div>
+        </div>
+      </div>
+
       {/* Controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2 z-30">
+      <div className="absolute top-4 right-4 flex flex-col gap-2 z-40">
         <button
           className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-100"
           onClick={handleZoomIn}
@@ -314,17 +314,17 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
 
       {/* Save button */}
       <button
-        className="absolute bottom-4 right-4 px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 flex items-center gap-2 z-30"
+        className="absolute bottom-4 right-4 px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 flex items-center gap-2 z-40"
         onClick={handleSave}
       >
         <Check className="w-4 h-4" />
         Save
       </button>
 
-      <ImageInfoPanel image={image} className="z-30" />
+      <ImageInfoPanel image={image} className="z-40" />
 
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-30">
+        <div className="absolute inset-0 flex items-center justify-center z-50">
           <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
         </div>
       )}
