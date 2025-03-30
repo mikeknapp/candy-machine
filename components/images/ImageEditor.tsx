@@ -29,6 +29,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   const [originalImageSize, setOriginalImageSize] = useState({ width: 0, height: 0 })
   const [frameScaleFactor, setFrameScaleFactor] = useState(1)
   const [editMode, setEditMode] = useState(false)
+  const [resizingCorner, setResizingCorner] = useState<GrabberPosition | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -98,6 +99,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     setIsResizing(true)
     setDragStart({ x: clientX, y: clientY })
     setStartScale(scale)
+    setResizingCorner(corner)
   }
 
   const handleRotateStart = (clientX: number, clientY: number) => {
@@ -145,11 +147,14 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       })
     } else if (isResizing) {
       const deltaY = dragStart.y - e.clientY
-      // Apply different resize behavior depending on which corner is being dragged
-      // For simplicity, we're just using a common scaling factor for now
-      // A more advanced implementation would resize from the specific corner
       const maxScale = calculateMaxScale()
-      const newScale = Math.max(0.1, Math.min(maxScale, startScale + deltaY * 0.01))
+
+      let scaleFactor = deltaY * 0.01
+      if (resizingCorner?.startsWith("top-")) {
+        scaleFactor = -scaleFactor
+      }
+
+      const newScale = Math.max(0.1, Math.min(maxScale, startScale - scaleFactor))
       setScale(newScale)
     } else if (isRotating) {
       if (!imageRef.current) return
@@ -184,7 +189,13 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     } else if (isResizing) {
       const deltaY = dragStart.y - touch.clientY
       const maxScale = calculateMaxScale()
-      const newScale = Math.max(0.1, Math.min(maxScale, startScale + deltaY * 0.01))
+
+      let scaleFactor = deltaY * 0.01
+      if (resizingCorner?.startsWith("top-")) {
+        scaleFactor = -scaleFactor
+      }
+
+      const newScale = Math.max(0.1, Math.min(maxScale, startScale - scaleFactor))
       setScale(newScale)
     } else if (isRotating) {
       if (!imageRef.current) return
@@ -207,6 +218,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     setIsDragging(false)
     setIsResizing(false)
     setIsRotating(false)
+    setResizingCorner(null)
   }
 
   const handleZoomIn = () => {
