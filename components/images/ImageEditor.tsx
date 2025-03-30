@@ -1,11 +1,11 @@
 "use client"
 
 import { Image as ImageType } from "@prisma/client"
-import { Check, Edit, Loader2, RotateCw, ZoomIn, ZoomOut } from "lucide-react"
+import { Check, Edit, Loader2, ZoomIn, ZoomOut } from "lucide-react"
 import Image from "next/image"
 import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react"
+import { grabberCorners, GrabberPosition, ResizeGrabber, RotateGrabber } from "./ImageGrabbers"
 import { ImageInfoPanel } from "./ImageInfoPanel"
-import { grabberCorners, GrabberPosition, ResizeGrabber } from "./ResizeGrabber"
 
 interface ImageEditorProps {
   image: ImageType
@@ -280,11 +280,11 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
             {/* Render all four corner resize grabbers */}
             {!isLoading &&
               editMode &&
-              grabberCorners.map((corner) => (
+              grabberCorners.map((corner: GrabberPosition) => (
                 <ResizeGrabber
                   key={corner}
                   position={corner}
-                  onGrab={(e) => {
+                  onGrab={(e: MouseEvent | TouchEvent) => {
                     if ("clientX" in e) {
                       handleResizeStart(e.clientX, e.clientY, corner)
                     } else if (e.touches.length === 1) {
@@ -295,28 +295,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
               ))}
 
             {/* Rotate grabber - on the right center */}
-            {!isLoading && editMode && (
-              <div
-                className="absolute w-20 h-20 bg-pink-500 flex items-center justify-center cursor-pointer z-30 rounded-full"
-                style={{
-                  right: "-60px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                }}
-                onMouseDown={(e) => {
-                  e.stopPropagation()
-                  handleRotateStart(e.clientX, e.clientY)
-                }}
-                onTouchStart={(e) => {
-                  e.stopPropagation()
-                  if (e.touches.length === 1) {
-                    handleRotateStart(e.touches[0].clientX, e.touches[0].clientY)
-                  }
-                }}
-              >
-                <RotateCw className="w-10 h-10 text-white" />
-              </div>
-            )}
+            {!isLoading && editMode && <RotateGrabber handleRotateStart={handleRotateStart} />}
           </div>
 
           {/* Frame that represents the final image dimensions - moved AFTER the image */}
