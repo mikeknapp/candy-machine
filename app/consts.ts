@@ -1,5 +1,60 @@
 import { join } from "path"
 
+// Image sizes
+const shortestSize = 1024
+
+export const imageSizes = {
+  square: {
+    width: shortestSize,
+    height: shortestSize,
+    aspectRatio: 1,
+    name: "square (1:1)",
+  },
+  vertical: {
+    width: shortestSize,
+    height: Math.round((shortestSize * 16) / 9),
+    aspectRatio: 9 / 16,
+    name: "vertical (9:16)",
+  },
+  portrait: {
+    width: Math.round((shortestSize * 4) / 5),
+    height: shortestSize,
+    aspectRatio: 4 / 5,
+    name: "portrait (4:5)",
+  },
+  photo: {
+    width: Math.round((shortestSize * 4) / 3),
+    height: shortestSize,
+    aspectRatio: 4 / 3,
+    name: "photo (4:3)",
+  },
+  photo_landscape: {
+    width: shortestSize,
+    height: Math.round((shortestSize * 3) / 4),
+    aspectRatio: 3 / 4,
+    name: "photo landscape (3:4)",
+  },
+  landscape: {
+    width: shortestSize,
+    height: Math.round((shortestSize * 3) / 2),
+    aspectRatio: 3 / 2,
+    name: "landscape (3:2)",
+  },
+  widescreen: {
+    width: Math.round((shortestSize * 16) / 9),
+    height: shortestSize,
+    aspectRatio: 16 / 9,
+    name: "widescreen (16:9)",
+  },
+  cinematic: {
+    width: Math.round((shortestSize * 21) / 9),
+    height: shortestSize,
+    aspectRatio: 21 / 9,
+    name: "cinematic (21:9)",
+  },
+}
+
+// Database path
 let dbRawPath = process.env.DATABASE_URL ?? ":memory:"
 
 if (dbRawPath === ":memory:") {
@@ -9,5 +64,3 @@ if (dbRawPath === ":memory:") {
 }
 
 export const dbPath = dbRawPath
-
-console.log("dbPath", dbPath)

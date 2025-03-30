@@ -1,8 +1,9 @@
 "use client"
 
+import { TooltipButton } from "@/components/ui/tooltip-button"
 import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { ArrowLeft, ArrowRight, Copy, RotateCcw, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { ProcessingQueue } from "./upload/ProcessingQueue"
@@ -56,45 +57,74 @@ export const MainPanel = () => {
   if (!selectedImage) return null
 
   return (
-    <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative w-full h-full flex items-center justify-center">
+    <div className="flex-1 relative bg-white dark:bg-gray-900">
+      {/* Top Navigation Bar */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+        <div className="flex items-center gap-2">
+          <TooltipButton onClick={handlePrevImage} tooltip="Previous image" aria-label="Previous image">
+            <ArrowLeft className="w-5 h-5" />
+          </TooltipButton>
+
+          <TooltipButton onClick={handleNextImage} tooltip="Next image" aria-label="Next image">
+            <ArrowRight className="w-5 h-5" />
+          </TooltipButton>
+
+          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+
+          <TooltipButton tooltip="Repost image" aria-label="Repost">
+            <RotateCcw className="w-5 h-5" />
+          </TooltipButton>
+
+          <TooltipButton tooltip="Copy to clipboard" aria-label="Copy">
+            <Copy className="w-5 h-5" />
+          </TooltipButton>
+
+          <TooltipButton tooltip="Delete image" aria-label="Delete">
+            <Trash2 className="w-5 h-5" />
+          </TooltipButton>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">
+            {images.findIndex((img) => img.id === selectedImageId) + 1} / {images.length}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex h-full pt-14">
+        {/* Image Display */}
+        <div className="flex-1 relative flex items-center justify-center bg-gray-100 dark:bg-gray-800">
           <Image
             src={`/data/${selectedProject.slug}/${selectedImage.id}-original.${selectedImage.extension}`}
             alt={`Image ${selectedImage.id}`}
-            className="max-h-full max-w-full w-auto h-auto object-contain"
+            className="max-h-[calc(100vh-120px)] max-w-full w-auto h-auto object-contain"
             width={2000}
             height={2000}
             priority
             draggable={false}
             onLoad={() => setIsLoading(false)}
           />
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            </div>
-          )}
         </div>
-      </div>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-gray-900/80 text-white px-4 py-2 rounded-full">
-        <button
-          onClick={handlePrevImage}
-          className="p-2 hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
-          aria-label="Previous image"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <span className="text-sm">
-          {images.findIndex((img) => img.id === selectedImageId) + 1} / {images.length}
-        </span>
-        <button
-          onClick={handleNextImage}
-          className="p-2 hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
-          aria-label="Next image"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        {/* Right Sidebar - Tags Panel (Placeholder) */}
+        <div className="w-80 border-l dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Image Quality</h3>
+              <div className="flex gap-2">
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-sm">HD</span>
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-sm">Low quality</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Image Type</h3>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-sm">Photo</span>
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-sm">Drawing</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

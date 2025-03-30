@@ -1,0 +1,8 @@
+- Auto crop images for SDXL
+- Resolve duplicates image
+- Layout main panel
+- Edit image (crop, rotate, etc)
+- Layout tag panel
+- Save tags
+- Auto tag images (train a model?)
+- Auto mask images
