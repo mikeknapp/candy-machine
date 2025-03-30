@@ -46,17 +46,19 @@ model Image {
   id                  Int         @id @default(autoincrement())
   projectId           Int
   extension           String
+  originalWidth       Int
+  originalHeight      Int
+  originalFileSize    Int
+  originalAspectRatio Float
   width               Int
   height              Int
   fileSize            Int
-  originalAspectRatio Float
   aspectRatio         Float
   hash                String // for duplicate detection
   embedding           Bytes // vector embedding data (if available)
   cropData            Json? // e.g. { x, y, width, height }
   rotation            Int? // in degrees
   rating              Int?
-  eloRating           Int         @default(1000)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
   status              ImageStatus @default(PENDING_INDEXING)

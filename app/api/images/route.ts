@@ -44,10 +44,13 @@ export async function POST(request: NextRequest) {
     const image = await prisma.image.create({
       data: {
         extension: extension,
+        originalWidth: metadata.width,
+        originalHeight: metadata.height,
+        originalFileSize: file.size,
+        originalAspectRatio: aspectRatio,
         width: metadata.width,
         height: metadata.height,
         fileSize: file.size,
-        originalAspectRatio: aspectRatio,
         aspectRatio,
         hash: "", // Will calculate hash after writing to file system
         embedding: Buffer.from([]), // Empty buffer for now, will be populated later
