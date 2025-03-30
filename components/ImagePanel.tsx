@@ -43,12 +43,12 @@ export const ImagePanel = () => {
       const currentIndex = images.findIndex((img) => img.id === selectedImageId)
       if (currentIndex === -1) return
 
-      if (e.key === "ArrowLeft") {
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         const newIndex = (currentIndex - 1 + images.length) % images.length
         setSelectedImageId(images[newIndex].id)
         buttonRefs.current[images[newIndex].id]?.focus()
       }
-      if (e.key === "ArrowRight") {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         const newIndex = (currentIndex + 1) % images.length
         setSelectedImageId(images[newIndex].id)
         buttonRefs.current[images[newIndex].id]?.focus()

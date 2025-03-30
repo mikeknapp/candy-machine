@@ -338,7 +338,9 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
           <Image
             src={`/data/${projectSlug}/${image.id}-original.${image.extension}`}
             alt={`Image ${image.id}`}
-            className={`transition-opacity duration-200 ${isLoading ? "opacity-0" : "opacity-100"} max-h-full`}
+            className={`transition-opacity duration-200 ${
+              isLoading ? "opacity-0" : "opacity-100"
+            } max-h-full w-auto h-auto`}
             width={image.originalWidth}
             height={image.originalHeight}
             style={{
