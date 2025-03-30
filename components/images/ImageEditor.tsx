@@ -1,11 +1,13 @@
 "use client"
 
+import { GridOverlay } from "@/components/images/GridOverlay"
+import { grabberCorners, GrabberPosition, ResizeGrabber, RotateGrabber } from "@/components/images/ImageGrabbers"
+import { ImageInfoPanel } from "@/components/images/ImageInfoPanel"
+import { useImageTransform } from "@/hooks/useImageTransform"
 import { Image as ImageType } from "@prisma/client"
 import { Check, Edit, Loader2, ZoomIn, ZoomOut } from "lucide-react"
 import Image from "next/image"
-import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react"
-import { grabberCorners, GrabberPosition, ResizeGrabber, RotateGrabber } from "./ImageGrabbers"
-import { ImageInfoPanel } from "./ImageInfoPanel"
+import { MouseEvent, RefObject, TouchEvent, useEffect, useRef, useState } from "react"
 
 interface ImageEditorProps {
   image: ImageType
@@ -15,25 +17,39 @@ interface ImageEditorProps {
 
 export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) => {
   const [isLoading, setIsLoading] = useState(true)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [scale, setScale] = useState(1)
-  const [rotation, setRotation] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isResizing, setIsResizing] = useState(false)
-  const [isRotating, setIsRotating] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 })
-  const [startScale, setStartScale] = useState(1)
-  const [startRotation, setStartRotation] = useState(0)
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 })
-  const [originalImageSize, setOriginalImageSize] = useState({ width: 0, height: 0 })
-  const [frameScaleFactor, setFrameScaleFactor] = useState(1)
   const [editMode, setEditMode] = useState(false)
-  const [resizingCorner, setResizingCorner] = useState<GrabberPosition | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
+
+  const {
+    position,
+    scale,
+    rotation,
+    displayScale,
+    isDragging,
+    isResizing,
+    isRotating,
+    handleDragStart,
+    handleResizeStart,
+    handleRotateStart,
+    handleMouseMove,
+    handleTouchMove,
+    handleMouseUp,
+    handleZoomIn,
+    handleZoomOut,
+    setScale,
+  } = useImageTransform({
+    initialPosition: { x: 0, y: 0 },
+    initialScale: 1,
+    initialRotation: 0,
+    originalImageSize: { width: image.originalWidth, height: image.originalHeight },
+    frameSize: { width: 0, height: 0 },
+    frameScaleFactor: 1,
+    editMode,
+    imageRef: imageRef as RefObject<HTMLDivElement>,
+  })
 
   // Calculate and set the frame size based on container dimensions
   useEffect(() => {
@@ -52,14 +68,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       if (width > containerWidth * 0.9) {
         const newWidth = containerWidth * 0.9
         const newHeight = newWidth / image.aspectRatio
-        setFrameSize({ width: newWidth, height: newHeight })
-      } else {
-        setFrameSize({ width, height })
+        setScale(newWidth / image.width)
       }
-
-      // Calculate the scale factor between frame and actual image dimensions
-      const factor = width / image.width
-      setFrameScaleFactor(factor)
     }
 
     updateFrameSize()
@@ -73,50 +83,6 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   // Set initial scale when image loads
   const handleImageLoad = () => {
     setIsLoading(false)
-    setOriginalImageSize({
-      width: image.originalWidth,
-      height: image.originalHeight,
-    })
-
-    // Calculate initial scale to make the image fit nicely in the frame
-    // We want to fit the original image into the frame properly
-    const widthRatio = frameSize.width / image.originalWidth
-    const heightRatio = frameSize.height / image.originalHeight
-
-    // Use the smaller ratio to ensure the image fits within the frame
-    const initialScale = Math.min(widthRatio, heightRatio) * 0.9
-    setScale(initialScale / frameScaleFactor) // Adjust for frameScaleFactor
-  }
-
-  // Handle mouse/touch events for dragging the image
-  const handleDragStart = (clientX: number, clientY: number) => {
-    setIsDragging(true)
-    setDragStart({ x: clientX, y: clientY })
-    setStartPosition({ ...position })
-  }
-
-  const handleResizeStart = (clientX: number, clientY: number, corner: GrabberPosition) => {
-    setIsResizing(true)
-    setDragStart({ x: clientX, y: clientY })
-    setStartScale(scale)
-    setResizingCorner(corner)
-  }
-
-  const handleRotateStart = (clientX: number, clientY: number) => {
-    setIsRotating(true)
-    setDragStart({ x: clientX, y: clientY })
-    setStartRotation(rotation)
-  }
-
-  // Calculate the maximum scale based on original image size
-  const calculateMaxScale = () => {
-    if (originalImageSize.width === 0 || frameSize.width === 0) return 3 // Default max if dimensions not available
-
-    // Calculate the ratio between original image size and frame size
-    const maxScaleFactor = originalImageSize.width / (frameSize.width / frameScaleFactor)
-
-    // Return the max scale, accounting for frameScaleFactor
-    return maxScaleFactor
   }
 
   // Handle keyboard shortcuts
@@ -135,108 +101,13 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     }
   }, [editMode])
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!editMode) return
-
-    if (isDragging) {
-      const deltaX = e.clientX - dragStart.x
-      const deltaY = e.clientY - dragStart.y
-      setPosition({
-        x: startPosition.x + deltaX,
-        y: startPosition.y + deltaY,
-      })
-    } else if (isResizing) {
-      const deltaY = dragStart.y - e.clientY
-      const maxScale = calculateMaxScale()
-
-      let scaleFactor = deltaY * 0.01
-      if (resizingCorner?.startsWith("top-")) {
-        scaleFactor = -scaleFactor
-      }
-
-      const newScale = Math.max(0.1, Math.min(maxScale, startScale - scaleFactor))
-      setScale(newScale)
-    } else if (isRotating) {
-      if (!imageRef.current) return
-
-      // Get the center of the image
-      const rect = imageRef.current.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-
-      // Calculate angles
-      const startAngle = Math.atan2(dragStart.y - centerY, dragStart.x - centerX)
-      const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
-      const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
-
-      setRotation(startRotation + angleDiff)
-    }
-  }
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!editMode) return
-    if (e.touches.length !== 1) return
-
-    const touch = e.touches[0]
-
-    if (isDragging) {
-      const deltaX = touch.clientX - dragStart.x
-      const deltaY = touch.clientY - dragStart.y
-      setPosition({
-        x: startPosition.x + deltaX,
-        y: startPosition.y + deltaY,
-      })
-    } else if (isResizing) {
-      const deltaY = dragStart.y - touch.clientY
-      const maxScale = calculateMaxScale()
-
-      let scaleFactor = deltaY * 0.01
-      if (resizingCorner?.startsWith("top-")) {
-        scaleFactor = -scaleFactor
-      }
-
-      const newScale = Math.max(0.1, Math.min(maxScale, startScale - scaleFactor))
-      setScale(newScale)
-    } else if (isRotating) {
-      if (!imageRef.current) return
-
-      // Get the center of the image
-      const rect = imageRef.current.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-
-      // Calculate angles
-      const startAngle = Math.atan2(dragStart.y - centerY, dragStart.x - centerX)
-      const currentAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX)
-      const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
-
-      setRotation(startRotation + angleDiff)
-    }
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-    setIsResizing(false)
-    setIsRotating(false)
-    setResizingCorner(null)
-  }
-
-  const handleZoomIn = () => {
-    const maxScale = calculateMaxScale()
-    setScale((prev) => Math.min(prev + 0.1, maxScale))
-  }
-
-  const handleZoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.1, 0.1))
-  }
-
   const handleSave = () => {
     if (onSave) {
       // When saving, adjust the scale by the frameScaleFactor
       // to account for the visual scaling in the UI
       onSave({
         position,
-        scale: scale * frameScaleFactor,
+        scale: scale,
         rotation,
       })
     }
@@ -246,9 +117,6 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   const toggleEditMode = () => {
     setEditMode((prev) => !prev)
   }
-
-  // Display scale is used for the UI rendering
-  const displayScale = scale * frameScaleFactor
 
   return (
     <div
@@ -315,26 +183,15 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
             ref={frameRef}
             className="relative border-2 border-black z-20 overflow-hidden pointer-events-none"
             style={{
-              width: frameSize.width,
-              height: frameSize.height,
+              width: image.width,
+              height: image.height,
               boxShadow: "0 0 0 9999px rgba(23, 23, 23, 0.4)",
             }}
           >
+            <GridOverlay />
+
             {/* Transparent center of the frame */}
             <div className="absolute inset-0 bg-transparent"></div>
-
-            {/* Grid lines for better visualization */}
-            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
-              <div className="border-r border-b border-white border-opacity-30"></div>
-              <div className="border-r border-b border-white border-opacity-30"></div>
-              <div className="border-b border-white border-opacity-30"></div>
-              <div className="border-r border-b border-white border-opacity-30"></div>
-              <div className="border-r border-b border-white border-opacity-30"></div>
-              <div className="border-b border-white border-opacity-30"></div>
-              <div className="border-r border-white border-opacity-30"></div>
-              <div className="border-r border-white border-opacity-30"></div>
-              <div className="border-white border-opacity-30"></div>
-            </div>
           </div>
         </>
       ) : (
