@@ -32,10 +32,10 @@ export async function getProjectImages(projectId: number) {
       })
 
       // Crop the image to the closest image size
-      console.log(image.originalAspectRatio, imageSize.aspectRatio)
+      //console.log(image.originalAspectRatio, imageSize.aspectRatio)
 
       if (image.originalAspectRatio == 0.8136752136752137) {
-        console.log(image)
+        //console.log(image)
         await standarizeImage(
           image,
           join(process.cwd(), "public", "data", "hello", `${image.id}-original.${image.extension}`)

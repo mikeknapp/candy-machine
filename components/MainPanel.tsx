@@ -6,7 +6,7 @@ import { useAtom, useAtomValue } from "jotai"
 import { ArrowLeft, ArrowRight, Copy, RotateCcw, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { ImageInfoPanel } from "./ImageInfoPanel"
+import { ImageInfoPanel } from "./images/ImageInfoPanel"
 import { ProcessingQueue } from "./upload/ProcessingQueue"
 
 export const MainPanel = () => {

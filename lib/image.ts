@@ -2,13 +2,18 @@ import { imageSizes } from "@/app/consts"
 import { Image } from "@prisma/client"
 import sharp from "sharp"
 
-export async function standarizeImage(image: Image, imagePath: string) {
+export function getBestImageSize(image: Image) {
   const bestImageSize = Object.values(imageSizes).reduce((prev, curr) => {
     return Math.abs(curr.aspectRatio - image.originalAspectRatio) <
       Math.abs(prev.aspectRatio - image.originalAspectRatio)
       ? curr
       : prev
   })
+  return bestImageSize
+}
+
+export async function standarizeImage(image: Image, imagePath: string) {
+  const bestImageSize = getBestImageSize(image)
 
   const imageData = sharp(imagePath)
 
