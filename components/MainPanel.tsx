@@ -1,11 +1,12 @@
 "use client"
 
+import { saveTransformedImage } from "@/app/actions/images"
 import { TooltipButton } from "@/components/ui/tooltip-button"
 import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
 import { ArrowLeft, ArrowRight, Copy, RotateCcw, Trash2 } from "lucide-react"
-import { ImageDisplay } from "./images/ImageDisplay"
-import { ImageInfoPanel } from "./images/ImageInfoPanel"
+import { toast } from "sonner"
+import { ImageEditor } from "./images/ImageEditor"
 import { ProcessingQueue } from "./upload/ProcessingQueue"
 
 export const MainPanel = () => {
@@ -27,6 +28,24 @@ export const MainPanel = () => {
     if (currentIndex === -1) return
     const newIndex = (currentIndex + 1) % images.length
     setSelectedImageId(images[newIndex].id)
+  }
+
+  const handleSaveTransform = async (
+    imageId: number,
+    transformData: {
+      position: { x: number; y: number }
+      scale: number
+      rotation: number
+    }
+  ) => {
+    if (!selectedProject) return
+
+    // TODO: Revisit.
+    toast.promise(saveTransformedImage(imageId, selectedProject.slug, transformData), {
+      loading: "Saving image...",
+      success: "Image saved successfully",
+      error: (err) => `Failed to save image: ${err.error || "Unknown error"}`,
+    })
   }
 
   // Show welcome message if no project is selected or no image is selected
@@ -89,8 +108,11 @@ export const MainPanel = () => {
       <div className="flex h-full pt-12">
         {/* Image Display */}
         <div className="flex-1 relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(to_right,#e5e7eb_1px,transparent_1px)] dark:[background-image:linear-gradient(#374151_1px,transparent_1px),linear-gradient(to_right,#374151_1px,transparent_1px)] [background-size:20px_20px]">
-          <ImageDisplay projectSlug={selectedProject.slug} image={selectedImage} />
-          <ImageInfoPanel image={selectedImage} />
+          <ImageEditor
+            projectSlug={selectedProject.slug}
+            image={selectedImage}
+            onSave={(transformData) => handleSaveTransform(selectedImage.id, transformData)}
+          />
         </div>
 
         {/* Right Sidebar - Tags Panel (Placeholder) */}
