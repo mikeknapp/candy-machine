@@ -106,6 +106,17 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     setStartRotation(rotation)
   }
 
+  // Calculate the maximum scale based on original image size
+  const calculateMaxScale = () => {
+    if (originalImageSize.width === 0 || frameSize.width === 0) return 3 // Default max if dimensions not available
+
+    // Calculate the ratio between original image size and frame size
+    const maxScaleFactor = originalImageSize.width / (frameSize.width / frameScaleFactor)
+
+    // Return the max scale, accounting for frameScaleFactor
+    return maxScaleFactor
+  }
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -137,7 +148,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       // Apply different resize behavior depending on which corner is being dragged
       // For simplicity, we're just using a common scaling factor for now
       // A more advanced implementation would resize from the specific corner
-      const newScale = Math.max(0.1, startScale + deltaY * 0.01)
+      const maxScale = calculateMaxScale()
+      const newScale = Math.max(0.1, Math.min(maxScale, startScale + deltaY * 0.01))
       setScale(newScale)
     } else if (isRotating) {
       if (!imageRef.current) return
@@ -171,7 +183,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       })
     } else if (isResizing) {
       const deltaY = dragStart.y - touch.clientY
-      const newScale = Math.max(0.1, startScale + deltaY * 0.01)
+      const maxScale = calculateMaxScale()
+      const newScale = Math.max(0.1, Math.min(maxScale, startScale + deltaY * 0.01))
       setScale(newScale)
     } else if (isRotating) {
       if (!imageRef.current) return
@@ -197,7 +210,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   }
 
   const handleZoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.1, 3))
+    const maxScale = calculateMaxScale()
+    setScale((prev) => Math.min(prev + 0.1, maxScale))
   }
 
   const handleZoomOut = () => {
