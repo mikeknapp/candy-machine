@@ -5,6 +5,7 @@ import { Check, Loader2, RotateCw, ZoomIn, ZoomOut } from "lucide-react"
 import Image from "next/image"
 import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react"
 import { ImageInfoPanel } from "./ImageInfoPanel"
+import { grabberCorners, GrabberPosition, ResizeGrabber } from "./ResizeGrabber"
 
 interface ImageEditorProps {
   image: ImageType
@@ -92,7 +93,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     setStartPosition({ ...position })
   }
 
-  const handleResizeStart = (clientX: number, clientY: number) => {
+  const handleResizeStart = (clientX: number, clientY: number, corner: GrabberPosition) => {
     setIsResizing(true)
     setDragStart({ x: clientX, y: clientY })
     setStartScale(scale)
@@ -114,6 +115,9 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       })
     } else if (isResizing) {
       const deltaY = dragStart.y - e.clientY
+      // Apply different resize behavior depending on which corner is being dragged
+      // For simplicity, we're just using a common scaling factor for now
+      // A more advanced implementation would resize from the specific corner
       const newScale = Math.max(0.1, startScale + deltaY * 0.01)
       setScale(newScale)
     } else if (isRotating) {
@@ -232,27 +236,31 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
           }}
         />
 
-        {/* Resize handle */}
-        {!isLoading && (
-          <div
-            className="absolute top-0 right-0 w-6 h-6 rounded-full bg-white border-2 border-blue-500 cursor-nesw-resize z-30"
-            onMouseDown={(e) => {
-              e.stopPropagation()
-              handleResizeStart(e.clientX, e.clientY)
-            }}
-            onTouchStart={(e) => {
-              e.stopPropagation()
-              if (e.touches.length === 1) {
-                handleResizeStart(e.touches[0].clientX, e.touches[0].clientY)
-              }
-            }}
-          />
-        )}
+        {/* Render all four corner resize grabbers */}
+        {!isLoading &&
+          grabberCorners.map((corner) => (
+            <ResizeGrabber
+              key={corner}
+              position={corner}
+              onGrab={(e) => {
+                if ("clientX" in e) {
+                  handleResizeStart(e.clientX, e.clientY, corner)
+                } else if (e.touches.length === 1) {
+                  handleResizeStart(e.touches[0].clientX, e.touches[0].clientY, corner)
+                }
+              }}
+            />
+          ))}
 
-        {/* Rotate handle */}
+        {/* Rotate grabber - on the right center */}
         {!isLoading && (
           <div
-            className="absolute bottom-0 right-0 w-8 h-8 flex items-center justify-center bg-white rounded-full border-2 border-blue-500 cursor-pointer z-30"
+            className="absolute w-20 h-20 bg-pink-500 flex items-center justify-center cursor-pointer z-30 rounded-full"
+            style={{
+              right: "-60px",
+              top: "50%",
+              transform: "translateY(-50%)",
+            }}
             onMouseDown={(e) => {
               e.stopPropagation()
               handleRotateStart(e.clientX, e.clientY)
@@ -264,7 +272,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
               }
             }}
           >
-            <RotateCw className="w-4 h-4 text-blue-600" />
+            <RotateCw className="w-10 h-10 text-white" />
           </div>
         )}
       </div>
