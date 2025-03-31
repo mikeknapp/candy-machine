@@ -54,9 +54,9 @@ model Image {
   height              Int
   fileSize            Int
   aspectRatio         Float
-  hash                String // for duplicate detection
-  embedding           Bytes // vector embedding data (if available)
-  editData            Json? // { position: {x, y}, scale, rotation }
+  hash                String // For duplicate detection.
+  embedding           Bytes // Vector embedding data (if available).
+  editData            Json? // { x, y, rotation, width, height }
   rating              Int?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt

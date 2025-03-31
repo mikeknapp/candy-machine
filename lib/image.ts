@@ -1,5 +1,7 @@
-import { imageSizes } from "@/app/consts"
+import { ImageSize, imageSizes } from "@/app/consts"
 import { Image } from "@prisma/client"
+import fs from "fs"
+import path from "path"
 import sharp from "sharp"
 
 export type ImageModification = {
@@ -8,6 +10,14 @@ export type ImageModification = {
   width: number
   height: number
   rotation: number
+}
+
+export type ModifiedImage = {
+  image: Image
+  frame: ImageSize
+  modification: ImageModification
+  outputPath: string
+  newSize: number
 }
 
 export function getBestImageSize(image: Image) {
@@ -63,5 +73,52 @@ export async function suggestImageModification(
     width: newWidth,
     height: newHeight,
     rotation: 0,
+  }
+}
+
+export async function exportModifiedImage(image: Image, imagePath: string): Promise<ModifiedImage> {
+  // Get the suggested modifications for the image
+  const modification = await suggestImageModification(image, imagePath)
+
+  // Get the best image size for the frame
+  const frame = getBestImageSize(image)
+
+  // Create the output path using the existing directory
+  const existingDir = path.dirname(imagePath)
+  const outputPath = path.join(existingDir, `${image.id}-export.png`)
+  const outputDir = path.dirname(outputPath)
+
+  // Ensure the output directory exists
+  await fs.promises.mkdir(outputDir, { recursive: true })
+
+  // Process the input image according to the modifications
+  const resizedImage = await sharp(imagePath).resize(modification.width, modification.height).toBuffer()
+
+  // Create a new image with a white background of the target dimensions
+  await sharp({
+    create: {
+      width: frame.width,
+      height: frame.height,
+      channels: 4,
+      background: { r: 255, g: 255, b: 255, alpha: 1 },
+    },
+  })
+    .composite([
+      {
+        input: resizedImage,
+        left: modification.x,
+        top: modification.y,
+      },
+    ])
+    .rotate(modification.rotation)
+    .png()
+    .toFile(outputPath)
+
+  return {
+    image,
+    frame,
+    modification,
+    outputPath,
+    newSize: resizedImage.length,
   }
 }

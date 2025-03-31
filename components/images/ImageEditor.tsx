@@ -321,7 +321,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
         // Simple view mode - just the image without editing controls
         <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
           <Image
-            src={`/data/${projectSlug}/${image.id}-original.${image.extension}`}
+            src={`/data/${projectSlug}/${image.id}-export.png`}
             alt={`Image ${image.id}`}
             className={`transition-opacity duration-200 ${
               isLoading ? "opacity-0" : "opacity-100"

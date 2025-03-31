@@ -2,7 +2,7 @@
 
 import { findAndRecordDuplicates } from "@/lib/duplicates"
 import { getEmbedding } from "@/lib/embedding"
-import { getBestImageSize } from "@/lib/image"
+import { exportModifiedImage } from "@/lib/image"
 import { prisma } from "@/lib/prisma"
 import { arrayToBuffer } from "@/lib/utils"
 import { writeFile } from "fs"
@@ -89,8 +89,8 @@ export async function POST(request: NextRequest) {
     // Get embedding
     const embedding = await getEmbedding({ filePath })
 
-    // Get best image size
-    const bestImageSize = getBestImageSize(image)
+    // Export modified image
+    const modifiedImage = await exportModifiedImage(image, filePath)
 
     // Update image record with hash
     await prisma.image.update({
@@ -98,10 +98,11 @@ export async function POST(request: NextRequest) {
       data: {
         hash,
         embedding: arrayToBuffer(embedding),
-        width: bestImageSize.width,
-        height: bestImageSize.height,
-        aspectRatio: bestImageSize.aspectRatio,
-        fileSize: 0, // TODO: Update file size!
+        width: modifiedImage.frame.width,
+        height: modifiedImage.frame.height,
+        aspectRatio: modifiedImage.frame.aspectRatio,
+        fileSize: modifiedImage.newSize,
+        editData: modifiedImage.modification,
       },
     })
 

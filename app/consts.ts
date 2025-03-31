@@ -3,7 +3,14 @@ import { join } from "path"
 // Image sizes
 const shortestSize = 1024
 
-export const imageSizes = {
+export type ImageSize = {
+  width: number
+  height: number
+  aspectRatio: number
+  name: string
+}
+
+export const imageSizes: Record<string, ImageSize> = {
   square: {
     width: shortestSize,
     height: shortestSize,
