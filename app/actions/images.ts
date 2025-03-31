@@ -21,29 +21,6 @@ export async function getProjectImages(projectId: number) {
       },
     })
 
-    // TODO: Review if this standarization block is still needed or should be adapted
-    // See what we should crop everything to.
-    // for (const image of images) {
-    //   // Find the closest image size
-    //   const imageSize = Object.values(imageSizes).reduce((prev, curr) => {
-    //     return Math.abs(curr.aspectRatio - image.originalAspectRatio) <
-    //       Math.abs(prev.aspectRatio - image.originalAspectRatio)
-    //       ? curr
-    //       : prev
-    //   })
-    //
-    //   // Crop the image to the closest image size
-    //   //console.log(image.originalAspectRatio, imageSize.aspectRatio)
-    //
-    //   if (image.originalAspectRatio == 0.8136752136752137) {
-    //     //console.log(image)
-    //     await standarizeImage(
-    //       image,
-    //       join(process.cwd(), "public", "data", "hello", `${image.id}-original.${image.extension}`)
-    //     )
-    //   }
-    // }
-
     return { data: images ?? [] }
   } catch (error) {
     console.error("Error fetching images:", error)

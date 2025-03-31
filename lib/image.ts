@@ -2,6 +2,14 @@ import { imageSizes } from "@/app/consts"
 import { Image } from "@prisma/client"
 import sharp from "sharp"
 
+export type ImageModification = {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+}
+
 export function getBestImageSize(image: Image) {
   const bestImageSize = Object.values(imageSizes).reduce((prev, curr) => {
     return Math.abs(curr.aspectRatio - image.originalAspectRatio) <
@@ -12,25 +20,48 @@ export function getBestImageSize(image: Image) {
   return bestImageSize
 }
 
-export async function standarizeImage(image: Image, imagePath: string) {
-  const bestImageSize = getBestImageSize(image)
+export async function suggestImageModification(
+  image: Image,
+  imagePath: string,
+  // Allow for dependency injection for testing
+  getMetadata = async () => {
+    const metadata = await sharp(imagePath).metadata()
+    if (!metadata.width || !metadata.height) {
+      throw new Error("Could not determine image dimensions")
+    }
+    return { width: metadata.width, height: metadata.height }
+  }
+): Promise<ImageModification> {
+  const frame = getBestImageSize(image)
+  const targetWidth = frame.width
+  const targetHeight = frame.height
 
-  const imageData = sharp(imagePath)
+  const { width: originalWidth, height: originalHeight } = await getMetadata()
 
-  // Calculate target dimensions while maintaining aspect ratio
-  const targetWidth = bestImageSize.width
-  const targetHeight = bestImageSize.height
+  // Calculate scaling factors for width and height
+  const widthScale = targetWidth / originalWidth
+  const heightScale = targetHeight / originalHeight
 
-  // Resize the image to cover the target dimensions (may overflow)
-  const finalImageData = await imageData
-    .resize(targetWidth, targetHeight, {
-      fit: "cover", // This ensures the image fills the space without black bars
-      position: "center", // Center the crop
-    })
-    .toBuffer()
+  // Use the smaller scaling factor to ensure the image fits entirely within the frame
+  // without exceeding its original dimensions
+  const scale = Math.min(widthScale, heightScale, 1) // Never scale up beyond original size
 
-  // Save the final image to "/sample.png"
-  //await sharp(finalImageData).toFile("sample.png")
+  // Calculate new dimensions
+  const newWidth = Math.round(originalWidth * scale)
+  const newHeight = Math.round(originalHeight * scale)
 
-  return finalImageData
+  // Calculate position
+  // For horizontal positioning, we'll use x = 0 based on the example
+  const x = 0
+
+  // Align to bottom of frame if it doesn't fit exactly
+  const y = targetHeight - newHeight
+
+  return {
+    x,
+    y,
+    width: newWidth,
+    height: newHeight,
+    rotation: 0,
+  }
 }

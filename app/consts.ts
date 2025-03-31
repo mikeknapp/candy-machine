@@ -25,14 +25,14 @@ export const imageSizes = {
   photo: {
     width: Math.round((shortestSize * 4) / 3),
     height: shortestSize,
-    aspectRatio: 4 / 3,
-    name: "photo (4:3)",
+    aspectRatio: 3 / 4,
+    name: "photo (3:4)",
   },
   photo_landscape: {
     width: Math.round((shortestSize * 3) / 4),
     height: shortestSize,
-    aspectRatio: 3 / 4,
-    name: "photo landscape (3:4)",
+    aspectRatio: 4 / 3,
+    name: "photo landscape (4:3)",
   },
   landscape: {
     width: Math.round((shortestSize * 3) / 2),

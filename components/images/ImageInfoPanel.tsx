@@ -21,6 +21,10 @@ export const ImageInfoPanel = ({ image, className }: { image: Image; className?:
         {isInfoPanelOpen && (
           <div className="p-3 space-y-2 text-sm">
             <div>
+              <div className="text-gray-500 dark:text-gray-400">Image ID</div>
+              <div># {image.id}</div>
+            </div>
+            <div>
               <div className="text-gray-500 dark:text-gray-400">Original Size</div>
               <div>
                 {image.originalWidth} × {image.originalHeight}
