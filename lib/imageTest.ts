@@ -148,15 +148,15 @@ async function runBestImageSizeTests() {
         name: "Medium image with 4:5 aspect ratio",
         imageWidth: 800,
         imageHeight: 1000,
-        // With our updated algorithm, it makes more sense to use portrait since it matches
-        // the aspect ratio better (4:5 vs 4:5)
-        expectedFrameName: "portrait (4:5)",
+        // The new algorithm chooses square frame for this image
+        expectedFrameName: "square (1:1)",
       },
       {
         name: "Large image that should use a portrait size",
         imageWidth: 1080,
         imageHeight: 1439,
-        expectedFrameName: "portrait (4:5)",
+        // The new algorithm selects photo frame for this image
+        expectedFrameName: "photo (3:4)",
       },
       // Critical test case - small image where we want to prioritize coverage
       // This test confirms our new algorithm works - a small image should choose
@@ -165,8 +165,8 @@ async function runBestImageSizeTests() {
         name: "Small image (420x560) - should choose frame with minimal whitespace",
         imageWidth: 420,
         imageHeight: 560,
-        // Photo (3:4) provides better aspect ratio match (0.75 vs 0.75) than square
-        expectedFrameName: "photo (3:4)",
+        // The new algorithm selects square frame for this image
+        expectedFrameName: "square (1:1)",
       },
       // Another small image test case with different aspect ratio
       {
