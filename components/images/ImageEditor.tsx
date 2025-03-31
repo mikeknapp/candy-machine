@@ -1,5 +1,6 @@
 "use client"
 
+import { imageSizes } from "@/app/consts"
 import { GridOverlay } from "@/components/images/GridOverlay"
 import { grabberCorners, GrabberPosition, ResizeGrabber, RotateGrabber } from "@/components/images/ImageGrabbers"
 import { ImageInfoPanel } from "@/components/images/ImageInfoPanel"
@@ -8,16 +9,24 @@ import { Image as ImageType } from "@prisma/client"
 import { Check, Edit, Loader2, ZoomIn, ZoomOut } from "lucide-react"
 import Image from "next/image"
 import { MouseEvent, RefObject, TouchEvent, useEffect, useRef, useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
 interface ImageEditorProps {
   image: ImageType
   projectSlug: string
-  onSave?: (transformData: { position: { x: number; y: number }; scale: number; rotation: number }) => void
+  onSave?: (transformData: {
+    position: { x: number; y: number }
+    scale: number
+    rotation: number
+    frameSize: keyof typeof imageSizes
+  }) => void
 }
 
 export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
+  const [selectedFrameSize, setSelectedFrameSize] = useState<keyof typeof imageSizes>("square")
+  const [frameScaleFactor, setFrameScaleFactor] = useState(1)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -40,13 +49,17 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     handleZoomIn,
     handleZoomOut,
     setScale,
+    setPosition,
   } = useImageTransform({
     initialPosition: { x: 0, y: 0 },
     initialScale: 1,
     initialRotation: 0,
     originalImageSize: { width: image.originalWidth, height: image.originalHeight },
-    frameSize: { width: 0, height: 0 },
-    frameScaleFactor: 1,
+    frameSize: {
+      width: imageSizes[selectedFrameSize].width * frameScaleFactor,
+      height: imageSizes[selectedFrameSize].height * frameScaleFactor,
+    },
+    frameScaleFactor,
     editMode,
     imageRef: imageRef as RefObject<HTMLDivElement>,
   })
@@ -57,19 +70,25 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       if (!containerRef.current) return
 
       const containerHeight = containerRef.current.clientHeight
-      const maxHeight = containerHeight * 0.7 // 70% of container height
-
-      // Calculate width based on the aspect ratio
-      const width = maxHeight * image.aspectRatio
-      const height = maxHeight
-
-      // If width exceeds container width, recalculate dimensions
       const containerWidth = containerRef.current.clientWidth
-      if (width > containerWidth * 0.9) {
-        const newWidth = containerWidth * 0.9
-        const newHeight = newWidth / image.aspectRatio
-        setScale(newWidth / image.width)
+
+      // Set maximum dimensions as percentages of container size
+      const maxHeight = containerHeight * 0.7 // 70% of container height
+      const maxWidth = containerWidth * 0.7 // 70% of container width
+
+      // Calculate initial dimensions based on the height constraint
+      let width = maxHeight * image.aspectRatio
+      let height = maxHeight
+
+      // Check if width exceeds the max width constraint
+      if (width > maxWidth) {
+        // Recalculate based on width constraint
+        width = maxWidth
+        height = width / image.aspectRatio
       }
+
+      // Set the scale based on the calculated dimensions
+      setScale(Math.min(width / image.width, height / image.height))
     }
 
     updateFrameSize()
@@ -78,7 +97,79 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     return () => {
       window.removeEventListener("resize", updateFrameSize)
     }
-  }, [image.aspectRatio, image.width])
+  }, [image.aspectRatio, image.width, selectedFrameSize, setScale])
+
+  // Frame ref effect
+  useEffect(() => {
+    if (editMode && frameRef.current && containerRef.current) {
+      const updateFrameSize = () => {
+        if (!frameRef.current || !containerRef.current) return
+
+        const selectedSize = imageSizes[selectedFrameSize]
+        const containerWidth = containerRef.current.clientWidth
+        const containerHeight = containerRef.current.clientHeight
+
+        // Calculate the maximum allowed dimensions (70% of container)
+        const maxWidth = containerWidth * 0.7
+        const maxHeight = containerHeight * 0.7
+
+        // Calculate scaling factor to fit within the constraints
+        let newFrameScaleFactor = 1
+
+        // If frame would exceed either dimension, scale it down
+        if (selectedSize.width > maxWidth || selectedSize.height > maxHeight) {
+          // Determine which constraint is more limiting
+          const widthRatio = maxWidth / selectedSize.width
+          const heightRatio = maxHeight / selectedSize.height
+          newFrameScaleFactor = Math.min(widthRatio, heightRatio)
+        }
+
+        // Update the frameScaleFactor state
+        setFrameScaleFactor(newFrameScaleFactor)
+
+        // Apply the scaled dimensions
+        const scaledWidth = selectedSize.width * newFrameScaleFactor
+        const scaledHeight = selectedSize.height * newFrameScaleFactor
+
+        frameRef.current.style.width = `${scaledWidth}px`
+        frameRef.current.style.height = `${scaledHeight}px`
+      }
+
+      // Update initially
+      updateFrameSize()
+
+      // Set up resize observer to update frame size when container resizes
+      const resizeObserver = new ResizeObserver(() => {
+        updateFrameSize()
+      })
+
+      resizeObserver.observe(containerRef.current)
+
+      return () => {
+        resizeObserver.disconnect()
+      }
+    }
+  }, [editMode, selectedFrameSize, setFrameScaleFactor])
+
+  // Select best initial frame size based on image aspect ratio
+  useEffect(() => {
+    if (editMode) {
+      // Find the closest aspect ratio match when entering edit mode
+      const imageAspect = image.aspectRatio
+      let closestMatch = "square"
+      let smallestDiff = Infinity
+
+      Object.entries(imageSizes).forEach(([key, size]) => {
+        const diff = Math.abs(size.aspectRatio - imageAspect)
+        if (diff < smallestDiff) {
+          smallestDiff = diff
+          closestMatch = key
+        }
+      })
+
+      setSelectedFrameSize(closestMatch as keyof typeof imageSizes)
+    }
+  }, [editMode, image.aspectRatio])
 
   // Set initial scale when image loads
   const handleImageLoad = () => {
@@ -109,6 +200,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
         position,
         scale: scale,
         rotation,
+        frameSize: selectedFrameSize,
       })
     }
     setEditMode(false)
@@ -116,6 +208,24 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
 
   const toggleEditMode = () => {
     setEditMode((prev) => !prev)
+  }
+
+  const handleFrameSizeChange = (value: string) => {
+    const newFrameSize = value as keyof typeof imageSizes
+    setSelectedFrameSize(newFrameSize)
+
+    // Center the image when frame size changes
+    if (containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const containerCenterX = containerRect.width / 2
+      const containerCenterY = containerRect.height / 2
+
+      // Apply the current frameScaleFactor for proper positioning
+      setPosition({
+        x: containerCenterX - (imageSizes[newFrameSize].width * frameScaleFactor * scale) / 2,
+        y: containerCenterY - (imageSizes[newFrameSize].height * frameScaleFactor * scale) / 2,
+      })
+    }
   }
 
   return (
@@ -130,7 +240,20 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     >
       {editMode ? (
         <>
-          {/* Actual image that can be manipulated - Moved BEFORE the frame to ensure it's accessible */}
+          <div className="absolute top-4 left-4 z-100 bg-white rounded-md p-2">
+            <Select onValueChange={handleFrameSizeChange} value={selectedFrameSize}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select an image size" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(imageSizes).map(([key, size]) => (
+                  <SelectItem key={key} value={key}>
+                    {size.name} - {size.width}x{size.height}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div
             ref={imageRef}
             className="absolute z-10 select-none"
@@ -183,8 +306,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
             ref={frameRef}
             className="relative border-2 border-black z-20 overflow-hidden pointer-events-none"
             style={{
-              width: image.width,
-              height: image.height,
+              width: imageSizes[selectedFrameSize].width,
+              height: imageSizes[selectedFrameSize].height,
               boxShadow: "0 0 0 9999px rgba(23, 23, 23, 0.4)",
             }}
           >
@@ -196,7 +319,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
         </>
       ) : (
         // Simple view mode - just the image without editing controls
-        <div className="relative max-w-full max-h-[70%] flex items-center justify-center">
+        <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
           <Image
             src={`/data/${projectSlug}/${image.id}-original.${image.extension}`}
             alt={`Image ${image.id}`}

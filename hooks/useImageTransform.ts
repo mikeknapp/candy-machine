@@ -36,6 +36,9 @@ export interface UseImageTransformReturn {
   handleZoomIn: () => void
   handleZoomOut: () => void
   setScale: (scale: number | ((prevScale: number) => number)) => void // Expose setScale
+  setPosition: (
+    position: { x: number; y: number } | ((prevPosition: { x: number; y: number }) => { x: number; y: number })
+  ) => void // Expose setPosition
 }
 
 export const useImageTransform = ({
@@ -224,5 +227,6 @@ export const useImageTransform = ({
     handleZoomIn,
     handleZoomOut,
     setScale, // Expose setScale for parent component (e.g., for initial setting)
+    setPosition, // Expose setPosition for parent component
   }
 }
