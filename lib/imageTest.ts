@@ -5,108 +5,156 @@ import { suggestImageModification } from "./image"
 // Save original sharp module
 const originalSharp = sharp
 
-// Create a mock sharp function to avoid file system access
-// @ts-ignore - We need to override this for testing
-global.sharp = function () {
+// Create a mock function factory to generate metadata responses for testing
+const createMetadataMock = (width: number, height: number) => async () => ({
+  width,
+  height,
+})
+
+// Create a mock Image object factory
+const createMockImage = (width: number, height: number): Image => {
+  const aspectRatio = width / height
   return {
-    metadata: async () => {
-      return {
-        width: 1600,
-        height: 999,
-      }
-    },
+    id: 1,
+    projectId: 1,
+    extension: "jpg",
+    originalWidth: width,
+    originalHeight: height,
+    originalFileSize: 0,
+    originalAspectRatio: aspectRatio,
+    width: width,
+    height: height,
+    fileSize: 0,
+    aspectRatio: aspectRatio,
+    hash: "",
+    embedding: Buffer.from([]),
+    editData: null,
+    rating: null,
+    status: ImageStatus.INDEXED,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 }
 
-// Create a mock Image object
-const mockImage: Image = {
-  id: 1,
-  projectId: 1,
-  extension: "jpg",
-  originalWidth: 1600,
-  originalHeight: 999,
-  originalFileSize: 0,
-  originalAspectRatio: 1600 / 999,
-  width: 1600,
-  height: 999,
-  fileSize: 0,
-  aspectRatio: 1600 / 999,
-  hash: "",
-  embedding: Buffer.from([]),
-  editData: null,
-  rating: null,
-  status: ImageStatus.INDEXED,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+// Test case definition interface
+interface TestCase {
+  name: string
+  imageWidth: number
+  imageHeight: number
+  frameWidth: number
+  frameHeight: number
+  expectedWidth: number
+  expectedHeight: number
+  expectedX: number
+  expectedY: number
+  expectedRotation: number
+}
+
+// Run a single test case
+async function runTestCase(testCase: TestCase) {
+  console.log(`Running test: ${testCase.name}`)
+
+  const mockImage = createMockImage(testCase.imageWidth, testCase.imageHeight)
+  const metadataMock = createMetadataMock(testCase.imageWidth, testCase.imageHeight)
+
+  // Override the getBestImageSize function for testing
+  mockImage.width = testCase.frameWidth
+  mockImage.height = testCase.frameHeight
+  mockImage.aspectRatio = testCase.frameWidth / testCase.frameHeight
+
+  const result = await suggestImageModification(mockImage, "test-image-path", metadataMock)
+
+  console.log(`${testCase.name} result:`, result)
+
+  // Verify results
+  const passed =
+    result.width === testCase.expectedWidth &&
+    result.height === testCase.expectedHeight &&
+    result.x === testCase.expectedX &&
+    result.y === testCase.expectedY &&
+    result.rotation === testCase.expectedRotation
+
+  // Log individual assertions
+  console.assert(
+    result.width === testCase.expectedWidth,
+    `Width mismatch: expected ${testCase.expectedWidth}, got ${result.width}`
+  )
+  console.assert(
+    result.height === testCase.expectedHeight,
+    `Height mismatch: expected ${testCase.expectedHeight}, got ${result.height}`
+  )
+  console.assert(
+    result.x === testCase.expectedX,
+    `X position mismatch: expected ${testCase.expectedX}, got ${result.x}`
+  )
+  console.assert(
+    result.y === testCase.expectedY,
+    `Y position mismatch: expected ${testCase.expectedY}, got ${result.y}`
+  )
+  console.assert(
+    result.rotation === testCase.expectedRotation,
+    `Rotation mismatch: expected ${testCase.expectedRotation}, got ${result.rotation}`
+  )
+
+  console.log(passed ? "✅ Test passed!" : "❌ Test failed!")
+
+  return passed
 }
 
 export async function runTests() {
   console.log("Running tests for getSuggestedImageModification")
 
   try {
-    // Test the example case (1600x999 image in 1536x1024 frame)
-    const result = await suggestImageModification(mockImage, "test-image-path", async () => ({
-      width: 1600,
-      height: 999,
-    }))
+    // Define test cases
+    const testCases: TestCase[] = [
+      {
+        name: "Large image (1600x999 in 1536x1024 frame)",
+        imageWidth: 1600,
+        imageHeight: 999,
+        frameWidth: 1536,
+        frameHeight: 1024,
+        expectedWidth: 1536,
+        expectedHeight: 959, // (999 / 1600) * 1536 ≈ 959.4, rounded down
+        expectedX: 0, // centered: (1536 - 1536) / 2 = 0
+        expectedY: 65, // 1024 - 959 = 65 (bottom-aligned)
+        expectedRotation: 0,
+      },
+      {
+        name: "Small square image (400x400 in 1024x1024 frame)",
+        imageWidth: 400,
+        imageHeight: 400,
+        frameWidth: 1024,
+        frameHeight: 1024,
+        expectedWidth: 400, // Small, no scaling
+        expectedHeight: 400, // Small, no scaling
+        expectedX: 312, // centered: (1024 - 400) / 2 = 312
+        expectedY: 624, // 1024 - 400 = 624 (bottom-aligned)
+        expectedRotation: 0,
+      },
+      {
+        name: "Smaller image (800x500 in 1536x1024 frame)",
+        imageWidth: 800,
+        imageHeight: 500,
+        frameWidth: 1536,
+        frameHeight: 1024,
+        expectedWidth: 800, // Small, no scaling
+        expectedHeight: 500, // Small, no scaling
+        expectedX: 368, // centered: (1536 - 800) / 2 = 368
+        expectedY: 524, // 1024 - 500 = 524 (bottom-aligned)
+        expectedRotation: 0,
+      },
+    ]
 
-    console.log("Test result:", result)
-
-    // Expected values based on the example
-    const expectedWidth = 1536
-    const expectedHeight = 959 // (999 / 1600) * 1536 = ~959.4, rounded down
-    const expectedX = 0 // Based on your example
-    const expectedY = 65 // 1024 - 959 = 65 (bottom-aligned)
-
-    // Verify results
-    console.assert(result.width === expectedWidth, `Width mismatch: expected ${expectedWidth}, got ${result.width}`)
-
-    console.assert(
-      result.height === expectedHeight,
-      `Height mismatch: expected ${expectedHeight}, got ${result.height}`
-    )
-
-    console.assert(result.x === expectedX, `X position mismatch: expected ${expectedX}, got ${result.x}`)
-
-    console.assert(result.y === expectedY, `Y position mismatch: expected ${expectedY}, got ${result.y}`)
-
-    console.assert(result.rotation === 0, `Rotation mismatch: expected 0, got ${result.rotation}`)
-
-    if (
-      result.width === expectedWidth &&
-      result.height === expectedHeight &&
-      result.x === expectedX &&
-      result.y === expectedY &&
-      result.rotation === 0
-    ) {
-      console.log("✅ Test passed!")
-    } else {
-      console.log("❌ Test failed!")
+    // Run all test cases
+    let allPassed = true
+    for (const testCase of testCases) {
+      const passed = await runTestCase(testCase)
+      allPassed = allPassed && passed
     }
 
-    // Test smaller image that shouldn't be scaled up
-    const smallerResult = await suggestImageModification(mockImage, "smaller-image", async () => ({
-      width: 800,
-      height: 500,
-    }))
-
-    console.log("Smaller image test result:", smallerResult)
-
-    // Small image should maintain its original dimensions
-    console.assert(
-      smallerResult.width === 800,
-      `Small image width should be original: expected 800, got ${smallerResult.width}`
-    )
-
-    console.assert(
-      smallerResult.height === 500,
-      `Small image height should be original: expected 500, got ${smallerResult.height}`
-    )
-
-    // Should be aligned to the bottom
-    console.assert(smallerResult.y === 524, `Small image Y position: expected 524 (1024-500), got ${smallerResult.y}`)
+    console.log(allPassed ? "🎉 All tests passed!" : "❌ Some tests failed!")
   } catch (error) {
-    console.error("Test failed with error:", error)
+    console.error("Tests failed with error:", error)
     throw error // Re-throw to signal test failure
   } finally {
     // Restore original sharp implementation
@@ -114,9 +162,6 @@ export async function runTests() {
     global.sharp = originalSharp
   }
 }
-
-// The tests will be run by the test runner
-// runTests().catch(console.error)
 
 // Export a function that can be called to run the tests
 export const runImageTests = runTests

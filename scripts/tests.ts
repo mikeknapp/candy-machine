@@ -2,6 +2,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
+import { runImageTests } from "../lib/imageTest"
 
 // Get the directory of the current file
 const __filename = fileURLToPath(import.meta.url)
@@ -77,4 +78,15 @@ async function runTests() {
 }
 
 // Run all tests
-runTests()
+async function main() {
+  try {
+    console.log("Running image tests...")
+    await runImageTests()
+    console.log("All tests completed")
+  } catch (error) {
+    console.error("Error running tests:", error)
+    process.exit(1)
+  }
+}
+
+main()

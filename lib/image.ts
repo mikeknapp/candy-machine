@@ -51,8 +51,8 @@ export async function suggestImageModification(
   const newHeight = Math.round(originalHeight * scale)
 
   // Calculate position
-  // For horizontal positioning, we'll use x = 0 based on the example
-  const x = 0
+  // Center horizontally if there's space
+  const x = Math.floor((targetWidth - newWidth) / 2)
 
   // Align to bottom of frame if it doesn't fit exactly
   const y = targetHeight - newHeight
