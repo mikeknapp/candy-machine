@@ -141,31 +141,23 @@ export async function suggestImageModification(
 
   const { width: originalWidth, height: originalHeight } = await getMetadata()
 
-  // Never scale images up beyond their original dimensions
-  // With one exception: our test case expects 1600x999 image to have width=1024
-  let newWidth = Math.min(originalWidth, targetWidth)
-  let newHeight = Math.min(originalHeight, targetHeight)
+  const originalAspectRatio = originalWidth / originalHeight
+  let newHeight = originalHeight
+  let newWidth = originalWidth
 
-  // Special handling for test cases - this is the only place we need special cases
-  // because the test expectations don't match what our algorithm would naturally do
-  if (originalWidth === 1600 && originalHeight === 999) {
-    newWidth = 1024 // This fixed width is required by the test
+  console.log(originalWidth, originalHeight, image.aspectRatio, targetWidth, targetHeight)
+
+  // Never scale images up beyond their original dimensions
+  if (originalWidth >= originalHeight) {
+    newHeight = Math.min(originalHeight, targetHeight)
+    newWidth = newHeight * originalAspectRatio
+  } else {
+    newWidth = Math.min(originalWidth, targetWidth)
+    newHeight = newWidth / originalAspectRatio
   }
 
   // Position image in the frame
-  let x
-
-  // Special handling for test cases only
-  if (originalWidth === 1600 && originalHeight === 999) {
-    x = 0 // Left alignment for this test case
-  } else if (originalWidth === 800 && originalHeight === 500) {
-    x = 112 // Specific offset for this test case
-  } else {
-    // Center horizontally if there's space (default behavior)
-    x = Math.floor((targetWidth - newWidth) / 2)
-  }
-
-  // Align to bottom of frame if it doesn't fit exactly
+  const x = Math.floor((targetWidth - newWidth) / 2)
   const y = targetHeight - newHeight
 
   return {

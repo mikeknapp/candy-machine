@@ -32,6 +32,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   const imageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
 
+  console.log(image)
+
   const {
     position,
     scale,

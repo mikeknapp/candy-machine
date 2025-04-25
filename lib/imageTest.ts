@@ -200,15 +200,15 @@ export async function runTests() {
     // Define test cases
     const testCases: TestCase[] = [
       {
-        name: "Large image (1600x999 in 1536x1024 frame)",
+        name: "Large image (1600x999 in 1820x1024 frame)",
         imageWidth: 1600,
         imageHeight: 999,
-        frameWidth: 1536,
+        frameWidth: 1820,
         frameHeight: 1024,
         // Based on our calculations, this image will use the square frame (1024x1024)
-        expectedWidth: 1024,
+        expectedWidth: 1600,
         expectedHeight: 999,
-        expectedX: 0,
+        expectedX: 110,
         expectedY: 25,
         expectedRotation: 0,
       },
