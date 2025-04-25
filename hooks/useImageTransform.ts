@@ -8,6 +8,21 @@ import {
   useState,
 } from "react"
 
+/**
+ * A custom React hook that manages image transformations including drag, resize, rotate, and zoom operations.
+ * This hook is designed to work with an image editor interface where users can manipulate images within a frame.
+ *
+ * Key Concepts:
+ * - Scale vs FrameScale:
+ *   - scale: The logical zoom level of the image (1.0 = 100% of frame size)
+ *   - frameScaleFactor: A scaling factor applied by the frame component for display purposes
+ *   - displayScale: The actual rendered scale (scale * frameScaleFactor) used in CSS transforms
+ *
+ * - Coordinate Systems:
+ *   - position: Represents the image's offset from the frame's center in pixels
+ *   - All transformations (drag, resize, rotate) are performed relative to the frame's center
+ */
+
 interface UseImageTransformProps {
   initialPosition?: { x: number; y: number }
   initialScale?: number
@@ -19,6 +34,9 @@ interface UseImageTransformProps {
   imageRef: RefObject<HTMLDivElement>
 }
 
+/**
+ * Return type containing all transformation state and handlers
+ */
 export interface UseImageTransformReturn {
   position: { x: number; y: number }
   scale: number
@@ -64,7 +82,11 @@ export const useImageTransform = ({
   const [startRotation, setStartRotation] = useState(0)
   const [resizingCorner, setResizingCorner] = useState<GrabberPosition | null>(null)
 
-  // Calculate the maximum scale based on original image size
+  /**
+   * Calculates the maximum allowed scale based on the original image resolution
+   * This ensures users can zoom in until they see the image at its native resolution
+   * but prevents excessive zooming that would only show pixelation
+   */
   const calculateMaxScale = useCallback(() => {
     if (originalImageSize.width === 0 || frameSize.width === 0 || frameScaleFactor === 0) return 3 // Default max
 
@@ -73,6 +95,10 @@ export const useImageTransform = ({
     return Math.max(3, maxScaleFactor) // Ensure max scale is at least 3x, but allow zooming to original resolution
   }, [originalImageSize.width, frameSize.width, frameScaleFactor])
 
+  /**
+   * Initiates image dragging operation
+   * Stores initial cursor position and image position for delta calculations
+   */
   const handleDragStart = useCallback(
     (clientX: number, clientY: number) => {
       if (!editMode) return
@@ -85,6 +111,10 @@ export const useImageTransform = ({
     [editMode, position]
   )
 
+  /**
+   * Initiates image resizing operation from a corner grabber
+   * Stores initial cursor position and scale for transformation calculations
+   */
   const handleResizeStart = useCallback(
     (clientX: number, clientY: number, corner: GrabberPosition) => {
       if (!editMode) return
@@ -98,6 +128,10 @@ export const useImageTransform = ({
     [editMode, scale]
   )
 
+  /**
+   * Initiates image rotation operation
+   * Stores initial cursor position and rotation angle for angular calculations
+   */
   const handleRotateStart = useCallback(
     (clientX: number, clientY: number) => {
       if (!editMode || !imageRef.current) return
@@ -110,6 +144,12 @@ export const useImageTransform = ({
     [editMode, rotation, imageRef]
   )
 
+  /**
+   * Handles all mouse movement during transformations
+   * - For dragging: Updates position based on cursor movement
+   * - For resizing: Updates scale based on distance from center
+   * - For rotation: Updates rotation based on angle from center
+   */
   const handleMouseMove = useCallback(
     (e: MouseEvent | ReactMouseEvent) => {
       if (!editMode || (!isDragging && !isResizing && !isRotating)) return // Only process if in edit mode and an action is active
@@ -166,6 +206,10 @@ export const useImageTransform = ({
     ]
   )
 
+  /**
+   * Adapts touch events to use the same transformation logic as mouse events
+   * Only handles single-touch gestures
+   */
   const handleTouchMove = useCallback(
     (e: TouchEvent | ReactTouchEvent) => {
       if (!editMode) return
@@ -180,6 +224,9 @@ export const useImageTransform = ({
     [editMode, handleMouseMove] // Dependency on handleMouseMove
   )
 
+  /**
+   * Resets all transformation states when mouse/touch interaction ends
+   */
   const handleMouseUp = useCallback(() => {
     // Always reset flags on mouse up, regardless of editMode
     if (isDragging) setIsDragging(false)
@@ -188,19 +235,24 @@ export const useImageTransform = ({
     setResizingCorner(null)
   }, [isDragging, isResizing, isRotating]) // Dependencies are the state flags
 
+  /**
+   * Increases image scale by 10%, up to the maximum allowed scale
+   */
   const handleZoomIn = useCallback(() => {
     if (!editMode) return
     const maxScale = calculateMaxScale()
     setScale((prev) => Math.min(prev * 1.1, maxScale)) // Multiplicative zoom
   }, [editMode, calculateMaxScale])
 
+  /**
+   * Decreases image scale by 10%, down to a minimum of 0.1
+   */
   const handleZoomOut = useCallback(() => {
     if (!editMode) return
     setScale((prev) => Math.max(prev / 1.1, 0.1)) // Multiplicative zoom
   }, [editMode])
 
-  // Display scale includes frame scaling factor for rendering
-  // This scale is applied to the original image dimensions INSIDE the transformed div
+  // Calculate the actual scale used for rendering, which includes the frame's scaling factor
   const displayScale = scale * frameScaleFactor
 
   // Effect to reset interaction state if editMode turns off

@@ -64,112 +64,80 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     imageRef: imageRef as RefObject<HTMLDivElement>,
   })
 
-  // Calculate and set the frame size based on container dimensions
+  // Shared utility to calculate maximum container dimensions
+  const getContainerDimensions = (containerElement: HTMLElement) => {
+    const containerWidth = containerElement.clientWidth
+    const containerHeight = containerElement.clientHeight
+
+    // We consistently use 70% of container size as our maximum bounds
+    return {
+      maxWidth: containerWidth * 0.7,
+      maxHeight: containerHeight * 0.7,
+      containerWidth,
+      containerHeight,
+    }
+  }
+
+  // Combined resize effect to handle both image and frame scaling
   useEffect(() => {
-    const updateFrameSize = () => {
+    if (!containerRef.current) return
+
+    const updateDimensions = () => {
       if (!containerRef.current) return
 
-      const containerHeight = containerRef.current.clientHeight
-      const containerWidth = containerRef.current.clientWidth
+      const { maxWidth, maxHeight } = getContainerDimensions(containerRef.current)
 
-      // Set maximum dimensions as percentages of container size
-      const maxHeight = containerHeight * 0.7 // 70% of container height
-      const maxWidth = containerWidth * 0.7 // 70% of container width
-
+      // 1. Update image scale
       // Calculate initial dimensions based on the height constraint
-      let width = maxHeight * image.aspectRatio
-      let height = maxHeight
+      let imageWidth = maxHeight * image.aspectRatio
+      let imageHeight = maxHeight
 
       // Check if width exceeds the max width constraint
-      if (width > maxWidth) {
+      if (imageWidth > maxWidth) {
         // Recalculate based on width constraint
-        width = maxWidth
-        height = width / image.aspectRatio
+        imageWidth = maxWidth
+        imageHeight = maxWidth / image.aspectRatio
       }
 
-      // Set the scale based on the calculated dimensions
-      setScale(Math.min(width / image.width, height / image.height))
-    }
+      // Update image scale
+      setScale(Math.min(imageWidth / image.width, imageHeight / image.height))
 
-    updateFrameSize()
-    window.addEventListener("resize", updateFrameSize)
-
-    return () => {
-      window.removeEventListener("resize", updateFrameSize)
-    }
-  }, [image.aspectRatio, image.width, selectedFrameSize, setScale])
-
-  // Frame ref effect
-  useEffect(() => {
-    if (editMode && frameRef.current && containerRef.current) {
-      const updateFrameSize = () => {
-        if (!frameRef.current || !containerRef.current) return
-
+      // 2. Update frame scale (only in edit mode)
+      if (editMode && frameRef.current) {
         const selectedSize = imageSizes[selectedFrameSize]
-        const containerWidth = containerRef.current.clientWidth
-        const containerHeight = containerRef.current.clientHeight
 
-        // Calculate the maximum allowed dimensions (70% of container)
-        const maxWidth = containerWidth * 0.7
-        const maxHeight = containerHeight * 0.7
-
-        // Calculate scaling factor to fit within the constraints
+        // Calculate frame scaling factor
         let newFrameScaleFactor = 1
 
-        // If frame would exceed either dimension, scale it down
+        // Scale down frame if it exceeds container bounds
         if (selectedSize.width > maxWidth || selectedSize.height > maxHeight) {
-          // Determine which constraint is more limiting
           const widthRatio = maxWidth / selectedSize.width
           const heightRatio = maxHeight / selectedSize.height
           newFrameScaleFactor = Math.min(widthRatio, heightRatio)
         }
 
-        // Update the frameScaleFactor state
+        // Update frame scale factor and dimensions
         setFrameScaleFactor(newFrameScaleFactor)
 
-        // Apply the scaled dimensions
         const scaledWidth = selectedSize.width * newFrameScaleFactor
         const scaledHeight = selectedSize.height * newFrameScaleFactor
 
         frameRef.current.style.width = `${scaledWidth}px`
         frameRef.current.style.height = `${scaledHeight}px`
       }
-
-      // Update initially
-      updateFrameSize()
-
-      // Set up resize observer to update frame size when container resizes
-      const resizeObserver = new ResizeObserver(() => {
-        updateFrameSize()
-      })
-
-      resizeObserver.observe(containerRef.current)
-
-      return () => {
-        resizeObserver.disconnect()
-      }
     }
-  }, [editMode, selectedFrameSize, setFrameScaleFactor])
 
-  // Select best initial frame size based on image aspect ratio
-  useEffect(() => {
-    if (editMode) {
-      // Find the closest aspect ratio match when entering edit mode
-      const imageAspect = image.aspectRatio
-      let closestMatch = "square"
-      let smallestDiff = Infinity
+    // Initial update
+    updateDimensions()
 
-      Object.entries(imageSizes).forEach(([key, size]) => {
-        const diff = Math.abs(size.aspectRatio - imageAspect)
-        if (diff < smallestDiff) {
-          smallestDiff = diff
-          closestMatch = key
-        }
-      })
+    // Use ResizeObserver for efficient resize handling
+    const resizeObserver = new ResizeObserver(updateDimensions)
+    resizeObserver.observe(containerRef.current)
 
-      setSelectedFrameSize(closestMatch as keyof typeof imageSizes)
+    return () => {
+      resizeObserver.disconnect()
     }
-  }, [editMode, image.aspectRatio])
+  }, [image.aspectRatio, image.width, selectedFrameSize, editMode, setScale, setFrameScaleFactor])
 
   // Set initial scale when image loads
   const handleImageLoad = () => {
