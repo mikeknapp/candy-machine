@@ -28,7 +28,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   const [isLoading, setIsLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [selectedFrameSize, setSelectedFrameSize] = useState<keyof typeof imageSizes>("square")
-  const [frameScaleFactor, setFrameScaleFactor] = useState(1)
+  const [renderedFrameSize, setRenderedFrameSize] = useState<{ width: number; height: number } | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -57,8 +57,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
 
   const initialPosition = editData
     ? {
-        x: (editData.x ?? 0) * frameScaleX * frameScaleFactor,
-        y: (editData.y ?? 0) * frameScaleY * frameScaleFactor,
+        x: (editData.x ?? 0) * frameScaleX,
+        y: (editData.y ?? 0) * frameScaleY,
       }
     : { x: 0, y: 0 }
   const initialRotation = editData?.rotation ?? 0
@@ -69,9 +69,6 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     scale,
     rotation,
     displayScale,
-    isDragging,
-    isResizing,
-    isRotating,
     handleDragStart,
     handleResizeStart,
     handleRotateStart,
@@ -87,89 +84,28 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     initialScale,
     initialRotation,
     originalImageSize: { width: image.originalWidth, height: image.originalHeight },
-    frameSize: {
-      width: imageSizes[selectedFrameSize].width * frameScaleFactor,
-      height: imageSizes[selectedFrameSize].height * frameScaleFactor,
-    },
-    frameScaleFactor,
+    frameSize: imageSizes[selectedFrameSize],
+    renderedFrameSize: renderedFrameSize || undefined,
     editMode,
     imageRef: imageRef as RefObject<HTMLDivElement>,
   })
 
-  // Shared utility to calculate maximum container dimensions
-  const getContainerDimensions = (containerElement: HTMLElement) => {
-    const containerWidth = containerElement.clientWidth
-    const containerHeight = containerElement.clientHeight
-
-    // We consistently use 70% of container size as our maximum bounds
-    return {
-      maxWidth: containerWidth * 0.7,
-      maxHeight: containerHeight * 0.7,
-      containerWidth,
-      containerHeight,
-    }
-  }
-
-  // Combined resize effect to handle both image and frame scaling
+  // Track the actual rendered frame size
   useEffect(() => {
-    if (!containerRef.current) return
-
-    const updateDimensions = () => {
-      if (!containerRef.current) return
-
-      const { maxWidth, maxHeight } = getContainerDimensions(containerRef.current)
-
-      // 1. Update image scale
-      // Calculate initial dimensions based on the height constraint
-      let imageWidth = maxHeight * image.aspectRatio
-      let imageHeight = maxHeight
-
-      // Check if width exceeds the max width constraint
-      if (imageWidth > maxWidth) {
-        // Recalculate based on width constraint
-        imageWidth = maxWidth
-        imageHeight = maxWidth / image.aspectRatio
-      }
-
-      // Update image scale
-      setScale(Math.min(imageWidth / image.width, imageHeight / image.height))
-
-      // 2. Update frame scale (only in edit mode)
-      if (editMode && frameRef.current) {
-        const selectedSize = imageSizes[selectedFrameSize]
-
-        // Calculate frame scaling factor
-        let newFrameScaleFactor = 1
-
-        // Scale down frame if it exceeds container bounds
-        if (selectedSize.width > maxWidth || selectedSize.height > maxHeight) {
-          const widthRatio = maxWidth / selectedSize.width
-          const heightRatio = maxHeight / selectedSize.height
-          newFrameScaleFactor = Math.min(widthRatio, heightRatio)
-        }
-
-        // Update frame scale factor and dimensions
-        setFrameScaleFactor(newFrameScaleFactor)
-
-        const scaledWidth = selectedSize.width * newFrameScaleFactor
-        const scaledHeight = selectedSize.height * newFrameScaleFactor
-
-        frameRef.current.style.width = `${scaledWidth}px`
-        frameRef.current.style.height = `${scaledHeight}px`
+    if (!frameRef.current) return
+    const updateSize = () => {
+      if (frameRef.current) {
+        setRenderedFrameSize({
+          width: frameRef.current.offsetWidth,
+          height: frameRef.current.offsetHeight,
+        })
       }
     }
-
-    // Initial update
-    updateDimensions()
-
-    // Use ResizeObserver for efficient resize handling
-    const resizeObserver = new ResizeObserver(updateDimensions)
-    resizeObserver.observe(containerRef.current)
-
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [image.aspectRatio, image.width, selectedFrameSize, editMode, setScale, setFrameScaleFactor])
+    updateSize()
+    const resizeObserver = new ResizeObserver(updateSize)
+    resizeObserver.observe(frameRef.current)
+    return () => resizeObserver.disconnect()
+  }, [selectedFrameSize, editMode])
 
   // Set initial scale when image loads
   const handleImageLoad = () => {
@@ -224,8 +160,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
 
       // Apply the current frameScaleFactor for proper positioning
       setPosition({
-        x: containerCenterX - (imageSizes[newFrameSize].width * frameScaleFactor * scale) / 2,
-        y: containerCenterY - (imageSizes[newFrameSize].height * frameScaleFactor * scale) / 2,
+        x: containerCenterX - (imageSizes[newFrameSize].width * scale) / 2,
+        y: containerCenterY - (imageSizes[newFrameSize].height * scale) / 2,
       })
     }
   }
@@ -240,7 +176,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       onTouchEnd={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {editMode ? (
+      {editMode && renderedFrameSize && (
         <>
           <div className="absolute top-4 left-4 z-100 bg-white rounded-md p-2">
             <Select onValueChange={handleFrameSizeChange} value={selectedFrameSize}>
@@ -319,27 +255,27 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
             <div className="absolute inset-0 bg-transparent"></div>
           </div>
         </>
-      ) : (
-        // Simple view mode - just the image without editing controls
-        <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
-          <Image
-            src={`/data/${projectSlug}/${image.id}-export.png`}
-            alt={`Image ${image.id}`}
-            className={`transition-opacity duration-200 ${
-              isLoading ? "opacity-0" : "opacity-100"
-            } max-h-full w-auto h-auto`}
-            width={image.originalWidth}
-            height={image.originalHeight}
-            style={{
-              objectFit: "contain",
-              maxHeight: "70vh",
-            }}
-            priority
-            draggable={false}
-            onLoad={handleImageLoad}
-          />
-        </div>
       )}
+
+      {/* Simple view mode - just the image without editing controls */}
+      <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
+        <Image
+          src={`/data/${projectSlug}/${image.id}-export.png`}
+          alt={`Image ${image.id}`}
+          className={`transition-opacity duration-200 ${
+            isLoading ? "opacity-0" : "opacity-100"
+          } max-h-full w-auto h-auto`}
+          width={image.originalWidth}
+          height={image.originalHeight}
+          style={{
+            objectFit: "contain",
+            maxHeight: "70vh",
+          }}
+          priority
+          draggable={false}
+          onLoad={handleImageLoad}
+        />
+      </div>
 
       {/* Controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-40">

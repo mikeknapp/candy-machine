@@ -28,8 +28,8 @@ interface UseImageTransformProps {
   initialScale?: number
   initialRotation?: number
   originalImageSize: { width: number; height: number }
-  frameSize: { width: number; height: number }
-  frameScaleFactor: number
+  frameSize: { width: number; height: number } // virtual frame size
+  renderedFrameSize?: { width: number; height: number } // actual rendered size
   editMode: boolean
   imageRef: RefObject<HTMLDivElement>
 }
@@ -65,7 +65,7 @@ export const useImageTransform = ({
   initialRotation = 0,
   originalImageSize,
   frameSize,
-  frameScaleFactor,
+  renderedFrameSize,
   editMode,
   imageRef,
 }: UseImageTransformProps): UseImageTransformReturn => {
@@ -88,12 +88,12 @@ export const useImageTransform = ({
    * but prevents excessive zooming that would only show pixelation
    */
   const calculateMaxScale = useCallback(() => {
-    if (originalImageSize.width === 0 || frameSize.width === 0 || frameScaleFactor === 0) return 3 // Default max
+    if (originalImageSize.width === 0 || frameSize.width === 0 || frameSize.width / frameSize.height > 1) return 3 // Default max
 
     // Max scale allows zooming until the original image pixel density matches the frame pixel density
-    const maxScaleFactor = originalImageSize.width / (frameSize.width / frameScaleFactor)
+    const maxScaleFactor = originalImageSize.width / (frameSize.width / frameSize.height)
     return Math.max(3, maxScaleFactor) // Ensure max scale is at least 3x, but allow zooming to original resolution
-  }, [originalImageSize.width, frameSize.width, frameScaleFactor])
+  }, [originalImageSize.width, frameSize.width, frameSize.height])
 
   /**
    * Initiates image dragging operation
@@ -144,6 +144,12 @@ export const useImageTransform = ({
     [editMode, rotation, imageRef]
   )
 
+  // Calculate the scale factor between virtual and rendered frame sizes
+  const renderScaleX = renderedFrameSize ? renderedFrameSize.width / frameSize.width : 1
+  const renderScaleY = renderedFrameSize ? renderedFrameSize.height / frameSize.height : 1
+  // Use the smaller scale to maintain aspect ratio
+  const renderScale = Math.min(renderScaleX, renderScaleY)
+
   /**
    * Handles all mouse movement during transformations
    * - For dragging: Updates position based on cursor movement
@@ -155,8 +161,9 @@ export const useImageTransform = ({
       if (!editMode || (!isDragging && !isResizing && !isRotating)) return // Only process if in edit mode and an action is active
 
       if (isDragging) {
-        const deltaX = e.clientX - dragStart.x
-        const deltaY = e.clientY - dragStart.y
+        // Adjust delta by renderScale so logical position is correct
+        const deltaX = (e.clientX - dragStart.x) / renderScale
+        const deltaY = (e.clientY - dragStart.y) / renderScale
         setPosition({
           x: startPosition.x + deltaX,
           y: startPosition.y + deltaY,
@@ -167,8 +174,13 @@ export const useImageTransform = ({
         const centerX = rect.left + rect.width / 2
         const centerY = rect.top + rect.height / 2
 
-        const startDist = Math.sqrt(Math.pow(dragStart.x - centerX, 2) + Math.pow(dragStart.y - centerY, 2))
-        const currentDist = Math.sqrt(Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2))
+        // Adjust distances by renderScale so logical scale is correct
+        const startDist = Math.sqrt(
+          Math.pow((dragStart.x - centerX) / renderScale, 2) + Math.pow((dragStart.y - centerY) / renderScale, 2)
+        )
+        const currentDist = Math.sqrt(
+          Math.pow((e.clientX - centerX) / renderScale, 2) + Math.pow((e.clientY - centerY) / renderScale, 2)
+        )
 
         if (startDist === 0) return // Avoid division by zero
 
@@ -203,6 +215,7 @@ export const useImageTransform = ({
       resizingCorner,
       imageRef,
       calculateMaxScale,
+      renderScale,
     ]
   )
 
@@ -253,7 +266,7 @@ export const useImageTransform = ({
   }, [editMode])
 
   // Calculate the actual scale used for rendering, which includes the frame's scaling factor
-  const displayScale = scale * frameScaleFactor
+  const displayScale = scale * renderScale
 
   // Effect to reset interaction state if editMode turns off
   useEffect(() => {
