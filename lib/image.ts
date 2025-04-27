@@ -22,44 +22,24 @@ export type ModifiedImage = {
   newSize: number
 }
 
-// When image fits without scaling down:
-const SCORE_WEIGHT_COVERAGE_FIT = 15.0 // Strongly prefer filling space
-const SCORE_WEIGHT_ASPECT_FIT = 1.0 // Lesser weight for aspect ratio match
+// Weights for scoring frame fit. Adjust to tune prioritization.
+const SCORE_WEIGHT_COVERAGE_FIT = 15.0 // Prefer maximizing frame coverage when no downscaling is needed
+const SCORE_WEIGHT_ASPECT_FIT = 1.0 // Minor preference for aspect ratio match in fit scenarios
 
-// When image must be scaled down (frame is smaller):
-const SCORE_WEIGHT_ASPECT_SCALED = 5.0 // Prioritize aspect ratio to minimize distortion
-const SCORE_WEIGHT_COVERAGE_SCALED = 2.0 // Still consider coverage
+const SCORE_WEIGHT_ASPECT_SCALED = 5.0 // When downscaling, prioritize aspect ratio to minimize distortion
+const SCORE_WEIGHT_COVERAGE_SCALED = 2.0 // Still consider coverage when downscaling
 
-const ASPECT_DIFF_MULTIPLIER = 10.0 // How much to penalize aspect ratio differences
+const ASPECT_DIFF_MULTIPLIER = 10.0 // Penalize aspect ratio differences more strongly
 
 /**
- * Selects the most suitable predefined frame size for an image, prioritizing coverage
- * when the image fits without scaling, and aspect ratio when scaling down is required.
+ * Selects the optimal predefined frame size for an image, balancing coverage and aspect ratio.
  *
- * Ensures the image is never scaled up beyond its original dimensions to prevent pixelation.
+ * - Never upscales images beyond their original size.
+ * - If the image fits without downscaling, coverage is prioritized.
+ * - If downscaling is required, aspect ratio match is prioritized to reduce distortion.
  *
- * @param {Image} image - The image object with original dimensions and aspect ratio.
- * @returns {ImageSize} The best matching ImageSize object from the predefined `imageSizes`.
- *
- * @remarks
- * Simplified Logic:
- * 1.  **No Upscaling:** Calculates the necessary scale factor to fit the image within
- *     each frame, capped at a maximum of 1.0 (no enlargement).
- * 2.  **Metrics:** For each frame, calculates:
- *     - `coverage`: How much of the frame's area the final rendered image occupies.
- *     - `aspectRatioDiff`: How different the frame's aspect ratio is.
- *     - `needsDownscaling`: Whether the image had to be scaled down (scale factor < 1.0)
- *                            because the frame is smaller than the image dimensions.
- * 3.  **Scoring:**
- *     - **If the image fits without downscaling (`needsDownscaling` is false):**
- *       The score strongly prioritizes `coverage` (minimizing void space). Aspect ratio
- *       match has a minor influence, mainly as a tie-breaker.
- *       `score = coverage * SCORE_WEIGHT_COVERAGE_FIT + (1 / (1 + aspectRatioDiff * ASPECT_DIFF_MULTIPLIER)) * SCORE_WEIGHT_ASPECT_FIT`
- *     - **If the image requires downscaling (`needsDownscaling` is true):**
- *       The score prioritizes a close `aspectRatioDiff` (minimizing distortion/uneven cropping)
- *       while still considering `coverage`.
- *       `score = (1 / (1 + aspectRatioDiff * ASPECT_DIFF_MULTIPLIER)) * SCORE_WEIGHT_ASPECT_SCALED + coverage * SCORE_WEIGHT_COVERAGE_SCALED`
- * 4.  **Selection:** Returns the frame with the highest calculated score.
+ * @param image - Prisma Image object with original dimensions and aspect ratio.
+ * @returns The best matching ImageSize from `imageSizes`.
  */
 export function getBestImageSize(image: Image): ImageSize {
   const framesWithScores = Object.values(imageSizes).map((frame) => {
@@ -102,7 +82,7 @@ export function getBestImageSize(image: Image): ImageSize {
     }
   })
 
-  // Sort by score descending
+  // Sort by score descending; highest score wins
   framesWithScores.sort((a, b) => b.score - a.score)
 
   if (framesWithScores.length === 0) {
@@ -110,25 +90,26 @@ export function getBestImageSize(image: Image): ImageSize {
     return Object.values(imageSizes)[0] || { width: 1024, height: 1024, aspectRatio: 1, name: "fallback-square" }
   }
 
-  // Log the winner and maybe top contenders for debugging:
-  // console.log(
-  //   "Top scoring frames:",
-  //   framesWithScores.slice(0, 3).map((f) => ({
-  //     name: f.frame.name,
-  //     score: f.score,
-  //     needsDownscaling: f.needsDownscaling,
-  //     coverage: f.coverage,
-  //     arDiff: f.aspectRatioDiff,
-  //   }))
-  // )
+  // Uncomment for debug: log top scoring frames
+  // console.log(framesWithScores.slice(0, 3))
 
   return framesWithScores[0].frame
 }
 
+/**
+ * Suggests how to position and size an image within its best-fit frame.
+ *
+ * - Never scales up beyond original dimensions.
+ * - Centers horizontally; aligns to bottom vertically.
+ *
+ * @param image - Prisma Image object.
+ * @param imagePath - Filesystem path to the image.
+ * @param getMetadata - Optional: function to retrieve image metadata (for testing/mocking).
+ * @returns ImageModification describing placement and size within the frame.
+ */
 export async function suggestImageModification(
   image: Image,
   imagePath: string,
-  // Allow for dependency injection for testing
   getMetadata = async () => {
     const metadata = await sharp(imagePath).metadata()
     if (!metadata.width || !metadata.height) {
@@ -156,7 +137,7 @@ export async function suggestImageModification(
     newHeight = newWidth / originalAspectRatio
   }
 
-  // Position image in the frame
+  // Center horizontally, align to bottom vertically
   const x = Math.floor((targetWidth - newWidth) / 2)
   const y = targetHeight - newHeight
 
@@ -171,6 +152,16 @@ export async function suggestImageModification(
   }
 }
 
+/**
+ * Exports a modified image, compositing it into a new frame with a white background.
+ *
+ * - Resizes and positions the image according to suggested modifications.
+ * - Outputs a PNG file in the same directory as the original image.
+ *
+ * @param image - Prisma Image object.
+ * @param imagePath - Filesystem path to the image.
+ * @returns ModifiedImage with details about the export.
+ */
 export async function exportModifiedImage(image: Image, imagePath: string): Promise<ModifiedImage> {
   // Get the suggested modifications for the image
   const modification = await suggestImageModification(image, imagePath)
