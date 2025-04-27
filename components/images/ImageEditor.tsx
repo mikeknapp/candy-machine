@@ -43,16 +43,16 @@ function getFittedFrameSize(
   }
 }
 
+// Helper to find frame size key by width and height
+function getFrameSizeKeyByDimensions(width: number, height: number): keyof typeof imageSizes | undefined {
+  return (
+    (Object.entries(imageSizes).find(
+      ([_key, size]) => size.width === width && size.height === height
+    )?.[0] as keyof typeof imageSizes) || undefined
+  )
+}
+
 export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) => {
-  const [isLoading, setIsLoading] = useState(true)
-  const [editMode, setEditMode] = useState(false)
-  const [selectedFrameSize, setSelectedFrameSize] = useState<keyof typeof imageSizes>("square")
-  const [renderedFrameSize, setRenderedFrameSize] = useState<{ width: number; height: number } | null>(null)
-
-  const containerRef = useRef<HTMLDivElement>(null)
-  const imageRef = useRef<HTMLDivElement>(null)
-  const frameRef = useRef<HTMLDivElement>(null)
-
   // Use editData for initial transform if present
   const editData = image.editData as {
     x?: number
@@ -67,6 +67,19 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   // Determine the frame size used when editData was saved
   const savedFrameWidth = editData?.frameWidth ?? image.width
   const savedFrameHeight = editData?.frameHeight ?? image.height
+
+  // Find the initial frame size key
+  const initialFrameSizeKey = getFrameSizeKeyByDimensions(savedFrameWidth, savedFrameHeight) || "square"
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [editMode, setEditMode] = useState(false)
+  const [selectedFrameSize, setSelectedFrameSize] = useState<keyof typeof imageSizes>(initialFrameSizeKey)
+  const [renderedFrameSize, setRenderedFrameSize] = useState<{ width: number; height: number } | null>(null)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<HTMLDivElement>(null)
+
   const currentFrameWidth = imageSizes[selectedFrameSize].width
   const currentFrameHeight = imageSizes[selectedFrameSize].height
   const frameScaleX = currentFrameWidth / savedFrameWidth
