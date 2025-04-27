@@ -1,0 +1,6 @@
+---
+description: When you are writing unit tests
+globs: 
+alwaysApply: false
+---
+- You are *NOT* allowed to add special cases to the core logic to ensure your tests pass! This is cheating. Simply inform the user that the tests are broken, and they will need to fix the core logic. 

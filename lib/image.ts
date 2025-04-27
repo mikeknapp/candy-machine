@@ -10,6 +10,8 @@ export type ImageModification = {
   width: number
   height: number
   rotation: number
+  flippedY: boolean
+  flippedX: boolean
 }
 
 export type ModifiedImage = {
@@ -145,8 +147,6 @@ export async function suggestImageModification(
   let newHeight = originalHeight
   let newWidth = originalWidth
 
-  console.log(originalWidth, originalHeight, image.aspectRatio, targetWidth, targetHeight)
-
   // Never scale images up beyond their original dimensions
   if (originalWidth >= originalHeight) {
     newHeight = Math.min(originalHeight, targetHeight)
@@ -166,6 +166,8 @@ export async function suggestImageModification(
     width: newWidth,
     height: newHeight,
     rotation: 0,
+    flippedY: false,
+    flippedX: false,
   }
 }
 

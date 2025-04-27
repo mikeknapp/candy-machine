@@ -1,0 +1,14 @@
+---
+description: When you are using the adjusted coordinates of the image, relative to its frame
+globs: 
+alwaysApply: false
+---
+## Image Modification Coordinate System
+
+- The coordinate system for image modifications is based on the frame’s top-left corner, which is (0, 0).
+- The `x` and `y` values specify the position of the image’s top-left corner relative to the frame:
+  - Positive `x` moves the image right; positive `y` moves it down.
+  - For example, `(10, 20)` means the image’s top-left corner is 10 pixels to the right and 20 pixels down from the frame’s top-left corner.
+  - Negative values are allowed: `(-14, -20)` means the image starts 14 pixels left and 20 pixels above the frame’s top-left corner.
+- All coordinates are in pixels.
+- Rotation is applied around the image’s own top-left corner at its `(x, y)` position within the frame, not the frame’s origin.

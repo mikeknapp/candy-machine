@@ -36,6 +36,8 @@ export const MainPanel = () => {
       position: { x: number; y: number }
       scale: number
       rotation: number
+      flippedY: boolean
+      flippedX: boolean
     }
   ) => {
     if (!selectedProject) return

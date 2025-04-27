@@ -44,6 +44,8 @@ export async function saveTransformedImage(
     position: { x: number; y: number }
     scale: number
     rotation: number
+    flippedY: boolean
+    flippedX: boolean
   }
 ) {
   try {

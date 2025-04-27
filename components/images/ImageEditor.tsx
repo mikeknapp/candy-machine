@@ -18,6 +18,8 @@ interface ImageEditorProps {
     position: { x: number; y: number }
     scale: number
     rotation: number
+    flippedY: boolean
+    flippedX: boolean
     frameSize: keyof typeof imageSizes
   }) => void
 }
@@ -33,6 +35,34 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   const frameRef = useRef<HTMLDivElement>(null)
 
   console.log(image)
+
+  // Use editData for initial transform if present
+  const editData = image.editData as {
+    x?: number
+    y?: number
+    rotation?: number
+    width?: number
+    height?: number
+    frameWidth?: number
+    frameHeight?: number
+  } | null
+
+  // Determine the frame size used when editData was saved
+  const savedFrameWidth = editData?.frameWidth ?? image.width
+  const savedFrameHeight = editData?.frameHeight ?? image.height
+  const currentFrameWidth = imageSizes[selectedFrameSize].width
+  const currentFrameHeight = imageSizes[selectedFrameSize].height
+  const frameScaleX = currentFrameWidth / savedFrameWidth
+  const frameScaleY = currentFrameHeight / savedFrameHeight
+
+  const initialPosition = editData
+    ? {
+        x: (editData.x ?? 0) * frameScaleX * frameScaleFactor,
+        y: (editData.y ?? 0) * frameScaleY * frameScaleFactor,
+      }
+    : { x: 0, y: 0 }
+  const initialRotation = editData?.rotation ?? 0
+  const initialScale = editData && editData.width && image.originalWidth ? editData.width / image.originalWidth : 1
 
   const {
     position,
@@ -53,9 +83,9 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     setScale,
     setPosition,
   } = useImageTransform({
-    initialPosition: { x: 0, y: 0 },
-    initialScale: 1,
-    initialRotation: 0,
+    initialPosition,
+    initialScale,
+    initialRotation,
     originalImageSize: { width: image.originalWidth, height: image.originalHeight },
     frameSize: {
       width: imageSizes[selectedFrameSize].width * frameScaleFactor,
@@ -170,6 +200,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
         position,
         scale: scale,
         rotation,
+        flippedY: false, // TODO: Add flippedY and flippedX
+        flippedX: false,
         frameSize: selectedFrameSize,
       })
     }
