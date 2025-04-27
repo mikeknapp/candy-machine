@@ -24,6 +24,25 @@ interface ImageEditorProps {
   }) => void
 }
 
+// Helper to fit frame inside container at 70% max, preserving aspect ratio
+function getFittedFrameSize(
+  containerWidth: number,
+  containerHeight: number,
+  frameAspect: number,
+  maxPercent: number = 0.7
+) {
+  const maxWidth = containerWidth * maxPercent
+  const maxHeight = containerHeight * maxPercent
+
+  if (maxWidth / frameAspect <= maxHeight) {
+    // Width is the limiting factor
+    return { width: maxWidth, height: maxWidth / frameAspect }
+  } else {
+    // Height is the limiting factor
+    return { width: maxHeight * frameAspect, height: maxHeight }
+  }
+}
+
 export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
@@ -33,8 +52,6 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
-
-  console.log(image)
 
   // Use editData for initial transform if present
   const editData = image.editData as {
@@ -176,7 +193,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       onTouchEnd={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {editMode && renderedFrameSize && (
+      {editMode ? (
         <>
           <div className="absolute top-4 left-4 z-100 bg-white rounded-md p-2">
             <Select onValueChange={handleFrameSizeChange} value={selectedFrameSize}>
@@ -199,6 +216,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
               transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg) scale(${displayScale})`,
               transformOrigin: "center",
               willChange: "transform",
+              overflow: "visible",
             }}
           >
             <Image
@@ -242,12 +260,22 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
           {/* Frame that represents the final image dimensions - moved AFTER the image */}
           <div
             ref={frameRef}
-            className="relative border-2 border-black z-20 overflow-hidden pointer-events-none"
-            style={{
-              width: imageSizes[selectedFrameSize].width,
-              height: imageSizes[selectedFrameSize].height,
-              boxShadow: "0 0 0 9999px rgba(23, 23, 23, 0.4)",
-            }}
+            className="relative border-2 border-black bg-white z-0 overflow-hidden pointer-events-none"
+            style={(function () {
+              const containerWidth = containerRef.current?.offsetWidth ?? 0
+              const containerHeight = containerRef.current?.offsetHeight ?? 0
+              const frameAspect = imageSizes[selectedFrameSize].width / imageSizes[selectedFrameSize].height
+              const { width: frameWidth, height: frameHeight } = getFittedFrameSize(
+                containerWidth,
+                containerHeight,
+                frameAspect
+              )
+              return {
+                width: frameWidth,
+                height: frameHeight,
+                boxShadow: "0 0 0 9999px rgba(23, 23, 23, 0.4)",
+              }
+            })()}
           >
             <GridOverlay />
 
@@ -255,27 +283,29 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
             <div className="absolute inset-0 bg-transparent"></div>
           </div>
         </>
+      ) : (
+        <>
+          {/* Simple view mode - just the image without editing controls */}
+          <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
+            <Image
+              src={`/data/${projectSlug}/${image.id}-export.png`}
+              alt={`Image ${image.id}`}
+              className={`transition-opacity duration-200 ${
+                isLoading ? "opacity-0" : "opacity-100"
+              } max-h-full w-auto h-auto`}
+              width={image.originalWidth}
+              height={image.originalHeight}
+              style={{
+                objectFit: "contain",
+                maxHeight: "70vh",
+              }}
+              priority
+              draggable={false}
+              onLoad={handleImageLoad}
+            />
+          </div>
+        </>
       )}
-
-      {/* Simple view mode - just the image without editing controls */}
-      <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
-        <Image
-          src={`/data/${projectSlug}/${image.id}-export.png`}
-          alt={`Image ${image.id}`}
-          className={`transition-opacity duration-200 ${
-            isLoading ? "opacity-0" : "opacity-100"
-          } max-h-full w-auto h-auto`}
-          width={image.originalWidth}
-          height={image.originalHeight}
-          style={{
-            objectFit: "contain",
-            maxHeight: "70vh",
-          }}
-          priority
-          draggable={false}
-          onLoad={handleImageLoad}
-        />
-      </div>
 
       {/* Controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-40">
