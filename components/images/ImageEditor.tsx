@@ -1,10 +1,12 @@
 "use client"
 
+import { ImageEditData, SaveImageEditData } from "@/app/actions/images"
 import { imageSizes } from "@/app/consts"
 import { GridOverlay } from "@/components/images/GridOverlay"
 import { grabberCorners, GrabberPosition, ResizeGrabber, RotateGrabber } from "@/components/images/ImageGrabbers"
 import { ImageInfoPanel } from "@/components/images/ImageInfoPanel"
 import { useImageTransform } from "@/hooks/useImageTransform"
+import { getFittedFrameSize, getFrameSizeKeyByDimensions } from "@/lib/utils"
 import { Image as ImageType } from "@prisma/client"
 import { Check, Edit, Loader2, ZoomIn, ZoomOut } from "lucide-react"
 import Image from "next/image"
@@ -14,91 +16,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 interface ImageEditorProps {
   image: ImageType
   projectSlug: string
-  onSave?: (transformData: {
-    position: { x: number; y: number }
-    scale: number
-    rotation: number
-    flippedY: boolean
-    flippedX: boolean
-    frameSize: keyof typeof imageSizes
-  }) => void
-}
-
-// Helper to fit frame inside container at 70% max, preserving aspect ratio
-function getFittedFrameSize(
-  containerWidth: number,
-  containerHeight: number,
-  frameAspect: number,
-  maxPercent: number = 0.7
-) {
-  const maxWidth = containerWidth * maxPercent
-  const maxHeight = containerHeight * maxPercent
-
-  if (maxWidth / frameAspect <= maxHeight) {
-    // Width is the limiting factor
-    return { width: maxWidth, height: maxWidth / frameAspect }
-  } else {
-    // Height is the limiting factor
-    return { width: maxHeight * frameAspect, height: maxHeight }
-  }
-}
-
-// Helper to find frame size key by width and height
-function getFrameSizeKeyByDimensions(width: number, height: number): keyof typeof imageSizes | undefined {
-  return (
-    (Object.entries(imageSizes).find(
-      ([_key, size]) => size.width === width && size.height === height
-    )?.[0] as keyof typeof imageSizes) || undefined
-  )
+  onSave?: (transformData: SaveImageEditData) => void
 }
 
 export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) => {
-  // Use editData for initial transform if present
-  const editData = image.editData as {
-    x?: number
-    y?: number
-    rotation?: number
-    width?: number
-    height?: number
-    frameWidth?: number
-    frameHeight?: number
-  } | null
-
-  // Determine the frame size used when editData was saved
-  const savedFrameWidth = editData?.frameWidth ?? image.width
-  const savedFrameHeight = editData?.frameHeight ?? image.height
-
-  // Find the initial frame size key
-  const initialFrameSizeKey = getFrameSizeKeyByDimensions(savedFrameWidth, savedFrameHeight) || "square"
+  const initialFrameSizeKey = getFrameSizeKeyByDimensions(image.width, image.height) || "square"
 
   const [isLoading, setIsLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [selectedFrameSize, setSelectedFrameSize] = useState<keyof typeof imageSizes>(initialFrameSizeKey)
   const [renderedFrameSize, setRenderedFrameSize] = useState<{ width: number; height: number } | null>(null)
+  const [lastSavedAt, setLastSavedAt] = useState(Date.now())
 
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
 
-  const currentFrameWidth = imageSizes[selectedFrameSize].width
-  const currentFrameHeight = imageSizes[selectedFrameSize].height
-  const frameScaleX = currentFrameWidth / savedFrameWidth
-  const frameScaleY = currentFrameHeight / savedFrameHeight
-
-  const initialPosition = editData
-    ? {
-        x: (editData.x ?? 0) * frameScaleX,
-        y: (editData.y ?? 0) * frameScaleY,
-      }
-    : { x: 0, y: 0 }
-  const initialRotation = editData?.rotation ?? 0
-  const initialScale = editData && editData.width && image.originalWidth ? editData.width / image.originalWidth : 1
-
   const {
-    position,
-    scale,
-    rotation,
-    displayScale,
+    renderedImageData,
+    newImageData,
     handleDragStart,
     handleResizeStart,
     handleRotateStart,
@@ -107,14 +43,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     handleMouseUp,
     handleZoomIn,
     handleZoomOut,
-    setScale,
-    setPosition,
   } = useImageTransform({
-    initialPosition,
-    initialScale,
-    initialRotation,
-    originalImageSize: { width: image.originalWidth, height: image.originalHeight },
-    frameSize: imageSizes[selectedFrameSize],
+    initImg: image,
     renderedFrameSize: renderedFrameSize || undefined,
     editMode,
     imageRef: imageRef as RefObject<HTMLDivElement>,
@@ -136,6 +66,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     resizeObserver.observe(frameRef.current)
     return () => resizeObserver.disconnect()
   }, [selectedFrameSize, editMode])
+
+  const renderData = renderedImageData.editData as ImageEditData
 
   // Set initial scale when image loads
   const handleImageLoad = () => {
@@ -159,20 +91,33 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   }, [editMode])
 
   const handleSave = () => {
-    if (onSave) {
-      // When saving, adjust the scale by the frameScaleFactor
-      // to account for the visual scaling in the UI
-      onSave({
-        position,
-        scale: scale,
-        rotation,
+    if (onSave && renderedFrameSize) {
+      const saveImageData = newImageData.editData as ImageEditData
+
+      console.log({
+        position: saveImageData?.position,
+        scale: saveImageData?.scale,
+        rotation: saveImageData?.rotation,
         flippedY: false, // TODO: Add flippedY and flippedX
         flippedX: false,
         frameSize: selectedFrameSize,
       })
+
+      onSave({
+        position: saveImageData?.position,
+        scale: saveImageData?.scale,
+        rotation: saveImageData?.rotation,
+        flippedY: false, // TODO: Add flippedY and flippedX
+        flippedX: false,
+        frameSize: selectedFrameSize,
+      })
+      setLastSavedAt(Date.now())
     }
     setEditMode(false)
   }
+
+  console.log("scale", renderData?.scale)
+  console.log("position", renderData?.position)
 
   const toggleEditMode = () => {
     setEditMode((prev) => !prev)
@@ -184,15 +129,16 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
 
     // Center the image when frame size changes
     if (containerRef.current) {
+      // TODO: FIX THIS
       const containerRect = containerRef.current.getBoundingClientRect()
       const containerCenterX = containerRect.width / 2
       const containerCenterY = containerRect.height / 2
 
       // Apply the current frameScaleFactor for proper positioning
-      setPosition({
-        x: containerCenterX - (imageSizes[newFrameSize].width * scale) / 2,
-        y: containerCenterY - (imageSizes[newFrameSize].height * scale) / 2,
-      })
+      // setPosition({
+      //   x: containerCenterX - (imageSizes[newFrameSize].width * scale) / 2,
+      //   y: containerCenterY - (imageSizes[newFrameSize].height * scale) / 2,
+      // })
     }
   }
 
@@ -223,57 +169,8 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
             </Select>
           </div>
           <div
-            ref={imageRef}
-            className="absolute z-10 select-none"
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg) scale(${displayScale})`,
-              transformOrigin: "center",
-              willChange: "transform",
-              overflow: "visible",
-            }}
-          >
-            <Image
-              src={`/data/${projectSlug}/${image.id}-original.${image.extension}`}
-              alt={`Image ${image.id}`}
-              className={`transition-opacity duration-200 ${isLoading ? "opacity-0" : "opacity-100"}`}
-              width={image.originalWidth}
-              height={image.originalHeight}
-              priority
-              draggable={false}
-              onLoad={handleImageLoad}
-              onMouseDown={(e) => editMode && handleDragStart(e.clientX, e.clientY)}
-              onTouchStart={(e) => {
-                if (editMode && e.touches.length === 1) {
-                  handleDragStart(e.touches[0].clientX, e.touches[0].clientY)
-                }
-              }}
-            />
-
-            {/* Render all four corner resize grabbers */}
-            {!isLoading &&
-              editMode &&
-              grabberCorners.map((corner: GrabberPosition) => (
-                <ResizeGrabber
-                  key={corner}
-                  position={corner}
-                  onGrab={(e: MouseEvent | TouchEvent) => {
-                    if ("clientX" in e) {
-                      handleResizeStart(e.clientX, e.clientY, corner)
-                    } else if (e.touches.length === 1) {
-                      handleResizeStart(e.touches[0].clientX, e.touches[0].clientY, corner)
-                    }
-                  }}
-                />
-              ))}
-
-            {/* Rotate grabber - on the right center */}
-            {!isLoading && editMode && <RotateGrabber handleRotateStart={handleRotateStart} />}
-          </div>
-
-          {/* Frame that represents the final image dimensions - moved AFTER the image */}
-          <div
             ref={frameRef}
-            className="relative border-2 border-black bg-white z-0 overflow-hidden pointer-events-none"
+            className="relative border-2 border-black bg-white z-0 overflow-hidden"
             style={(function () {
               const containerWidth = containerRef.current?.offsetWidth ?? 0
               const containerHeight = containerRef.current?.offsetHeight ?? 0
@@ -290,8 +187,54 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
               }
             })()}
           >
-            <GridOverlay />
+            <div
+              ref={imageRef}
+              className="absolute z-10 select-none"
+              style={{
+                transform: `translate(${renderData?.position.x}px, ${renderData?.position.y}px) rotate(${renderData?.rotation}deg) scale(${renderData?.scale})`,
+                transformOrigin: "top left",
+                willChange: "transform",
+                overflow: "visible",
+              }}
+            >
+              <Image
+                src={`/data/${projectSlug}/${image.id}-original.${image.extension}`}
+                alt={`Image ${image.id}`}
+                className={`transition-opacity duration-200 ${isLoading ? "opacity-0" : "opacity-100"}`}
+                width={image.originalWidth}
+                height={image.originalHeight}
+                priority
+                draggable={false}
+                onLoad={handleImageLoad}
+                onMouseDown={(e) => editMode && handleDragStart(e.clientX, e.clientY)}
+                onTouchStart={(e) => {
+                  if (editMode && e.touches.length === 1) {
+                    handleDragStart(e.touches[0].clientX, e.touches[0].clientY)
+                  }
+                }}
+              />
 
+              {/* Render all four corner resize grabbers */}
+              {!isLoading &&
+                editMode &&
+                grabberCorners.map((corner: GrabberPosition) => (
+                  <ResizeGrabber
+                    key={corner}
+                    position={corner}
+                    onGrab={(e: MouseEvent | TouchEvent) => {
+                      if ("clientX" in e) {
+                        handleResizeStart(e.clientX, e.clientY, corner)
+                      } else if (e.touches.length === 1) {
+                        handleResizeStart(e.touches[0].clientX, e.touches[0].clientY, corner)
+                      }
+                    }}
+                  />
+                ))}
+
+              {/* Rotate grabber - on the right center */}
+              {!isLoading && editMode && <RotateGrabber handleRotateStart={handleRotateStart} />}
+            </div>
+            <GridOverlay />
             {/* Transparent center of the frame */}
             <div className="absolute inset-0 bg-transparent"></div>
           </div>
@@ -301,7 +244,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
           {/* Simple view mode - just the image without editing controls */}
           <div className="relative max-h-[70%] max-w-[70%] flex items-center justify-center">
             <Image
-              src={`/data/${projectSlug}/${image.id}-export.png`}
+              src={`/data/${projectSlug}/${image.id}-export.png?t=${lastSavedAt}`}
               alt={`Image ${image.id}`}
               className={`transition-opacity duration-200 ${
                 isLoading ? "opacity-0" : "opacity-100"

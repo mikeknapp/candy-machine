@@ -1,5 +1,3 @@
-import { join } from "path"
-
 export type ImageSize = {
   width: number
   height: number
@@ -57,14 +55,3 @@ export const imageSizes: Record<string, ImageSize> = {
     name: "cinematic (21:9)",
   },
 }
-
-// Database path
-let dbRawPath = process.env.DATABASE_URL ?? ":memory:"
-
-if (dbRawPath === ":memory:") {
-  console.warn("DATABASE_URL is not set, using in-memory database")
-} else {
-  dbRawPath = join(process.cwd(), "prisma", dbRawPath.replace("file:", ""))
-}
-
-export const dbPath = dbRawPath

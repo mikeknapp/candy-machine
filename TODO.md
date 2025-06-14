@@ -1,4 +1,4 @@
-- Auto crop images for SDXL
+- Fix useImageTransform tests
 - Resolve duplicates image
 - Layout main panel
 - Edit image (crop, rotate, etc)

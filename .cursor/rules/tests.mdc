@@ -4,3 +4,5 @@ globs:
 alwaysApply: false
 ---
 - You are *NOT* allowed to add special cases to the core logic to ensure your tests pass! This is cheating. Simply inform the user that the tests are broken, and they will need to fix the core logic. 
+- Use the Jest framework for writing tests.
+- Place test code in a `__tests__` sub directory under the folder containing the file we're testing.

@@ -1,6 +1,6 @@
 "use client"
 
-import { saveTransformedImage } from "@/app/actions/images"
+import { SaveImageEditData, saveTransformedImage } from "@/app/actions/images"
 import { TooltipButton } from "@/components/ui/tooltip-button"
 import { projectImagesAtom, selectedImageIdAtom, selectedProjectAtom } from "@/lib/atoms"
 import { useAtom, useAtomValue } from "jotai"
@@ -30,16 +30,7 @@ export const MainPanel = () => {
     setSelectedImageId(images[newIndex].id)
   }
 
-  const handleSaveTransform = async (
-    imageId: number,
-    transformData: {
-      position: { x: number; y: number }
-      scale: number
-      rotation: number
-      flippedY: boolean
-      flippedX: boolean
-    }
-  ) => {
+  const handleSaveTransform = async (imageId: number, transformData: SaveImageEditData) => {
     if (!selectedProject) return
 
     // TODO: Revisit.
@@ -113,7 +104,7 @@ export const MainPanel = () => {
           <ImageEditor
             projectSlug={selectedProject.slug}
             image={selectedImage}
-            onSave={(transformData) => handleSaveTransform(selectedImage.id, transformData)}
+            onSave={(transformData: SaveImageEditData) => handleSaveTransform(selectedImage.id, transformData)}
           />
         </div>
 
