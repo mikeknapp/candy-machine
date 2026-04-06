@@ -50,10 +50,9 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     imageRef: imageRef as RefObject<HTMLDivElement>,
   })
 
-  // Track the actual rendered frame size
+  // Track the actual rendered frame size.
   useEffect(() => {
-    if (!frameRef.current) return
-    const updateSize = () => {
+    const updateRenderedFrameSize = () => {
       if (frameRef.current) {
         setRenderedFrameSize({
           width: frameRef.current.offsetWidth,
@@ -61,10 +60,9 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
         })
       }
     }
-    updateSize()
-    const resizeObserver = new ResizeObserver(updateSize)
-    resizeObserver.observe(frameRef.current)
-    return () => resizeObserver.disconnect()
+    updateRenderedFrameSize()
+    window.addEventListener("resize", updateRenderedFrameSize)
+    return () => window.removeEventListener("resize", updateRenderedFrameSize)
   }, [selectedFrameSize, editMode])
 
   const renderData = renderedImageData.editData as ImageEditData
@@ -72,6 +70,11 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
   // Set initial scale when image loads
   const handleImageLoad = () => {
     setIsLoading(false)
+    setSelectedFrameSize(initialFrameSizeKey)
+    setRenderedFrameSize({
+      width: frameRef.current?.offsetWidth ?? 0,
+      height: frameRef.current?.offsetHeight ?? 0,
+    })
   }
 
   // Handle keyboard shortcuts
@@ -85,9 +88,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     }
 
     window.addEventListener("keydown", handleKeyDown)
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
+    return () => window.removeEventListener("keydown", handleKeyDown)
   }, [editMode])
 
   const handleSave = () => {
@@ -116,13 +117,6 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
     setEditMode(false)
   }
 
-  console.log("scale", renderData?.scale)
-  console.log("position", renderData?.position)
-
-  const toggleEditMode = () => {
-    setEditMode((prev) => !prev)
-  }
-
   const handleFrameSizeChange = (value: string) => {
     const newFrameSize = value as keyof typeof imageSizes
     setSelectedFrameSize(newFrameSize)
@@ -133,12 +127,6 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
       const containerRect = containerRef.current.getBoundingClientRect()
       const containerCenterX = containerRect.width / 2
       const containerCenterY = containerRect.height / 2
-
-      // Apply the current frameScaleFactor for proper positioning
-      // setPosition({
-      //   x: containerCenterX - (imageSizes[newFrameSize].width * scale) / 2,
-      //   y: containerCenterY - (imageSizes[newFrameSize].height * scale) / 2,
-      // })
     }
   }
 
@@ -289,7 +277,7 @@ export const ImageEditor = ({ image, projectSlug, onSave }: ImageEditorProps) =>
           className={`px-4 py-2 rounded-md shadow-md flex items-center gap-2 ${
             editMode ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-white text-gray-700 hover:bg-gray-100"
           }`}
-          onClick={editMode ? handleSave : toggleEditMode}
+          onClick={editMode ? handleSave : () => setEditMode(true)}
         >
           {editMode ? (
             <>

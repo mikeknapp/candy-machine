@@ -44,8 +44,11 @@ export const useImageTransform = ({
 }: UseImageTransformProps): UseImageTransformReturn => {
   const editData = initImg.editData as ImageEditData
   const currentFrame = imageSizes[getFrameSizeKeyByDimensions(initImg.width, initImg.height) as keyof typeof imageSizes]
-
-  const [position, setPosition] = useState(editData?.position ?? { x: 0, y: 0 })
+  // Position as a percentage of the image size.
+  const [positionPc, setPositionPc] = useState({
+    x: editData?.position.x / (initImg.width || 0),
+    y: editData?.position.y / (initImg.height || 0),
+  })
   const [scale, setScale] = useState(editData?.scale ?? 1)
   const [rotation, setRotation] = useState(editData?.rotation ?? 0)
 
@@ -63,11 +66,14 @@ export const useImageTransform = ({
       if (!editMode) return
       setIsDragging(true)
       setDragStart({ x: clientX, y: clientY })
-      setStartPosition({ ...position })
+      setStartPosition({
+        x: positionPc.x * (renderedFrameSize?.width || 0),
+        y: positionPc.y * (renderedFrameSize?.height || 0),
+      })
       setResizingCorner(null)
       setIsRotating(false)
     },
-    [editMode, position]
+    [editMode, positionPc]
   )
 
   const handleResizeStart = useCallback(
@@ -111,9 +117,9 @@ export const useImageTransform = ({
         // Adjust delta by renderScale so logical position is correct
         const deltaX = (e.clientX - dragStart.x) / renderScale
         const deltaY = (e.clientY - dragStart.y) / renderScale
-        setPosition({
-          x: startPosition.x + deltaX,
-          y: startPosition.y + deltaY,
+        setPositionPc({
+          x: (startPosition.x + deltaX) / (renderedFrameSize?.width || 0),
+          y: (startPosition.y + deltaY) / (renderedFrameSize?.height || 0),
         })
       } else if (isResizing && resizingCorner) {
         if (!imageRef.current) return
@@ -196,8 +202,11 @@ export const useImageTransform = ({
       ...initImg,
       editData: {
         ...editData,
-        position,
-        scale: scale,
+        position: {
+          x: positionPc.x * (renderedFrameSize?.width || 0),
+          y: positionPc.y * (renderedFrameSize?.height || 0),
+        },
+        scale: (scale * (renderedFrameSize?.width || 0)) / (initImg.width || 0),
         rotation,
       },
       width: renderedFrameSize?.width || 0,
@@ -208,10 +217,10 @@ export const useImageTransform = ({
       editData: {
         ...editData,
         position: {
-          x: position.x / (renderedFrameSize?.width || 0),
-          y: position.y / (renderedFrameSize?.height || 0),
+          x: positionPc.x * (initImg.width || 0),
+          y: positionPc.y * (initImg.height || 0),
         },
-        scale: (scale * (renderedFrameSize?.width || 0)) / (initImg.width || 0),
+        scale,
         rotation,
       },
       width: currentFrame?.width || 0,

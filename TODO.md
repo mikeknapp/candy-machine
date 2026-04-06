@@ -1,4 +1,9 @@
-- Fix useImageTransform tests
+- Fix useImageTransform
+  - Scale
+  - Rotation
+  - Shouldn't be possible to go off screen; if you drop it and nothing is touching - go back into the middle
+  - White background
+  - When we update, we should update the preview image
 - Resolve duplicates image
 - Layout main panel
 - Edit image (crop, rotate, etc)
